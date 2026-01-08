@@ -14,7 +14,7 @@
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-1 text-sm text-gray-600"
         >
           <p><span class="font-medium">Name:</span> {{ student?.first_name }} {{ student?.last_name }}</p>
-          <p><span class="font-medium">Email:</span> {{ student?.email }}</p>
+        
           <p><span class="font-medium">Admission No:</span> {{ student?.admission_number }}</p>
           <p><span class="font-medium">Grade:</span> {{ student?.class_level }}</p>
           <p><span class="font-medium">Stream:</span> {{ student?.stream }}</p>

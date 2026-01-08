@@ -52,7 +52,7 @@ import { useRouter } from 'vue-router'
 import Auth from '../api/Auth' 
 
 const router = useRouter()
-const email = ref('')
+const username = ref('')
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
@@ -66,7 +66,7 @@ const handleLogin = async () => {
 
   try {
     
-    await Auth.login(email.value, password.value)
+    await Auth.login(username.value, password.value)
 
     
     const stored = localStorage.getItem('user')
@@ -120,7 +120,7 @@ const handleLogin = async () => {
     <div class="bg-white shadow-md rounded-lg p-6 w-full max-w-sm">
       <h2 class="text-xl font-semibold text-center mb-4">Student Login</h2>
 
-      <input v-model="email" type="email" placeholder="Email"
+      <input v-model="username" type="text" placeholder="Admission Number"
              class="border rounded w-full p-2 mb-3" />
 
       <input v-model="password" type="password" placeholder="Password"
