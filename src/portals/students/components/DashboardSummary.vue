@@ -75,7 +75,7 @@ import { ref, computed, onMounted } from 'vue'
 import { Doughnut, Pie } from 'vue-chartjs'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { getAssignments } from '../api/lms'
-import router from '../routers'
+import router from '../routes'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 

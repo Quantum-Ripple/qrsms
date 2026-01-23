@@ -50,11 +50,14 @@ import Auth from '../api/Auth'
 import { useRouter } from 'vue-router'
 
 const navItems = [
-  { label: 'Dashboard', route: { name: 'Dashboard' } },
-  {label : 'Assignments', route: {name: 'Assignments'}},
-  { label: 'Notes', route: { name: 'NotesPage' } },
-  { label: 'Announcements', route: { name: 'AnnouncementsPage' } },
-  { label: 'Settings', route: { name: 'Settings' } },
+  { label: 'Dashboard', route: { name: 'FinanceDashboard' } },
+  { label: 'Fee Structures', route: { name: 'FinanceFeeStructure'}},
+  { label: 'Payments', route: { name: 'FinancePayments'}},
+  { label: 'Invoices', route: { name: 'FinanceInvoices'}},
+  { label: 'Expenditures', route: { name: 'FinanceExpenditures'}},
+  { label: 'Announcements', route: { name: 'FinanceAnnouncements' } },
+  { label: 'Settings', route: { name: 'FinanceSettings' } },
+ 
 ]
 
 const mobileSidebarOpen = ref(false)
@@ -71,8 +74,6 @@ function getGreeting() {
 }
 const userData = JSON.parse(localStorage.getItem("user") || "{}")
 
-
-
 const PageTitle = ref(`${getGreeting()}, ${userData.first_name || ""}`)
 
 const sidebarTitle = ref(`${userData.school_name || ""}`)
@@ -88,7 +89,7 @@ function toggleSidebar() {
 function onLogout() {
   if(confirm("Are you sure you want to logout?")){
     Auth.logout()
-    router.push({ name: 'login' })
+    router.push({ name: 'Login' })
   }
 }
 </script>

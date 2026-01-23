@@ -1,106 +1,82 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Auth from '../api/Auth'
-import LoginPage from '../views/Login.vue'
-import DashboardLayout from '../layouts/DashboardLayout.vue'
-import Dashboard from '../views/Dashboard.vue'
-import Settings from '../views/Settings.vue'
-import AnnouncementsPage from '../views/Announcements.vue'
-import NotesPage from '../views/Notes.vue'
-import PerformancePage from '../views/Performance.vue'
-import EventDetail from '../components/events/EventDetail.vue'
-import Assignments from '../views/Assignments.vue'
-import AssignmentStart from '../components/lms/AssignmentStart.vue';
-import QuestionPage from '../components/lms/QuestionPage.vue';
 
+import PortalSelector from '../views/PortalSelector.vue'
+import LoginPage from '../views/LoginPage.vue'
 
+import StudentRoutes from '../portals/students/routes'
+import TeacherRoutes from '../portals/teachers/routes'
+import PrincipalRoutes from '../portals/principals/routes'
+import FinanceRoutes from '../portals/finance/routes'
+import ParentRoutes from '../portals/parents/routes'
 
 const routes = [
   {
     path: '/',
-    redirect: '/login', 
+    name: 'PortalSelector',
+    component: PortalSelector,
+    meta: { public: true }
   },
   {
     path: '/login',
-    name: 'login',
+    name: 'Login',
     component: LoginPage,
-    meta: { public: true },
+    meta: { public: true }
   },
   {
-    path: '/dashboard',
-    component: DashboardLayout,
-    children: [
-      {
-        path: '',
-        name: 'Dashboard',
-        component: Dashboard,
-      },
-      
-      {
-        path: 'announcements',
-        name: 'AnnouncementsPage',
-        component: AnnouncementsPage,
-      },
-      {
-        path: 'notes',
-        name: 'NotesPage',
-        component: NotesPage,
-      },
-      {
-        path: '/assignments/:id/start',
-        name: 'AssignmentStart',
-        component: AssignmentStart,
-        props: true,  
-     },
-     {
-    path: '/assignments/:assignmentId/questions/:questionIndex',
-    name: 'QuestionPage',
-    component: QuestionPage,
-    props: true, 
+    path: '/student',
+    name: 'StudentPortal',
+    component: () => import('../portals/students/layouts/DashboardLayout.vue'),
+    children: StudentRoutes,
   },
-    
-      {
-        path: 'performance',
-        name: 'PerformancePage',
-        component: PerformancePage,
-      },
-      {
-        path: 'assignments',
-        name: 'Assignments',
-        component: Assignments
-      },
-     
-      {
-        path: 'announcements/:id',
-        name: 'EventDetail',
-        component: EventDetail
-      },
-    
-    
-      {
-        path: 'settings',
-        name: 'Settings',
-        component: Settings,
-      },
-    ],
+  {
+    path: '/teachers',
+    name: 'TeacherPortal',
+    component: () => import('../portals/teachers/layouts/DashboardLayout.vue'),
+    children: TeacherRoutes,
   },
+  {
+    path: '/principal',
+    name: 'PrincipalPortal',
+    component: () => import('../portals/principals/layouts/DashboardLayout.vue'),
+    children: PrincipalRoutes
+  },
+    {
+    path: '/finance',
+    name: 'FinancePortal',
+    component: () => import('../portals/finance/layouts/DashboardLayout.vue'),
+    children: FinanceRoutes
+  },
+  {
+    path: '/parent',
+    name: 'ParentPortal',
+    component: () => import('../portals/parents/layouts/DashboardLayout.vue'),
+    children: ParentRoutes
+  }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes
 })
 
 router.beforeEach((to, from, next) => {
   const isAuthenticated = Auth.isAuthenticated()
+  const user = Auth.getUser()
 
-   if (!to.meta.public && !isAuthenticated) {
-    next('/login') }
-
-    if (to.path === '/login' && isAuthenticated) {
-    next('/dashboard') 
-  } else {
-    next()
+  if (to.meta.public) {
+    return next()
   }
+
+  if (!isAuthenticated) {
+    return next('/login')
+  }
+
+  if (to.meta.role && user?.role !== to.meta.role) {
+    return next('/')
+  }
+
+  next()
 })
 
 export default router
