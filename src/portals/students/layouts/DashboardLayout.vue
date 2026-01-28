@@ -55,6 +55,7 @@ const navItems = [
   { label: 'Notes', route: { name: 'StudentNotes' } },
   { label: 'Announcements', route: { name: 'StudentAnnouncements' } },
   { label: 'Settings', route: { name: 'StudentSettings' } },
+  {label: 'Virtual Labs', route: {name: 'StudentSimulations'}}
 ]
 
 const mobileSidebarOpen = ref(false)

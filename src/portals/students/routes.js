@@ -8,6 +8,7 @@ import Settings from './views/Settings.vue'
 import EventDetail from './components/events/EventDetail.vue'
 import AssignmentStart from './components/lms/AssignmentStart.vue'
 import QuestionPage from './components/lms/QuestionPage.vue'
+import Simulations from './views/Simulations.vue'
 
 export default [
   {
@@ -27,6 +28,11 @@ export default [
     props: true,
   },
   {
+    path: 'virtual lab',
+    name: 'StudentSimulations',
+    component: Simulations,
+  },
+   {
     path: 'notes',
     name: 'StudentNotes',
     component: NotesPage,
