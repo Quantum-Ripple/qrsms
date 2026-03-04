@@ -57,7 +57,7 @@ export default [
   },
   {
         path: 'student/:id',
-        name: 'StudentsDetail',
+        name: 'TeacherStudentDetail',
         component: StudentsDetail,
       },
       
@@ -96,7 +96,7 @@ export default [
       },
       {
         path: 'announcements/:id',
-        name: 'EventDetail',
+        name: 'TeacherEventDetail',
         component: EventDetail
       },
   
@@ -123,9 +123,4 @@ export default [
         component: StudentAssignmentResponse
       },
 
-      {
-        path: 'settings',
-        name: 'Settings',
-        component: Settings,
-      },
 ]

@@ -58,7 +58,7 @@
       >
         <option value="">All Methods</option>
         <option value="Cash">Cash</option>
-        <option value="M-Pesa">M-Pesa</option>
+        <option value="Mpesa">M-Pesa</option>
         <option value="Bank">Bank</option>
       </select>
     </div>
@@ -166,7 +166,7 @@
 import { ref, computed, onMounted } from "vue"
 import * as XLSX from "xlsx"
 import jsPDF from "jspdf"
-import "jspdf-autotable"
+import autoTable from "jspdf-autotable"
 import { getTransactions } from "../../api/finance"
 import { useRouter } from "vue-router"
 
@@ -179,7 +179,7 @@ const error = ref(null)
 const router = useRouter()
 
 function goToInvoice(id) {
-  router.push({ name: "GenerateInvoice", params: { id } })
+  router.push({ name: "PrincipalGenerateInvoice", params: { id } })
 }
 
 async function fetchPayments() {
@@ -236,17 +236,19 @@ function exportToExcel() {
 
 function exportToPDF() {
   const doc = new jsPDF()
+
   doc.text("Detailed Transactions", 14, 10)
-  doc.autoTable({
-    head: [["Date", "Full Name", "Class Level", "Method", "Amount"]],
+
+  autoTable(doc, {
+    head: [["Date", "Full Name",  "Method", "Amount"]],
     body: filteredTransactions.value.map((txn) => [
       formatDate(txn.date),
       txn.full_name,
-      txn.class_level,
       txn.payment_method,
       formatCurrency(txn.amount),
     ]),
   })
+
   doc.save("transactions.pdf")
 }
 </script>

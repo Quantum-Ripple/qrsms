@@ -41,17 +41,15 @@
             <label class="block text-sm font-medium text-gray-700">Class Level</label>
             <select v-model="form.class_level" required class="mt-1 block w-full px-3 py-2 border rounded-md">
               <option value="">Select Class Level</option>
-              <option v-for="n in 12" :key="n" :value="'Grade ' + n">Grade {{ n }}</option>
+              <option v-for="grade in GRADES" :key="grade.value" :value="grade.value">{{grade.label}}</option>
             </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Stream</label>
             <select v-model="form.stream" required class="mt-1 block w-full px-3 py-2 border rounded-md">
               <option value="">Select Stream</option>
-              <option value="North">North</option>
-              <option value="South">South</option>
-              <option value="West">West</option>
-              <option value="East">East</option>
+              <option v-for="stream in STREAMS" :key="stream.value" :value="stream.value" >{{ stream.label }}</option>
+           
             </select>
           </div>
           <div>
@@ -175,10 +173,15 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useToast } from 'vue-toastification'
+import { GRADES } from '../../../constants/grades.js'
+import { STREAMS } from '../../../constants/streams.js'
 import studentsApi from '../api/Students.js'
 
 const emit = defineEmits(['close', 'studentCreated'])
 const showParent2 = ref(false)
+
+const toast = useToast()
 
 const form = ref({
   admission_number: '',
@@ -208,7 +211,8 @@ async function createStudent() {
     
 
     await studentsApi.create(payload)
-    alert('Student created successfully!')
+
+    toast.success('Student created successfully!')
     emit('studentCreated')
     emit('close')
 
@@ -221,7 +225,7 @@ async function createStudent() {
     showParent2.value = false
   } catch (error) {
     console.error(error)
-    alert('Failed to create student.')
+    toast.error('Failed to create student.')
   }
 }
 </script>

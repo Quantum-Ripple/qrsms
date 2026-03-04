@@ -35,7 +35,7 @@ export default [
   { path: 'announcements', name: 'ParentAnnouncements', component: AnnouncementsPage },
 
   // Events
-  { path: 'event-details/:id', name: 'EventDetail', component: EventDetail, props: true },
+  { path: 'event-details/:id', name: 'ParentEventDetail', component: EventDetail, props: true },
 
   // Finance nested routes
   {

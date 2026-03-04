@@ -141,9 +141,11 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import teachersApi from '../api/Teachers.js'
 import AssignmentForm from '../composables/AssignmentForm.vue'
+import { useToast } from 'vue-toastification';
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast();
 
 const teacher = ref(null)
 const editMode = ref(false)
@@ -152,7 +154,7 @@ onMounted(async () => {
   const id = route.params.id
   try {
     teacher.value = await teachersApi.get(id)
-    // Ensure assignments array is reactive
+    
     if (!teacher.value.assignments || !Array.isArray(teacher.value.assignments)) {
       teacher.value.assignments = []
     }
@@ -173,15 +175,17 @@ async function updateTeacher() {
   try {
     await teachersApi.update(teacher.value.id, teacher.value)
     editMode.value = false
+    toast.success("Details Updated Successfully")
   } catch (error) {
     console.error('Failed to update teacher:', error)
+    toast.error("Failed to update details")
   }
 }
 
 async function deleteTeacher() {
   try {
     await teachersApi.remove(teacher.value.id)
-    router.push({ name: 'TeachersPage' })
+    router.push({ name: 'PrincipalTeachers' })
   } catch (error) {
     console.error('Failed to delete teacher:', error)
   }

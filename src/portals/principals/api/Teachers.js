@@ -1,5 +1,5 @@
 
-import api from './axios'
+import api from '../../../api/axios'
 
 export default {
 
@@ -20,7 +20,7 @@ export default {
     return res.data
   },
 
-  // Update (partial)
+  // Update 
   async update(id, payload) {
     console.log('Updating teacher with id:', id, 'and payload:', payload)
     const res = await api.patch(`/teachers/${id}/`, payload)

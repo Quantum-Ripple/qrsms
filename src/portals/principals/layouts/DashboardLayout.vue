@@ -58,6 +58,8 @@ const navItems = [
   // Teachers section
   { label: 'Teachers', route: { name: 'PrincipalTeachers' } },
 
+  { label: 'Academics', route: { name: 'Academics' }},
+
   // Finance with sub-items
   {
     label: 'Finance',

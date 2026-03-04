@@ -90,7 +90,7 @@ function formatDate(dateString) {
 }
 
 function viewDetails(id) {
-  router.push({ name: 'EventDetail', params: { id } })
+  router.push({ name: 'StudentEventDetail', params: { id } })
 }
 
 onMounted(() => {

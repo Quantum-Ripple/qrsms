@@ -162,7 +162,7 @@
 import { ref, computed, onMounted } from "vue"
 import * as XLSX from "xlsx"
 import jsPDF from "jspdf"
-import "jspdf-autotable"
+import autoTable from "jspdf-autotable"
 import { getExpenditures } from "../../api/finance"
 
 const expenditures = ref([])
@@ -232,7 +232,7 @@ function exportToExcel() {
 function exportToPDF() {
   const doc = new jsPDF()
   doc.text("Expenditure Summary", 14, 10)
-  doc.autoTable({
+  autoTable(doc ,{
     head: [["Date", "Category", "Description", "Amount", "Approved By"]],
     body: filteredExpenditures.value.map((exp) => [
       formatDate(exp.date),

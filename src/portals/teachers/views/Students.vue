@@ -152,7 +152,7 @@ const filteredStudents = computed(() =>
 )
 
 function viewStudent(student) {
-  router.push({ name: 'StudentsDetail', params: { id: student.id } })
+  router.push({ name: 'TeacherStudentDetail', params: { id: student.id } })
 }
 </script>
 

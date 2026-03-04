@@ -27,7 +27,7 @@
       >
         <option value="">-- Add subject --</option>
         <option v-for="s in availableSubjects" :key="s.code" :value="s.code">
-          {{ s.name }}
+          {{ s.label }}
         </option>
       </select>
       <button
@@ -141,6 +141,7 @@
 import { ref, onMounted } from "vue";
 import { getExams, getExamGrades, bulkUploadGrades } from "../../api/Grades";
 import StudentsApi from "../../api/Students";
+import { SUBJECTS } from "../../../../constants/subjects";
 
 export default {
   setup() {
@@ -153,25 +154,7 @@ export default {
     const message = ref("");
     const error = ref("");
 
-    const availableSubjects = [
-      { code: "ENG", name: "English" },
-      { code: "KISW", name: "Kiswahili" },
-      { code: "MATH", name: "Math" },
-      { code: "SCI", name: "Science" },
-      { code: "SST", name: "Social Studies" },
-      { code: "CRE", name: "CRE" },
-      { code: "PHY", name: "Physics" },
-      { code: "CHEM", name: "Chemistry" },
-      { code: "BIO", name: "Biology" },
-      { code: "HIS", name: "History" },
-      { code: "GEO", name: "Geography" },
-      { code: "COMP", name: "Computer Studies" },
-      { code: "BUS", name: "Business Studies" },
-      { code: "ART", name: "Art" },
-      { code: "MUSIC", name: "Music" },
-      { code: "PE", name: "Physical Education" },
-      { code: "AGRI", name: "Agriculture" },
-    ];
+    const availableSubjects = SUBJECTS;
 
     const loadStudents = async () => {
       const user = JSON.parse(localStorage.getItem("user"));

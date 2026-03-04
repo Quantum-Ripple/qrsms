@@ -29,6 +29,58 @@ const handleLogin = async () => {
   loading.value = true
 
   try {
+    await Auth.login(username.value, password.value)
+
+    const user = Auth.getUser()
+
+    if (!user || !user.role) {
+      Auth.logout()
+      error.value = 'Login failed (no user info). Try again.'
+      return
+    }
+
+    const normalizedRole = user.role.toLowerCase()
+
+    const ROLE_TO_PORTAL_PATH = {
+      student: '/student',
+      teacher: '/teachers',
+      principal: '/principal',
+      admin: '/principal',
+      finance: '/finance',
+      parent: '/parent',
+    }
+
+    const portalPath = ROLE_TO_PORTAL_PATH[normalizedRole]
+
+    if (!portalPath) {
+      Auth.logout()
+      error.value = 'No portal configured for your role.'
+      return
+    }
+
+    return router.push(portalPath)
+
+  } catch (err) {
+
+    if (err?.response?.status === 400) {
+      error.value = 'Invalid credentials. Please try again.'
+    } else if (err?.response?.status === 401) {
+      error.value = 'You are not authorized.'
+    } else {
+      error.value = 'Login failed. Please try again.'
+      console.error('Login error:', err)
+    }
+
+  } finally {
+    loading.value = false
+  }
+}
+
+/*const handleLogin = async () => {
+  error.value = ''
+  loading.value = true
+
+  try {
    
     await Auth.login(username.value, password.value)
 
@@ -85,6 +137,7 @@ const handleLogin = async () => {
     loading.value = false
   }
 }
+*/
 </script>
 
 <template>

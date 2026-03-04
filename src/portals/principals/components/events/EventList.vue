@@ -99,7 +99,7 @@ function formatDate(dateString) {
 }
 
 function viewDetails(id) {
-  router.push({ name: 'EventDetail', params: { id } })
+  router.push({ name: 'PrincipalEventDetail', params: { id } })
 }
 
 onMounted(() => {
@@ -181,7 +181,7 @@ async function fetchEvents() {
   }
 }
 function viewDetails(id) {
-  router.push({ name: 'EventDetail', params: { id } })
+  router.push({ name: 'PrincipalEventDetail', params: { id } })
 }
 
 function formatDate(dateString) {

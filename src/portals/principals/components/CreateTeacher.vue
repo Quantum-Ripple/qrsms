@@ -36,17 +36,17 @@
 
               <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700">Email</label>
-                <input type="email" v-model="form.email" class="mt-1 w-full border rounded-lg px-3 py-2" />
+                <input type="email" v-model="form.email" required class="mt-1 w-full border rounded-lg px-3 py-2" />
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700">Phone Number</label>
-                <input type="tel" v-model="form.phone_number" class="mt-1 w-full border rounded-lg px-3 py-2" />
+                <input type="tel" v-model="form.phone_number" required class="mt-1 w-full border rounded-lg px-3 py-2" />
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700">National ID</label>
-                <input type="number" v-model="form.national_id" class="mt-1 w-full border rounded-lg px-3 py-2" />
+                <input type="number" v-model="form.national_id" required class="mt-1 w-full border rounded-lg px-3 py-2" />
               </div>
 
               <div>
@@ -60,12 +60,12 @@
 
               <div>
                 <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
-                <input type="date" v-model="form.date_of_birth" class="mt-1 w-full border rounded-lg px-3 py-2" />
+                <input type="date" v-model="form.date_of_birth" required class="mt-1 w-full border rounded-lg px-3 py-2" />
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700">Hire Date</label>
-                <input type="date" v-model="form.hire_date" class="mt-1 w-full border rounded-lg px-3 py-2" />
+                <input type="date" v-model="form.hire_date" required class="mt-1 w-full border rounded-lg px-3 py-2" />
               </div>
 
               <div>
@@ -130,8 +130,11 @@ import { ref } from 'vue'
 
 import teachersApi from '../api/Teachers.js'
 import AssignmentForm from '../composables/AssignmentForm.vue'
+import { useToast } from 'vue-toastification'
 
 const emit = defineEmits(['close', 'teacherCreated'])
+
+const toast = useToast()
 
 const user = JSON.parse(localStorage.getItem('user'))
 const schoolId = user?.school
@@ -166,11 +169,14 @@ async function createTeacher() {
   try {
     const payload = { ...form.value, school: schoolId, assignments: assignments.value }
     await teachersApi.create(payload)
+    console.log("Teacher Load",payload)
+    toast.success("Teacher created Successfully!")
     emit('teacherCreated')
     emit('close')
   } catch (error) {
     console.error('Error creating teacher:', error)
-    alert('Failed to create teacher.')
+    toast.error("Failed to create teacher.")
+    //alert('Failed to create teacher.')
   }
 }
 </script>

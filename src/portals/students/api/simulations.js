@@ -1,4 +1,4 @@
-import api from "./axios";
+import api from '../../../api/axios'
 
 /**
  * Fetch simulations filtered by subject and class level

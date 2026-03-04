@@ -122,17 +122,26 @@
 import { ref, computed, onMounted } from 'vue'
 import CreateStudent from '../components/CreateStudent.vue'
 import { useRouter } from 'vue-router'
+import { useQuery } from '@tanstack/vue-query'
 import studentsApi from '../api/Students.js'
 
 const router = useRouter()
 
-const students = ref([])
+//const students = ref([])
 const searchQuery = ref('')
 const showCreateForm = ref(false)
 
-onMounted(() => {
-  fetchStudents()
+
+const {data,isLoading ,isError } = useQuery({
+  queryKey: ['students'],
+  queryFn: ()=>studentsApi.list(),
+  staleTime: 1000*60*5,
+  
 })
+
+/*onMounted(() => {
+  fetchStudents()
+})*/
 
 async function fetchStudents() {
   try {
@@ -143,13 +152,13 @@ async function fetchStudents() {
 }
 
 const filteredStudents = computed(() =>
-  students.value.filter((s) =>
+  (data.value??[]).filter((s) =>
     s.full_name.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 )
 
 function viewStudent(student) {
-  router.push({ name: 'StudentsDetail', params: { id: student.id } })
+  router.push({ name: 'PrincipalStudentDetail', params: { id: student.id } })
 }
 </script>
 

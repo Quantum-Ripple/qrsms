@@ -78,7 +78,7 @@
           <button @click="deleteStudent" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
             Delete
           </button>
-          <router-link :to="{ name: 'StudentsPage'}" class="text-blue-600 hover:underline text-sm ml-auto">
+          <router-link :to="{ name: 'PrincipalStudents'}" class="text-blue-600 hover:underline text-sm ml-auto">
             <- Back to students
           </router-link>
         </div>
@@ -248,10 +248,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
 import studentsApi from '../api/Students.js'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const student = ref(null)
 const editMode = ref(false)
 const showParent2 = ref(false)
@@ -307,19 +309,19 @@ async function updateStudent() {
       parent2: showParent2.value && form.value.parent2.first_name ? form.value.parent2 : undefined,
     }
     await studentsApi.update(student.value.id, payload)
-    alert('Student updated successfully!')
+    toast.success('Student updated successfully!')
     editMode.value = false
     student.value = await studentsApi.get(student.value.id)
   } catch (error) {
     console.error(error)
-    alert('Failed to update student.')
+    toast.error('Failed to update student.')
   }
 }
 
 async function deleteStudent() {
   try {
     await studentsApi.remove(student.value.id)
-    router.push({ name: 'StudentsPage' })
+    router.push({ name: 'PrincipalStudents' })
   } catch (error) {
     console.error('Failed to delete student:', error)
   }

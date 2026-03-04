@@ -18,7 +18,7 @@
 
       <div class="flex justify-between items-center">
         <button
-          @click="router.push({ name: 'Events' })"
+          @click="router.push({ name: 'PrincipalCommunications' })"
           class="text-blue-600 hover:underline"
         >
           ← Back

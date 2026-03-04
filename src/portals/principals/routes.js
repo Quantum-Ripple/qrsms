@@ -14,9 +14,10 @@ import GenerateInvoice from './components/finance/GenerateInvoice.vue'
 import ReportsPage from './views/ReportsPage.vue'
 import StudentsReport from './components/reports/StudentsReport.vue'
 import Transactions from './components/reports/Transactions.vue'
-import CommunicationsPage from './views/CommunicationPage.vue'
+import CommunicationsPage from './views/EventsPage.vue'
 import SettingsPage from './views/SettingsPage.vue'
 import ParentDetails from './components/parents/ParentDetails.vue'
+import Academics from './views/Academics.vue'
 
 export default [
   { path: '', name: 'PrincipalDashboard', component: Dashboard },
@@ -24,34 +25,36 @@ export default [
   // Students
   { path: 'students', name: 'PrincipalStudents', component: StudentsPage },
   { path: 'students/create', name: 'CreateStudent', component: CreateStudent },
-  { path: 'student/:id', name: 'StudentsDetail', component: StudentsDetail, props: true },
+  { path: 'student/:id', name: 'PrincipalStudentDetail', component: StudentsDetail, props: true },
 
   // Teachers
   { path: 'teachers', name: 'PrincipalTeachers', component: TeachersPage },
   { path: 'teacher/:id', name: 'TeachersDetail', component: TeachersDetail, props: true },
 
   // Events
-  { path: 'events', name: 'PrincipalEvents', component: EventsPage },
-  { path: 'events/create', name: 'EventCreate', component: () => import('./components/events/EventCreate.vue') },
-  { path: 'events/:id', name: 'EventDetail', component: EventDetail, props: true },
+  { path: 'pr/events', name: 'PrincipalEvents', component: EventsPage },
+  { path: 'pr/events/create', name: 'EventCreate', component: () => import('./components/events/EventCreate.vue') },
+  { path: 'pr/events/:id', name: 'PrincipalEventDetail', component: EventDetail, props: true },
 
   // Finance
-  { path: 'finance/overview', name: 'PrincipalFeeOverview', component: FeeOverview },
-  { path: 'finance/transactions', name: 'PrincipalDetailedTransactions', component: DetailedTransactions },
-  { path: 'finance/expenditure', name: 'PrincipalExpenditureSummary', component: ExpenditureSummary },
-  { path: 'generate-invoice/:id', name: 'PrincipalGenerateInvoice', component: GenerateInvoice, props: true },
+  { path: 'principal/finance/overview', name: 'PrincipalFeeOverview', component: FeeOverview },
+  { path: 'principal/finance/transactions', name: 'PrincipalDetailedTransactions', component: DetailedTransactions },
+  { path: 'principal/finance/expenditure', name: 'PrincipalExpenditureSummary', component: ExpenditureSummary },
+  { path: 'principal/generate-invoice/:id', name: 'PrincipalGenerateInvoice', component: GenerateInvoice, props: true },
 
   // Reports
-  { path: 'reports', name: 'PrincipalReports', component: ReportsPage },
-  { path: 'student-reports', name: 'StudentReports', component: StudentsReport },
-  { path: 'transactions', name: 'Transactions', component: Transactions },
+  { path: 'principal/reports', name: 'PrincipalReports', component: ReportsPage },
+  { path: 'principal/student-reports', name: 'StudentReports', component: StudentsReport },
+  { path: 'principal/transactions', name: 'Transactions', component: Transactions },
 
   // Communications
-  { path: 'communications', name: 'PrincipalCommunications', component: CommunicationsPage },
+  { path: 'pr/communications', name: 'PrincipalCommunications', component: CommunicationsPage },
 
   // Parents
-  { path: 'parents/:id', name: 'ParentDetails', component: ParentDetails, props: true },
+  { path: 'pr/parents/:id', name: 'ParentDetails', component: ParentDetails, props: true },
 
   // Settings
-  { path: 'settings', name: 'PrincipalSettings', component: SettingsPage },
+  { path: 'pr/settings', name: 'PrincipalSettings', component: SettingsPage },
+
+  { path: 'academics', name: 'Academics', component: Academics },
 ]

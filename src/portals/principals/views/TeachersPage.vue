@@ -112,18 +112,25 @@
 import { ref, computed, onMounted } from 'vue'
 import CreateTeacher from '../components/CreateTeacher.vue'
 import { useRouter } from 'vue-router'
+import { useQuery } from '@tanstack/vue-query'
 import teachersApi from '../api/Teachers.js'
 
 const router = useRouter()
 
-const teachers = ref([])
+//const teachers = ref([])
 const searchQuery = ref('')
 const showCreateForm = ref(false)
 
+const { data: teachers=[], isLoading, isError}=useQuery({
+  queryKey: ['teachers'],
+  queryFn: ()=> teachersApi.list(),
+  staleTime: 1000*60*5
+})
+/*
 onMounted(() => {
   fetchTeachers()
 })
-
+*/
 async function fetchTeachers() {
   try {
     teachers.value = await teachersApi.list()

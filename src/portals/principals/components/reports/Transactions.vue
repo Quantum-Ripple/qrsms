@@ -238,7 +238,7 @@ Usage Context:
 import { ref, computed, onMounted } from "vue"
 import * as XLSX from "xlsx"
 import jsPDF from "jspdf"
-import "jspdf-autotable"
+import autoTable from "jspdf-autotable"
 import { getTransactions } from "../../api/finance"
 import { useRouter } from "vue-router"
 
@@ -299,7 +299,8 @@ function exportExcel() {
 
 function exportPDF() {
   const doc = new jsPDF()
-  doc.autoTable({
+  doc.text("Transactions Reports", 14, 10)
+  autoTable(doc, {
     head: [["Date", "Full Name", "Class", "Method", "Amount"]],
     body: filteredTransactions.value.map(txn => [
       formatDate(txn.date),
@@ -309,7 +310,7 @@ function exportPDF() {
       formatCurrency(txn.amount),
     ]),
   })
-  doc.save("transactions.pdf")
+  doc.save("transactions_reports.pdf")
 }
 
 function printReport() {
