@@ -1,9 +1,9 @@
 import api from './axios';
 
 
-export const getExams = async () => {
+export const getExams = async (params = {}) => {
   try {
-    const res = await api.get('/exams/');
+    const res = await api.get('/exams/', { params });
     return Array.isArray(res.data) ? res.data : res.data.results ?? [];
   } catch (error) {
     console.error('Error fetching exams:', error);

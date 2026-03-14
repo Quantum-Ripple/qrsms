@@ -54,7 +54,7 @@ export default {
       if (!this.assignment) return;
 
       this.$router.push({
-        name: "QuestionPage",
+        name: "StudentQuestionPage",
         params: { assignmentId: this.assignment.id, questionIndex: 0 },
       });
     },

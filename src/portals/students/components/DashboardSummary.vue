@@ -157,8 +157,8 @@ const getAssignmentStatus = (assignment) => {
 }
 
 
-const openAssignment = () => {
-  router.push('/dashboard/assignments')
+const openAssignment = (assigment) => {
+  router.push({name: 'StudentAssignmentStart',params: {id: assignment.id}})
 }
 </script>
 

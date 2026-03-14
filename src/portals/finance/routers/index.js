@@ -43,7 +43,7 @@ const routes = [
       
       {
         path: 'announcements',
-        name: 'AnnouncementsPage',
+        name: 'FinanceAnnouncements',
         component: AnnouncementsPage,
       },
       {
@@ -53,12 +53,12 @@ const routes = [
       },
       {
         path: 'invoices',
-        name: 'Invoices',
+        name: 'FinanceInvoices',
         component: Invoices
       },
       {
         path: 'payments',
-        name: 'Payments',
+        name: 'FinancePayments',
         component: Payments
       },
       {

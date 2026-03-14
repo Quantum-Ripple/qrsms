@@ -19,7 +19,7 @@
       Failed to load announcements. Please try again later.
     </div>
 
-    <div v-if="events.length==0" class="text-gray-500">
+    <div v-if="events?.length==0" class="text-gray-500">
       No announcements available.
     </div>
 
@@ -67,14 +67,50 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
+import { useQuery } from '@tanstack/vue-query'
 import * as eventApi from '../../api/event'
 
-const events = ref([])
+
+//const events = ref([])
 const loading = ref(false)
 const error = ref(null)
 const router = useRouter()
+const toast=useToast()
 
 
+const {data: events,isLoading,isError}=useQuery({
+  queryKey: ['events'],
+  queryFn: ()=>eventApi.fetchEvents(),
+  staleTime: 1000*60*5
+})
+
+
+async function getNotifications() {
+  loading.value = true
+  error.value = null
+  try {
+    const response = await eventApi.fetchEvents()
+
+    const filtered = response.filter(event =>
+      event.target_audience === "all" ||
+      event.target_audience === "teachers"
+    )
+
+  
+    events.value = filtered.sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at)
+    )
+
+  } catch (err) {
+    toast.error('Failed to fetch announcements.')
+    error.value = err.message || 'Error fetching announcements.'
+  } finally {
+    loading.value = false
+  }
+}
+
+/*
 async function getNotifications() {
   loading.value = true
   error.value = null
@@ -88,8 +124,8 @@ async function getNotifications() {
     error.value = err.message || 'Error fetching announcements.'
   } finally {
     loading.value = false
-  }
-}
+  }*/
+
 
 
 function formatDate(dateString) {
@@ -104,10 +140,10 @@ function formatDate(dateString) {
 function viewDetails(id) {
   router.push({ name: 'TeacherEventDetail', params: { id } })
 }
-
+/*
 onMounted(() => {
   getNotifications()
-})
+})*/
 </script>
 
 <style scoped>

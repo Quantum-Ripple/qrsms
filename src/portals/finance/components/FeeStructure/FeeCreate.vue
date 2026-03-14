@@ -19,8 +19,8 @@
             required
           >
             <option value="">Select class</option>
-            <option v-for="grade in grades" :key="grade" :value="grade">
-              {{ grade }}
+            <option v-for="grade in GRADES" :key="grade.value" :value="grade.value">
+              {{ grade.label }}
             </option>
           </select>
         </div>
@@ -91,15 +91,13 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { createFee } from '../../api/fee'
+import { GRADES } from '../../../../constants/grades'
+import { useToast } from 'vue-toastification'
 
 const router = useRouter()
 const loading = ref(false)
+const toast = useToast()
 
-const grades = [
-  'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4',
-  'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8',
-  'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'
-]
 
 const form = ref({
   class_level: '',
@@ -118,9 +116,11 @@ const submitForm = async () => {
       year: Number(form.value.year),
       amount: Number(form.value.amount)
     })
+    toast.success("Fee structure added successfully!")
 
-    router.push({ name: 'FeeStructure' })
+    router.push({ name: 'FinanceFeeStructure' })
   } catch (error) {
+    toast.error("Fee structure creation failed!")
     console.error('Failed to create fee structure:', error.response?.data || error)
   } finally {
     loading.value = false

@@ -116,23 +116,34 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
+import { useQuery } from '@tanstack/vue-query'
 import studentsApi from '../api/Students.js'
+import { useClassStore } from "@/stores/classStore"
 
 const router = useRouter()
+const toast = useToast()
+const classStore = useClassStore()
 
 const students = ref([])
 const searchQuery = ref('')
 
-const userData = JSON.parse(localStorage.getItem("user") || "{}")
-const class_level = ref(`${userData.class_level || ""}`)
-const stream = ref(`${userData.stream || ""}`)
+const class_level = ref("")
+const stream = ref("")
 
+watch(
+  () => classStore.activeClass,
+  (cls) => {
+    if (!cls) return
+    class_level.value = cls.class_level
+    stream.value = cls.stream
+    fetchStudents()
+  },
+  { immediate: true }
+)
 
-onMounted(() => {
-  fetchStudents()
-})
 
 async function fetchStudents() {
   try {

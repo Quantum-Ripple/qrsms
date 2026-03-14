@@ -67,6 +67,7 @@ const hasAnnouncements = ref(false)
 
 onMounted(() => {
   const userData = localStorage.getItem('user')
+  console.log(userData)
   if (userData) {
     student.value = JSON.parse(userData)
   }
@@ -75,7 +76,7 @@ onMounted(() => {
 })
 
 const goToAnnouncements = () => {
-  router.push('/dashboard/announcements')
+  router.push({name: 'StudentsAnnouncement'})
 }
 </script>
 

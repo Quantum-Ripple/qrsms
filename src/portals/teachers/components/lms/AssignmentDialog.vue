@@ -1,17 +1,20 @@
 <script setup>
 import { reactive, ref } from 'vue'
+import { SUBJECTS } from '../../../../constants/subjects'
+import { STREAMS } from '../../../../constants/streams'
+import { GRADES } from '../../../../constants/grades'
 
 const emit = defineEmits(['close', 'continue'])
 
-const availableSubjects = [
+/*const availableSubjects = [
   { code: 'MATH', name: 'Mathematics' },
   { code: 'ENG', name: 'English' },
   { code: 'SCI', name: 'Science' },
   { code: 'HIS', name: 'History' }
-]
+]*/
 
-const grades = Array.from({ length: 12 }, (_, i) => `Grade ${i + 1}`)
-const streams = ['North', 'South', 'East', 'West']
+//const grades = Array.from({ length: 12 }, (_, i) => `Grade ${i + 1}`)
+//const streams = ['North', 'South', 'East', 'West']
 
 const form = reactive({
   title: '',
@@ -48,25 +51,25 @@ const goToBuilder = () => {
         <select v-model="form.subject" class="w-full p-2 border rounded">
           <option disabled value="">Select Subject</option>
           <option
-            v-for="s in availableSubjects"
-            :key="s.code"
-            :value="s.code"
+            v-for="subject in SUBJECTS"
+            :key="subject.Value"
+            :value="subject.value"
           >
-            {{ s.name }}
+            {{ subject.label }}
           </option>
         </select>
 
         <select v-model="form.class_level" class="w-full p-2 border rounded">
           <option disabled value="">Select Class</option>
-          <option v-for="g in grades" :key="g">
-            {{ g }}
+          <option v-for="g in GRADES" :key="g.value" :value="g.value">
+            {{ g.value }}
           </option>
         </select>
 
         <select v-model="form.stream" class="w-full p-2 border rounded">
           <option disabled value="">Select Stream</option>
-          <option v-for="s in streams" :key="s">
-            {{ s }}
+          <option v-for="s in STREAMS" :key="s.Value">
+            {{ s.label }}
           </option>
         </select>
 

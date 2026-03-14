@@ -9,7 +9,7 @@
 
 
       <router-link
-        :to="{name: 'AttendancePage'}"
+        :to="{name: 'TeachersAttendancePage'}"
         class="text-blue-600 hover:underline text-sm ml-auto"
       >
         ← Back to Attendance View
@@ -65,11 +65,20 @@
 import studentApi from "../../api/Students";
 import * as attendanceApi from "../../api/attendance";
 
+import { useRouter } from "vue-router";
+import { useToast } from "vue-toastification";
+
 
 import PresentIcon from "../icons/PresentIcon.vue";
 import AbsentIcon from "../icons/AbsentIcon.vue";
 import LateIcon from "../icons/LateIcon.vue";
 import DocumentIcon from "../icons/UnavailableIcon.vue";
+
+
+
+const router = useRouter()
+const toast = useToast()
+
 
 export default {
   data() {
@@ -120,14 +129,16 @@ export default {
         
         records_input
       };
-      console.log(payload);
+      //console.log(payload);
 
       try {
         await attendanceApi.createAttendanceSession(payload);
-        alert("Attendance submitted successfully!");
+        this.$router.push({ name: "TeachersAttendancePage" })
+        toast.success("Attendance submitted successfully!");
+        
       } catch (err) {
         console.error("Error submitting attendance:", err);
-        alert("Attendance for today already submitted!.");
+        toast.error("Attendance for today already submitted!.");
       }
     }
   },

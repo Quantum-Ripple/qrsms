@@ -68,13 +68,49 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import * as eventApi from '../../api/event'
+import { useQuery } from '@tanstack/vue-query'
+import { useToast } from 'vue-toastification'
 
-const events = ref([])
+//const events = ref([])
 const loading = ref(false)
 const error = ref(null)
 const router = useRouter()
+const toast=useToast()
 
 
+
+const {data: events,isLoading,isError}=useQuery({
+  queryKey: ['events'],
+  queryFn: ()=>eventApi.fetchEvents(),
+  staleTime: 1000*60*5
+})
+
+
+async function getNotifications() {
+  loading.value = true
+  error.value = null
+  try {
+    const response = await eventApi.fetchEvents()
+
+    const filtered = response.filter(event =>
+      event.target_audience === "all" ||
+      event.target_audience === "finance"
+    )
+
+  
+    events.value = filtered.sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at)
+    )
+
+  } catch (err) {
+    toast.error('Failed to fetch announcements.')
+    error.value = err.message || 'Error fetching announcements.'
+  } finally {
+    loading.value = false
+  }
+}
+
+/*
 async function getNotifications() {
   loading.value = true
   error.value = null
@@ -90,7 +126,7 @@ async function getNotifications() {
     loading.value = false
   }
 }
-
+*/
 
 function formatDate(dateString) {
   const date = new Date(dateString)
@@ -104,10 +140,10 @@ function formatDate(dateString) {
 function viewDetails(id) {
   router.push({ name: 'FinanceEventDetail', params: { id } })
 }
-
+/*
 onMounted(() => {
   getNotifications()
-})
+})*/
 </script>
 
 <style scoped>

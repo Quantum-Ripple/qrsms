@@ -8,8 +8,8 @@
         <label class="block mb-1">Class</label>
         <select v-model="classLevel" class="border rounded px-3 py-2 w-full">
           <option value="">Select Class</option>
-          <option v-for="c in classLevels" :key="c" :value="c">
-            {{ c }}
+          <option v-for="c in GRADES" :key="c.value" :value="c.value">
+            {{ c.label }}
           </option>
         </select>
       </div>
@@ -50,8 +50,11 @@
 import { ref, onMounted } from 'vue'
 import { getFees, createBulkInvoices } from '../../api/fee'
 import { useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
+import { GRADES } from '../../../../constants/grades'
 
 const router = useRouter()
+const toast=useToast()
 const feeStructures = ref([])
 
 const classLevel = ref('')
@@ -60,7 +63,7 @@ const term = ref('')
 const loading = ref(false)
 
 
-const classLevels = ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4']
+//const classLevels = ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4']
 const terms = ['Term 1','Term 2','Term 3']
 
 
@@ -70,7 +73,7 @@ onMounted(async () => {
 
 const submitForm = async () => {
   if (!classLevel.value || !feeStructure.value) {
-    alert('Please select class and fee structure')
+    toast.error('Please select class and fee structure')
     return
   }
 
@@ -83,11 +86,12 @@ const submitForm = async () => {
   loading.value = true
   try {
     await createBulkInvoices(payload)
-    alert('Invoices generated successfully')
-    router.push({name: 'Invoices'})
+    router.push({name: 'FinanceInvoices'})
+    toast.success('Invoices generated successfully')
+    
   } catch (err) {
     console.error(err)
-    alert('Failed to generate invoices')
+    //toast.error('Failed to generate invoices')
   } finally {
     loading.value = false
   }

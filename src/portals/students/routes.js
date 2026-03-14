@@ -9,6 +9,7 @@ import EventDetail from './components/events/EventDetail.vue'
 import AssignmentStart from './components/lms/AssignmentStart.vue'
 import QuestionPage from './components/lms/QuestionPage.vue'
 import Simulations from './views/Simulations.vue'
+import NoteReader from './components/lms/NoteReader.vue'
 
 export default [
   {
@@ -37,6 +38,11 @@ export default [
     name: 'StudentNotes',
     component: NotesPage,
   },
+  {
+  path: "/notes/read/:id",
+  name: "NoteReader",
+  component: NoteReader,
+},
   {
     path: 'performance',
     name: 'StudentPerformance',

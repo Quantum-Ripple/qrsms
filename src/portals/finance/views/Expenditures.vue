@@ -96,8 +96,11 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { getExpense } from '../api/expense.js'
 import ExpenseModal from '../components/Expenses/ExpenseModal.vue'
+import { useQuery } from '@tanstack/vue-query'
+import { useToast } from 'vue-toastification'
 
 
+const toast=useToast()
 const router = useRouter()
 
 
@@ -108,8 +111,13 @@ const categories = ['Utilities', 'Salary', 'Maintenance', 'Miscellaneous']
 
 const showExpenseModal = ref(false)
 const editingExpense = ref({})
-
-
+/*
+const {data: expenses,isLoading,isError}=useQuery({
+  queryKey: ['expenses'],
+  queryFn: getExpense(),
+  staleTime: 1000*60*5
+})
+*/
 const fetchExpenses = async () => {
   try {
     const data = await getExpense()

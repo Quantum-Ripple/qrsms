@@ -18,7 +18,7 @@
 
       <div class="flex justify-between items-center">
         <button
-          @click="router.push({ name: 'AnnouncementsPage' })"
+          @click="router.push({ name: 'FinanceAnnouncements' })"
           class="text-blue-600 hover:underline"
         >
           ← Back
@@ -43,6 +43,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import * as eventApi from "../../api/event";
+
 
 const route = useRoute();
 const router = useRouter();

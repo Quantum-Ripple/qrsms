@@ -72,9 +72,12 @@ import { createExam } from "../../api/Grades";
 
 import { STREAMS } from "../../../../constants/streams";
 import { GRADES } from "../../../../constants/grades";
+import { useToast } from "vue-toastification";
 
 const userData = JSON.parse(localStorage.getItem('user') || '{}')
 const school = ref(`${userData.school || ""}`);
+
+const toast = useToast()
 
 const form = ref({
   name: "",
@@ -97,14 +100,12 @@ const handleSubmit = async () => {
     success.value = false;
 
     const res = await createExam(form.value);
-    console.log("Exam created:", res);
+    //console.log("Exam created:", res);
+    toast.success("Assessment Created Successfully")
 
     success.value = true;
 
-    
-    setTimeout(() => {
-      window.location.href = "/teachers/grades"; 
-    }, 1000);
+  
   } catch (err) {
     error.value = err.response?.data?.detail || "Failed to create exam";
   }

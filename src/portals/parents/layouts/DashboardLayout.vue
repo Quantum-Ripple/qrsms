@@ -95,7 +95,7 @@ function toggleSidebar() {
 function onLogout() {
   if(confirm("Are you sure you want to logout?")){
     Auth.logout()
-    router.push({ name: 'login' })
+    router.push({ name: 'Login' })
   }
 }
 </script>

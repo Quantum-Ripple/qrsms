@@ -48,7 +48,7 @@ export default {
   },
   methods: {
     startAssignment(assignment) {
-      this.$router.push({ name: "AssignmentStart", params: { id: assignment.id } });
+      this.$router.push({ name: "StudentAssignmentStart", params: { id: assignment.id } });
     },
     isDisabled(assignment) {
      

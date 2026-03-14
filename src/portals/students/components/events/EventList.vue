@@ -53,6 +53,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import * as eventApi from '../../api/event'
 
+
 const events = ref([])
 const loading = ref(false)
 const error = ref(null)

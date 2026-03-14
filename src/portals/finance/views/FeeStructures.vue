@@ -23,8 +23,8 @@
 
       <select v-model="selectedClass" class="border rounded px-3 py-2">
         <option value="">All Classes</option>
-        <option v-for="c in classLevels" :key="c" :value="c">
-          {{ c }}
+        <option v-for="c in GRADES" :key="c.value" :value="c.value">
+          {{ c.label }}
         </option>
       </select>
     </div>
@@ -79,6 +79,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getFees } from '../api/fee'
+import { GRADES } from '../../../constants/grades'
 
 const router = useRouter()
 const fees = ref([])
@@ -91,10 +92,10 @@ const fetchFees = async () => {
 
 onMounted(fetchFees)
 
-const classLevels = computed(() => {
+/*const classLevels = computed(() => {
   return [...new Set(fees.value.map(f => f.class_level))]
 })
-
+*/
 const filteredFees = computed(() => {
   return fees.value.filter(fee => {
     const matchesSearch =

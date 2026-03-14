@@ -28,8 +28,8 @@
           <label class="block mb-1 font-medium">Payment Method</label>
           <select v-model="paymentMethod" class="border rounded px-3 py-2 w-full" required>
             <option value="">Select a method</option>
-            <option v-for="(label, key) in PAYMENT_METHODS" :key="key" :value="key">
-              {{ label }}
+            <option v-for="m in PAYMENTS" :key="m.value" :value="m.value">
+              {{ m.label }}
             </option>
           </select>
         </div>
@@ -68,22 +68,19 @@
 import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { recordPayment, getInvoiceById } from '../../api/fee'
+import { useToast } from 'vue-toastification'
+import { PAYMENTS } from '../../../../constants/payment'
 
 const props = defineProps({
   invoiceId: { type: Number, required: true },
-  standalone: { type: Boolean, default: false } // If true, modal is full page
+  standalone: { type: Boolean, default: false } 
 })
 
 const emit = defineEmits(['close', 'paymentRecorded'])
-
+const toast=useToast()
 const router = useRouter()
 
-const PAYMENT_METHODS = {
-  cash: 'Cash',
-  mpesa: 'Mpesa',
-  bank: 'Bank Transfer',
-  cheque: 'Cheque'
-}
+
 
 const invoice = ref(null)
 const paymentAmount = ref('')
@@ -100,19 +97,19 @@ watch(() => props.invoiceId, loadInvoice, { immediate: true })
 
 const cancel = () => {
   if (props.standalone) {
-    router.push({ name: 'InvoiceList' }) // Return to list
+    router.push({ name: 'InvoiceList' }) 
   } else {
-    emit('close') // Close modal
+    emit('close') 
   }
 }
 
 const submitPayment = async () => {
   if (!paymentAmount.value || paymentAmount.value <= 0) {
-    alert('Amount must be greater than 0')
+    toast.error('Amount must be greater than 0')
     return
   }
   if (!paymentMethod.value) {
-    alert('Please select a payment method')
+    toast.error('Please select a payment method')
     return
   }
 
@@ -127,10 +124,10 @@ const submitPayment = async () => {
     await recordPayment(payload)
     emit('paymentRecorded')
     emit('close')
-    alert('Payment recorded successfully')
+    toast.success('Payment recorded successfully')
   } catch (err) {
     console.error(err)
-    alert('Failed to record payment')
+    toast.error('Failed to record payment')
   }
 }
 </script>

@@ -4,7 +4,7 @@
 
     <button
       class="mb-4 text-blue-600 hover:underline"
-      @click="$router.push({ name: 'Payments'})"
+      @click="$router.push({ name: 'FinancePayments'})"
     >
       &larr; Back to Payments
     </button>
@@ -122,7 +122,7 @@ const downloadReceipt = () => {
   doc.text(`Method: ${payment.value.method_display}`, 20, 140)
   doc.text(`Received By: ${payment.value.received_by}`, 20, 150)
   
-  doc.save(`Receipt_Payment_${payment.value.id}.pdf`)
+  doc.save(`Receipt_Payment_${payment.value.student_name}.pdf`)
 }
 
 
@@ -164,7 +164,7 @@ const downloadInvoice = () => {
     y += 10
   })
 
-  doc.save(`Invoice_${invoice.value.id}.pdf`)
+  doc.save(`Invoice_${invoice.value.student_name}.pdf`)
 }
 
 onMounted(fetchData)

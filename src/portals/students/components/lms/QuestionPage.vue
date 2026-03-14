@@ -58,9 +58,10 @@ import MultipleChoice from './QuestionTypes/MultipleChoice.vue';
 import ShortAnswer from './QuestionTypes/ShortAnswer.vue';
 import LongAnswer from './QuestionTypes/LongAnswer.vue';
 import { getAssignments,submitAssignment } from '../../api/lms';
+import { useToast } from 'vue-toastification';
 
 
-
+const toast =useToast()
 export default {
   components: { TrueFalse, MultipleChoice, ShortAnswer, LongAnswer },
   data() {
@@ -113,7 +114,7 @@ export default {
       });
     } catch (err) {
       console.error(err);
-      this.error = 'Failed to load assignment';
+      //this.error = 'Failed to load assignment';
     } finally {
       this.loading = false;
     }
@@ -157,11 +158,11 @@ export default {
     }).filter(Boolean);
 
     await submitAssignment(assignmentId, answersList);
-    alert('Assignment submitted successfully!');
-    this.$router.push({name: "Assignments"});
+    toast.success('Assignment submitted successfully!');
+    this.$router.push({name: "StudentAssignments"});
   } catch (err) {
     console.error("Failed to submit assignment:", err);
-    alert('Failed to submit assignment. Check console for details.');
+    toast.error('Assignment Already Submitted!!');
   } finally {
     this.submitting = false;
   }

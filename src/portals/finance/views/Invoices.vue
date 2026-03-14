@@ -136,7 +136,7 @@ const closeRecordPayment = () => {
 }
 
 const goToCreateInvoice = () => {
-  router.push({ name: 'CreateInvoice' })
+  router.push({ name: 'InvoiceCreate' })
 }
 
 const refreshInvoices = async () => {

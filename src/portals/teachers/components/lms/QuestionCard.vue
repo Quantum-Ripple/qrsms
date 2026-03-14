@@ -1,5 +1,11 @@
 <script setup>
-const props = defineProps({
+/*const props = defineProps({
+  question: {
+    type: Object,
+    required: true
+  }
+})*/
+const { question } = defineProps({
   question: {
     type: Object,
     required: true
@@ -8,6 +14,13 @@ const props = defineProps({
 
 const emit = defineEmits(['remove'])
 
+function updateCorrectOption() {
+  if (!question.options) return
+  question.options.forEach(o => {
+    o.is_correct = o.id === question.correct_answer
+  })
+}
+
 const questionTypes = [
   { id: 'multiple', label: 'Multiple Choice' },
   { id: 'true_false', label: 'True / False' },
@@ -15,10 +28,22 @@ const questionTypes = [
   { id: 'essay', label: 'Essay' }
 ]
 
+/*
 function addOption() {
   if (question.type !== 'multiple') return
   if (!Array.isArray(question.options)) question.options = []
   question.options.push({ id: Date.now(), text: '', is_correct: false })
+}*/
+function addOption() {
+  if (question.type !== 'multiple') return
+
+  if (!Array.isArray(question.options)) question.options = []
+
+  question.options.push({
+    id: crypto.randomUUID(),
+    text: '',
+    is_correct: false
+  })
 }
 
 
@@ -71,6 +96,7 @@ function addOption() {
           type="radio"
           :value="opt.id"
           v-model="question.correct_answer"
+          @change="updateCorrectOption"
         />
         <input
           v-model="opt.text"

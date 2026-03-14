@@ -48,21 +48,34 @@ import SimpleAppBar from '../components/AppBar.vue'
 import SimpleSideBar from '../components/SideBar.vue'
 import Auth from '../api/Auth'
 import { useRouter } from 'vue-router'
+import { useClassStore } from '@/stores/classStore'
 
 const navItems = [
   { label: 'Dashboard', route: { name: 'TeachersDashboard' } },
   { label: 'Students', route: { name: 'TeachersStudentsPage' } },
   { label: 'Attendance', route: { name: 'TeachersAttendancePage' } },
-  { label: 'Grades', route: { name: 'TeachersGradesPage' } },
-  { label: 'Announcements', route: { name: 'TeachersAnnouncementsPage' } },
+ // { label: 'Grades', route: { name: 'TeachersGradesPage' } },
+  //{ label: 'Assessments', route: { name: 'TeachersAssessmentsPage' } },
+  { label: 'Assessments' ,
+     children: [
+      { label: 'Create Assessment', route: { name: 'CreateExam' } },
+      { label: 'Rubric', route: { name: 'TeachersRubrics' } },
+      { label: 'Subject Score', route: { name: 'TeachersSubjectScore' } },
+      { label: 'Term Scores', route: { name: 'TeachersResults' } },
+      {label: 'Final Results', route: {name: 'TeachersFinalResults'}}
+    ], 
+  },
   { label: 'Assignments', route: { name: 'TeachersAssignmentsPage' } },
+  { label: 'Announcements', route: { name: 'TeachersAnnouncementsPage' } },
   { label: 'Settings', route: { name: 'TeachersSettings' } },
 ]
 
 
 const mobileSidebarOpen = ref(false)
 const router = useRouter()
+const classStore = useClassStore()
 
+classStore.loadInitialClass()
 
 
 
@@ -79,7 +92,8 @@ const getDisplayNameFromEmail = (email = "") => {
   if (!email || typeof email !== "string") return ""
   return email.split("@")[0]
 }
-const name = getDisplayNameFromEmail(userData.email)
+//const name = getDisplayNameFromEmail(userData.email)
+const name=userData.username
 
 const PageTitle = ref(`${getGreeting()}, ${name || ""}`)
 
@@ -96,6 +110,7 @@ function toggleSidebar() {
 function onLogout() {
   if(confirm("Are you sure you want to logout?")){
     Auth.logout()
+    classStore.clearClass()
     router.push({ name: 'Login' })
   }
 }

@@ -80,7 +80,10 @@ const onAssignmentChange = async () => {
   const results = await getAssignmentResults(selectedAssignment.value.id)
 
   students.value = results
-  maxPoints.value = selectedAssignment.value.total_points || 100
+  maxPoints.value = selectedAssignment.value.questions.reduce(
+    (sum, q) => sum + (q.points || 0),
+    0
+  )
 }
 
 const viewStudentResponse = (student) => {

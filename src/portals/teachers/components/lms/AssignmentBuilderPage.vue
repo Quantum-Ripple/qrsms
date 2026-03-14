@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import QuestionCard from './QuestionCard.vue'
 import { postAssignment } from '../../api/lms'
 
+
 const route = useRoute()
 const router = useRouter() 
 
@@ -31,8 +32,8 @@ const addQuestion = (type) => {
     options:
       type === 'multiple'
         ? [
-            { id: 1, text: '', is_correct: false },
-            { id: 2, text: '', is_correct: false }
+            { id: crypto.randomUUID(), text: '', is_correct: false },
+            { id: crypto.randomUUID(), text: '', is_correct: false }
           ]
         : [],
     correct_answer: null
@@ -42,6 +43,7 @@ const addQuestion = (type) => {
 const removeQuestion = (index) => {
   assignment.questions.splice(index, 1)
 }
+
 
 
 const submitAssignment = async () => {
@@ -72,11 +74,12 @@ const submitAssignment = async () => {
   }
 
   try {
+    //console.log(JSON.stringify(payload, null, 2))
     const response = await postAssignment(payload)
     
     alert('Assignment posted successfully!')
    
-    router.push({ name: 'AssignmentsPage' })
+    router.push({ name: 'TeachersAssignmentsPage' })
   } catch (err) {
     console.error('Assignment submission failed:', err)
     alert('Failed to post assignment. Please try again.')
@@ -105,9 +108,8 @@ const submitAssignment = async () => {
         v-for="(q, i) in assignment.questions"
         :key="q.id"
         :question="q"
-        :index="i"
         @remove="removeQuestion(i)"
-        @add-question="addQuestion"
+        
       />
     </div>
 

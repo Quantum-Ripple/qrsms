@@ -50,15 +50,13 @@
   >
     Download
   </a>
-  <a
-    v-if="note.file"
-    :href="note.file"
-    target="_blank"
-    rel="noopener noreferrer"
-    class="px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
-  >
-    Read
-  </a>
+  <button
+  v-if="note.file"
+  @click="readNote(note)"
+  class="px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
+>
+  Read
+</button>
 </div>
 
             </div>
@@ -67,6 +65,7 @@
       </div>
     </div>
   </div>
+
 </template>
 
 <script>
@@ -79,6 +78,7 @@ export default {
     return {
       notes: [],
       loading: false,
+      //selectedNote: null
     };
   },
 
@@ -122,6 +122,13 @@ export default {
         day: "numeric",
       });
     },
+   readNote(note) {
+  this.$router.push({
+    name: "NoteReader",
+    params: { id: note.id },
+    query: note
+  })
+}
   },
 };
 </script>

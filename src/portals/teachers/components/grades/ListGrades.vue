@@ -97,15 +97,31 @@
 import { ref, onMounted, watch } from "vue";
 import { getExams, getExamGrades } from "../../api/Grades";
 import * as XLSX from "xlsx";
+import { useClassStore } from "@/stores/classStore"
 
 export default {
   setup() {
+    const classStore = useClassStore();
     const exams = ref([]);
     const selectedExam = ref("");
     const tableData = ref({});
     const subjects = ref([]);
     const isLoading = ref(false);
     const error = ref("");
+
+    const classLevel = ref("")
+    const stream = ref("")
+
+    watch(
+      () => classStore.activeClass,
+      (cls) => {
+        if (!cls) return
+        classLevel.value = cls.class_level
+        stream.value = cls.stream
+        //fetchExams()
+      },
+      { immediate: true }
+    )
 
     const formatData = (grades) => {
       const map = {};
@@ -163,13 +179,22 @@ export default {
       XLSX.writeFile(wb, `exam_${examLabel}_grades.xlsx`);
     };
 
-    onMounted(async () => {
+    const fetchExams = async () => {
       try {
         isLoading.value = true;
         const res = await getExams();
-        exams.value = Array.isArray(res) ? res : (res.results ?? []);
+        const allExams = Array.isArray(res) ? res : (res.results ?? []);
+        
+        exams.value = allExams.filter(
+          (e) => e.class_level === classLevel.value && e.stream === stream.value
+        );
+
         if (exams.value.length) {
           selectedExam.value = exams.value[0].id;
+        } else {
+          selectedExam.value = "";
+          tableData.value = {};
+          subjects.value = [];
         }
       } catch (err) {
         error.value = err.response?.data
@@ -178,7 +203,7 @@ export default {
       } finally {
         isLoading.value = false;
       }
-    });
+    };
 
     return {
       exams,
@@ -188,7 +213,8 @@ export default {
       loadGrades,
       exportExcel,
       isLoading,
-      error
+      error,
+      fetchExams
     };
   }
 };

@@ -41,6 +41,12 @@
 
 import { ref, computed, onMounted } from 'vue';
 import { listNotes, deleteNote, createNote } from '../../api/lms';
+import { SUBJECTS } from '../../../../constants/subjects';
+import { GRADES } from '../../../../constants/grades';
+import { STREAMS } from '../../../../constants/streams';
+import { useQuery } from '@tanstack/vue-query';
+
+
 
 const user = JSON.parse(localStorage.getItem("user"));
 const teacherId = user?.id;
@@ -50,24 +56,17 @@ const loading = ref(false);
 const showDialog = ref(false);
 const noteToDelete = ref(null);
 
-const availableSubjects = [
-  { code: "ENG", name: "English" }, { code: "KISW", name: "Kiswahili" },
-  { code: "MATH", name: "Math" }, { code: "SCI", name: "Science" },
-  { code: "SST", name: "Social Studies" }, { code: "CRE", name: "CRE" },
-  { code: "PHY", name: "Physics" }, { code: "CHEM", name: "Chemistry" },
-  { code: "BIO", name: "Biology" }, { code: "HIS", name: "History" },
-  { code: "GEO", name: "Geography" }, { code: "COMP", name: "Computer Studies" },
-  { code: "BUS", name: "Business Studies" }, { code: "ART", name: "Art" },
-  { code: "MUSIC", name: "Music" }, { code: "PE", name: "Physical Education" },
-  { code: "AGRI", name: "Agriculture" },
-];
+/*const {data,isLoading,isError}=useQuery({
+  queryKey: ['notes'],
+  queryFn: ()=>notesApi.listNotes(),
+  staleTime: 1000*60*5
+})*/
 
-const grades = Array.from({ length: 12 }, (_, i) => `Grade ${i + 1}`);
-const streams = ["North", "South", "East", "West"];
 
 const form = ref({ subject: "", title: "", content: "", class_level: "", stream: "", file: null });
 
 const teacherNotes = computed(() => notes.value.filter(n => n.teacher_id === teacherId));
+//const teacherNotes = computed(() => (data.value??[]).filter(n => n.teacher_id === teacherId));
 
 const groupedNotes = computed(() => {
   const groups = {};
@@ -133,7 +132,7 @@ onMounted(fetchNotes);
     <div v-else>
       <div v-for="(items, subject) in groupedNotes" :key="subject" class="mb-10">
         <h3 class="text-xl font-semibold mb-4 border-b pb-1">
-          {{ availableSubjects.find(s => s.code === subject)?.name || subject }}
+          {{ STREAMS.find(s => s.value === subject)?.name || subject }}
         </h3>
 
         <div class="space-y-4">
@@ -181,7 +180,7 @@ onMounted(fetchNotes);
         <label class="block text-sm font-medium mb-1">Subject</label>
         <select v-model="form.subject" class="w-full p-2 border rounded mb-3">
           <option disabled value="">Select Subject</option>
-          <option v-for="s in availableSubjects" :key="s.code" :value="s.code">{{ s.name }}</option>
+          <option v-for="s in SUBJECTS" :key="s.value" :value="s.value">{{ s.label }}</option>
         </select>
 
         <label class="block text-sm font-medium mb-1">Title</label>
@@ -193,13 +192,13 @@ onMounted(fetchNotes);
         <label class="block text-sm font-medium mb-1">Grade</label>
         <select v-model="form.class_level" class="w-full p-2 border rounded mb-3">
           <option disabled value="">Select Grade</option>
-          <option v-for="g in grades" :key="g">{{ g }}</option>
+          <option v-for="g in GRADES" :key="g.value">{{ g.label }}</option>
         </select>
 
         <label class="block text-sm font-medium mb-1">Stream</label>
         <select v-model="form.stream" class="w-full p-2 border rounded mb-3">
           <option disabled value="">Select Stream</option>
-          <option v-for="st in streams" :key="st">{{ st }}</option>
+          <option v-for="st in STREAMS" :key="st.value">{{ st.label }}</option>
         </select>
 
         <label class="block text-sm font-medium mb-1">Upload File</label>

@@ -6,7 +6,7 @@
 
       
       <router-link
-        :to="{name: 'AttendancePage'}"
+        :to="{name: 'TeachersAttendancePage'}"
         class="text-blue-600 hover:underline text-sm"
       >
         ← Back to Attendance View
@@ -71,11 +71,18 @@
 import { getAttendanceSession, updateAttendanceSession } from "../../api/attendance";
 import studentApi from "../../api/Students";
 
+import { useRouter } from "vue-router";
+import { useToast } from "vue-toastification";
+
+
 
 import PresentIcon from "../icons/PresentIcon.vue";
 import AbsentIcon from "../icons/AbsentIcon.vue";
 import LateIcon from "../icons/LateIcon.vue";
 import DocumentIcon from "../icons/UnavailableIcon.vue";
+
+const router = useRouter()
+const toast = useToast()
 
 export default {
   data() {
@@ -122,8 +129,8 @@ export default {
 
         this.sessionLoaded = true;
       } catch (err) {
-        console.error("Failed to load session:", err);
-        alert("Failed to load attendance session.");
+        //console.error("Failed to load session:", err);
+        toast.error("Failed to load attendance session.");
       }
     },
 
@@ -143,11 +150,12 @@ export default {
 
         console.log("PATCH payload:", payload);
         const res = await updateAttendanceSession(this.sessionId, payload);
-        console.log("PATCH response:", res);
-        alert("Attendance saved successfully!");
+       console.log("PATCH response:", res);
+       this.$router.push({ name: "TeachersAttendancePage" })
+        toast.success("Attendance saved successfully!");
       } catch (err) {
         console.error("Failed to save attendance:", err);
-        alert("Failed to save attendance.");
+        toast.error("Failed to save attendance.");
       } finally {
         this.saving = false;
       }

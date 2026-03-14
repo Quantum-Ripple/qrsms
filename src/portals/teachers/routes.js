@@ -14,10 +14,16 @@ import AddGrades from './components/grades/AddGrades.vue'
 import EventDetail from './components/events/EventDetail.vue'
 import MarkAttendance from './components/attendance/MarkAttendance.vue'
 import EditAttendance from './components/attendance/EditAttendance.vue'
-import AssignmentPage from './components/lms/AssignmentPage.vue'
+//import AssignmentPage from './components/lms/AssignmentPage.vue'
+import AssignmentPage from './views/Assignments.vue'
 import AssignmentBuilderPage from './components/lms/AssignmentBuilderPage.vue'
 import ResultsPage from './components/lms/ResultsPage.vue'
 import StudentAssignmentResponse from './components/lms/StudentAssignmentResponse.vue'
+import Assessments from './views/Assessments.vue'
+import StrandScore from './components/assessments/StrandScore.vue'
+import SubjectScore from './components/assessments/SubjectScore.vue'
+import ExamResults from './components/assessments/ResultsPage.vue'
+import FinalResults from './components/assessments/FinalResults.vue'
 
 export default [
   {
@@ -39,6 +45,32 @@ export default [
     path: 'grades',
     name: 'TeachersGradesPage',
     component: GradesPage,
+  },
+   {
+    path: 'assessments',
+    name: 'TeachersAssessmentsPage',
+    component: Assessments,
+  },
+  {
+    path: 'term-scores',
+    name: 'TeachersFinalResults',
+    component: FinalResults
+  },
+  {
+    path: 'rubrics',
+    name: 'TeachersRubrics',
+    component: StrandScore
+
+  },
+  {
+    path: 'term-results',
+    name: 'TeachersResults',
+    component: ExamResults
+  },
+  {
+    path: 'subject-scores',
+    name:'TeachersSubjectScore',
+    component: SubjectScore
   },
   {
     path: 'announcements',
@@ -100,8 +132,6 @@ export default [
         component: EventDetail
       },
   
-   
-     
       {
         path: 'results',
         name: 'ResultsPage',

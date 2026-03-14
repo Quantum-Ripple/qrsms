@@ -34,6 +34,7 @@
       </button>
 
       <router-link
+        v-if="canMarkAttendance"
         :to="{ name: 'MarkAttendance' }"
         class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded w-full sm:w-auto transition ml-auto"
       >
@@ -41,7 +42,7 @@
       </router-link>
 
       <router-link
-        v-if="todaysSession"
+        v-if="todaysSession && canEditAttendance"
         :to="{ name: 'EditAttendance', params: { sessionId: todaysSession.id } }"
         class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded w-full sm:w-auto transition"
       >
@@ -49,6 +50,7 @@
       </router-link>
 
       <button
+        v-if="canExportAttendance"
         @click="exportToExcel"
         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full sm:w-auto transition"
       >
@@ -102,10 +104,18 @@ import PresentIcon from "../icons/PresentIcon.vue";
 import AbsentIcon from "../icons/AbsentIcon.vue";
 import DocumentIcon from "../icons/UnavailableIcon.vue";
 import LateIcon from "../icons/LateIcon.vue";
+import { useClassStore } from "@/stores/classStore"
+import { watch } from "vue"
 
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+
+import { useToast } from "vue-toastification";
+import { useQuery } from "@tanstack/vue-query";
+
+
+const toast = useToast()
 
 export default {
   data() {
@@ -132,13 +142,63 @@ export default {
           s.admission_number.toLowerCase().includes(t)
       );
     },
+
+
+    user() {
+        return JSON.parse(localStorage.getItem("user") || "{}")
+      },
+
+      teachesThisClass() {
+        if (!this.user.teaching_assignments) return false
+
+        return this.user.teaching_assignments.some(
+          a =>
+            a.class_level === this.classLevel &&
+            a.stream === this.stream
+        )
+      },
+
+        isClassTeacherHere() {
+          return (
+            this.user.is_class_teacher &&
+            this.user.class_level === this.classLevel &&
+            this.user.stream === this.stream
+          )
+        },
+
+        canMarkAttendance() {
+          return this.isClassTeacherHere
+        },
+
+        canEditAttendance() {
+          return this.isClassTeacherHere
+        },
+
+        canExportAttendance() {
+          return this.teachesThisClass || this.isClassTeacherHere
+        },
+
+        canViewAttendance() {
+          return this.teachesThisClass || this.isClassTeacherHere
+        }
   },
+
+
 
   methods: {
     getStoredClassInfo() {
-      const user = JSON.parse(localStorage.getItem("user"));
-      this.classLevel = user?.class_level;
-      this.stream = user?.stream;
+      const classStore = useClassStore()
+      watch(
+        () => classStore.activeClass,
+        (cls) => {
+          if (!cls) return
+          this.classLevel = cls.class_level
+          this.stream = cls.stream
+          this.loadStudents()
+          this.loadAttendance()
+        },
+        { immediate: true }
+      )
     },
 
     async loadStudents() {
@@ -146,6 +206,7 @@ export default {
         this.students = await studentApi.filter(this.classLevel, this.stream);
       } catch (err) {
         console.error("Failed to load students:", err);
+        toast.error("Failed to load students");
       }
     },
 
@@ -198,6 +259,7 @@ export default {
         this.todaysSession =
           this.attendance.find((a) => a.date === todayStr) || null;
       } catch (err) {
+        toast.error("Failed to load attendance");
         console.error("Failed to load attendance:", err);
       }
     },
@@ -259,8 +321,6 @@ export default {
 
   async mounted() {
     this.getStoredClassInfo();
-    await this.loadStudents();
-    await this.loadAttendance();
   },
 };
 </script>

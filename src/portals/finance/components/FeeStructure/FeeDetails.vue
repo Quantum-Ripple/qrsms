@@ -4,7 +4,7 @@
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-2xl font-semibold">Fee Structure</h1>
-        <p class="text-sm text-gray-500">View, edit, or print fee details</p>
+       
       </div>
 
       <div class="flex gap-3">
@@ -38,7 +38,7 @@
         <p class="text-xs text-gray-500">Class Level</p>
         <div v-if="editing">
           <select v-model="editableFee.class_level" class="w-full border rounded px-2 py-1">
-            <option v-for="grade in grades" :key="grade" :value="grade">{{ grade }}</option>
+            <option v-for="grade in GRADES" :key="grade.value" :value="grade.value">{{ grade.label }}</option>
           </select>
         </div>
         <p v-else class="text-lg font-medium">{{ fee.class_level }}</p>
@@ -111,7 +111,11 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getFeeById, updateFee, deleteFee } from '../../api/fee'
+import { GRADES } from '../../../../constants/grades'
+import { useToast } from 'vue-toastification'
 
+
+const toast=useToast()
 const route = useRoute()
 const router = useRouter()
 
@@ -120,11 +124,11 @@ const editableFee = reactive({ class_level: '', term: '', year: null, amount: nu
 const loading = ref(false)
 const editing = ref(false)
 
-const grades = [
+/*const grades = [
   'Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6',
   'Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'
 ]
-
+*/
 const fetchFee = async () => {
   try {
     loading.value = true
@@ -149,8 +153,11 @@ const saveChanges = async () => {
     await updateFee(route.params.id, editableFee)
     Object.assign(fee.value, editableFee)
     editing.value = false
+
+    toast.success("Fee structure edited successfully!")
   } catch (error) {
     console.error('Failed to update fee:', error)
+    toast.error("Failed to edit the fee structure.")
   }
 }
 
@@ -164,8 +171,10 @@ const confirmDelete = async () => {
   if (!confirm('This action is irreversible. Continue?')) return
   try {
     await deleteFee(route.params.id)
-    router.push({ name: 'FeeStructure' })
+    router.push({ name: 'FinanceFeeStructure' })
+    toast.success("Fee structure deleted successfully!")
   } catch (error) {
+    toast.error("Error deleting the fee structure!")
     console.error('Failed to delete fee:', error)
   }
 }
