@@ -61,7 +61,8 @@ const navItems = [
       { label: 'Make Payment', route: { name: 'ParentOnlinePayment' } },
     ], 
   },
-  { label: 'Grades', route: { name: 'ParentGrade' } },
+  //{ label: 'Grades', route: { name: 'ParentGrade' } },
+  { label: 'Assessments', route: { name: 'ParentAssessment' } },
   { label: 'Announcements', route: { name: 'ParentAnnouncements' } },
   { label: 'Settings', route: { name: 'ParentSettings' } },
 ]

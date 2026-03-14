@@ -5,18 +5,17 @@ import AttendancePage from './views/Attendance.vue'
 import GradesPage from './views/Grades.vue'
 import AnnouncementsPage from './views/Announcements.vue'
 import Settings from './views/Settings.vue'
-
-// Finance components
 import FeeStatements from './components/Finance/FeeStatements.vue'
 import FeeStructure from './components/Finance/FeeStructure.vue'
 import FeeSummary from './components/Finance/FeeSummary.vue'
 import OnlinePayment from './components/Finance/OnlinePayment.vue'
 
-// Event
+
 import EventDetail from './components/events/EventDetail.vue'
+import Assessment from './views/Assessment.vue'
 
 export default [
-  // Base dashboard
+ 
   { path: '', name: 'ParentDashboard', component: Dashboard },
 
   // Students
@@ -30,6 +29,7 @@ export default [
 
   // Grades
   { path: 'grades', name: 'ParentGrade', component: GradesPage },
+  { path: 'assessments', name: 'ParentAssessment', component: Assessment },
 
   // Announcements
   { path: 'announcements', name: 'ParentAnnouncements', component: AnnouncementsPage },

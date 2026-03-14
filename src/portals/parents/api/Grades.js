@@ -1,5 +1,5 @@
 import api from '../../../api/axios'
-
+/*
 
 export const getExams = async () => {
   try {
@@ -66,3 +66,4 @@ export const bulkUploadGrades = async (examId, gradesArray) => {
     throw error;
   }
 };
+*/

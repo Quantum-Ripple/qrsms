@@ -1,4 +1,4 @@
-import api from './axios';
+import api from '../../../api/axios'
 
 
 export const getStrands = async () => {
@@ -182,4 +182,21 @@ export const bulkSaveRubricScores = async (payload) => {
     throw error
   }
 
+}
+
+export const getStudentGrades = async (studentId) => {
+  try {
+
+    const res = await api.get("/student-results/", {
+      params: { student: studentId }
+    })
+
+    return res.data
+
+  } catch (error) {
+
+    console.error("Error fetching student grades:", error)
+
+    throw error
+  }
 }
