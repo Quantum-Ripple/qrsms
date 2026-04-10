@@ -1,19 +1,11 @@
 <template>
   <div class="p-6 space-y-6">
  
-    <div class="flex justify-between items-center">
-      <h1 class="text-2xl font-semibold">Fee Structures</h1>
-
-      <button
-        @click="goToCreate"
-        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      >
-        Add Fee Structure
-      </button>
-    </div>
+   
 
    
-    <div class="flex gap-4">
+    <div class="flex flex-wrap gap-4 mb-4 items-center justify-between">
+      <div class="flex flex-wrap gap-2 md:gap-4">
       <input
         v-model="search"
         type="text"
@@ -27,6 +19,13 @@
           {{ c.label }}
         </option>
       </select>
+      </div>
+      <button
+        @click="goToCreate"
+        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+      >
+        Add Fee Structure
+      </button>
     </div>
 
     <!-- Table -->

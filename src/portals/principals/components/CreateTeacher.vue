@@ -1,139 +1,169 @@
 <template>
-  <!-- OVERLAY -->
-  <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-    @click.self="$emit('close')"
-  >
-    <!-- MODAL -->
-    <div
-      class="bg-white rounded-lg shadow-xl w-full max-w-4xl"
-      @click.stop
-    >
-      <!-- HEADER -->
-      <div class="flex justify-between items-center px-6 py-4 border-b">
-        <h3 class="text-xl font-semibold text-gray-800">Add New Teacher</h3>
-        <button @click="$emit('close')" class="text-gray-500 hover:text-gray-700">✕</button>
-      </div>
+  <div class="p-6 max-w-5xl mx-auto space-y-6">
 
-      <!-- BODY -->
-      <div class="px-6 py-6 max-h-[70vh] overflow-y-auto">
-        <form @submit.prevent="createTeacher" class="space-y-8">
-          
-          <!-- PERSONAL INFORMATION -->
-          <div>
-            <h4 class="text-lg font-semibold mb-4">Personal Information</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- HEADER -->
+    <div class="flex justify-between items-center">
+      <h2 class="text-2xl font-bold text-gray-800">Add New Teacher</h2>
 
-              <div>
-                <label class="block text-sm font-medium text-gray-700">First Name</label>
-                <input type="text" v-model="form.first_name" required class="mt-1 w-full border rounded-lg px-3 py-2" />
-              </div>
+      <router-link
+        :to="{ name: 'PrincipalTeachers' }"
+        class="text-blue-600 hover:underline text-sm"
+      >
+        ← Back to Teachers
+      </router-link>
+    </div>
 
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Last Name</label>
-                <input type="text" v-model="form.last_name" required class="mt-1 w-full border rounded-lg px-3 py-2" />
-              </div>
+    <!-- FORM CARD -->
+    <div class="bg-white shadow-lg rounded-2xl p-8 border border-gray-100">
 
-              <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700">Email</label>
-                <input type="email" v-model="form.email" required class="mt-1 w-full border rounded-lg px-3 py-2" />
-              </div>
+      <form @submit.prevent="createTeacher" class="space-y-10">
 
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Phone Number</label>
-                <input type="tel" v-model="form.phone_number" required class="mt-1 w-full border rounded-lg px-3 py-2" />
-              </div>
+        <!-- PERSONAL INFORMATION -->
+        <div class="border rounded-xl p-6 bg-gray-50">
+          <h4 class="text-md font-semibold mb-5 text-gray-700">
+            Personal Information
+          </h4>
 
-              <div>
-                <label class="block text-sm font-medium text-gray-700">National ID</label>
-                <input type="number" v-model="form.national_id" required class="mt-1 w-full border rounded-lg px-3 py-2" />
-              </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Gender</label>
-                <select v-model="form.gender" required class="mt-1 w-full border rounded-lg px-3 py-2">
-                  <option value="">Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
-                <input type="date" v-model="form.date_of_birth" required class="mt-1 w-full border rounded-lg px-3 py-2" />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Hire Date</label>
-                <input type="date" v-model="form.hire_date" required class="mt-1 w-full border rounded-lg px-3 py-2" />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Password</label>
-                <input type="password" v-model="form.password" required class="mt-1 w-full border rounded-lg px-3 py-2" />
-              </div>
-
-              
-
-              <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700">Address</label>
-                <textarea v-model="form.address" rows="3" class="mt-1 w-full border rounded-lg px-3 py-2" />
-              </div>
-              <div class="flex items-center space-x-2 mt-4">
-  <input
-    type="checkbox"
-    v-model="form.is_class_teacher"
-    class="rounded border-gray-300"
-  />
-  <label class="text-sm text-gray-700">Is Class Teacher</label>
-</div>
-
-              
- 
-
-
-            </div>
-          </div>
-
-          <!-- TEACHING ASSIGNMENTS -->
-          <div>
-            <h4 class="text-lg font-semibold mb-4">Teaching Assignments</h4>
-            <div class="space-y-4">
-              <AssignmentForm
-                v-for="(assignment, index) in assignments"
-                :key="index"
-                v-model="assignments[index]"
-                :removable="assignments.length > 1"
-                @remove="removeAssignment(index)"
-              />
+            <div>
+              <label class="block text-sm font-medium text-gray-600">First Name</label>
+              <input v-model="form.first_name" required type="text"
+                class="w-full mt-1 px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
             </div>
 
-            <button type="button" @click="addAssignment" class="mt-4 text-sm text-blue-600 hover:underline">
-              + Add Assignment
-            </button>
+            <div>
+              <label class="block text-sm font-medium text-gray-600">Last Name</label>
+              <input v-model="form.last_name" required type="text"
+                class="w-full mt-1 px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-600">Email</label>
+              <input type="email" v-model="form.email" required
+                class="w-full mt-1 px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-600">Phone Number</label>
+              <input type="tel" v-model="form.phone_number" required
+                class="w-full mt-1 px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-600">National ID</label>
+              <input type="number" v-model="form.national_id" required
+                class="w-full mt-1 px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-600">Gender</label>
+              <select v-model="form.gender" required
+                class="w-full mt-1 px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-600">Date of Birth</label>
+              <input type="date" v-model="form.date_of_birth" required
+                class="w-full mt-1 px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-600">Hire Date</label>
+              <input type="date" v-model="form.hire_date" required
+                class="w-full mt-1 px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-600">Password</label>
+              <input type="password" v-model="form.password" required
+                class="w-full mt-1 px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-600">Address</label>
+              <textarea v-model="form.address" rows="3"
+                class="w-full mt-1 px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"></textarea>
+            </div>
+
+            <div class="flex items-center space-x-3 md:col-span-2">
+              <input type="checkbox" v-model="form.is_class_teacher"
+                class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+              <label class="text-sm text-gray-700">Is Class Teacher</label>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- TEACHING ASSIGNMENTS -->
+        <div class="border rounded-xl p-6 bg-gray-50">
+          <h4 class="text-md font-semibold mb-5 text-gray-700">
+            Teaching Assignments
+          </h4>
+
+          <div class="space-y-4">
+            <AssignmentForm
+              v-for="(assignment, index) in assignments"
+              :key="index"
+              v-model="assignments[index]"
+              :removable="assignments.length > 1"
+              @remove="removeAssignment(index)"
+            />
           </div>
 
-          <!-- ACTION BUTTONS -->
-          <div class="flex justify-end space-x-4 pt-4 border-t">
-            <button type="button" @click="$emit('close')" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md">Cancel</button>
-            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Create Teacher</button>
-          </div>
+          <button
+            type="button"
+            @click="addAssignment"
+            class="mt-4 text-sm text-blue-600 hover:underline"
+          >
+            + Add Assignment
+          </button>
+        </div>
 
-        </form>
-      </div>
+        <!-- ACTION BUTTONS -->
+        <div class="flex justify-end space-x-4 pt-4 border-t">
+          <router-link
+            :to="{ name: 'PrincipalTeachers' }"
+            class="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
+          >
+            Cancel
+          </router-link>
+
+          <button
+            type="submit"
+            class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm transition"
+          >
+            Create Teacher
+          </button>
+        </div>
+
+      </form>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-
+import { useRouter } from 'vue-router'
 import teachersApi from '../api/Teachers.js'
 import AssignmentForm from '../composables/AssignmentForm.vue'
 import { useToast } from 'vue-toastification'
 
-const emit = defineEmits(['close', 'teacherCreated'])
-
+const router = useRouter()
 const toast = useToast()
 
 const user = JSON.parse(localStorage.getItem('user'))
@@ -167,16 +197,20 @@ function removeAssignment(index) {
 
 async function createTeacher() {
   try {
-    const payload = { ...form.value, school: schoolId, assignments: assignments.value }
+    const payload = {
+      ...form.value,
+      school: schoolId,
+      assignments: assignments.value
+    }
+
     await teachersApi.create(payload)
-    console.log("Teacher Load",payload)
-    toast.success("Teacher created Successfully!")
-    emit('teacherCreated')
-    emit('close')
+
+    toast.success("Teacher created successfully!")
+    router.push({ name: 'PrincipalTeachers' })
+
   } catch (error) {
     console.error('Error creating teacher:', error)
     toast.error("Failed to create teacher.")
-    //alert('Failed to create teacher.')
   }
 }
 </script>

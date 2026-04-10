@@ -5,11 +5,9 @@
       class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 space-y-3 sm:space-y-0"
     >
       <h2 class="text-2xl font-semibold text-gray-800">Teachers</h2>
-      <button
-        @click="showCreateForm = true"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition w-full sm:w-auto"
-      >
-        + Add Teacher
+      <button @click="goToCreateTeacher"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition w-full sm:w-auto">
+       + Add Teacher
       </button>
     </div>
 
@@ -99,18 +97,12 @@
         No teachers found.
       </div>
     </div>
-
-    <CreateTeacher
-      v-if="showCreateForm"
-      @close="showCreateForm = false"
-      @teacherCreated="fetchTeachers"
-    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import CreateTeacher from '../components/CreateTeacher.vue'
+//import CreateTeacher from '../components/CreateTeacher.vue'
 import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import teachersApi from '../api/Teachers.js'
@@ -146,6 +138,10 @@ const filteredTeachers = computed(() =>
       .includes(searchQuery.value.toLowerCase())
   )
 )
+
+const goToCreateTeacher = () => {
+  router.push({ name: 'PrincipalCreateTeacher' })
+}
 
 function viewTeachers(teacher) {
   router.push({ name: 'TeachersDetail', params: { id: teacher.id } })

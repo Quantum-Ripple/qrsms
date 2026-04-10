@@ -1,6 +1,6 @@
 <template>
   <div class="p-4 md:p-6 bg-gray-50 rounded-lg shadow-sm">
-    <h1 class="text-3xl font-bold mb-6 text-gray-700">Dashboard Overview</h1>
+  
 
     
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">

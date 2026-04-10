@@ -3,7 +3,7 @@
 
    
     <div class="bg-white shadow-md p-4">
-      <h2 class="text-xl font-bold mb-4 text-gray-800">Settings</h2>
+      <h2 class="text-xl font-bold mb-4 text-gray-800"></h2>
 
       <div class="flex space-x-3 overflow-x-auto pb-2">
 

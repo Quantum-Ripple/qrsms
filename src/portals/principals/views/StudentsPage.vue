@@ -6,7 +6,7 @@
     >
       <h2 class="text-2xl font-semibold text-gray-800">Students</h2>
       <button
-        @click="showCreateForm = true"
+        @click="goToCreateStudents"
         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition w-full sm:w-auto"
       >
         + Add Student
@@ -156,6 +156,9 @@ const filteredStudents = computed(() =>
     s.full_name.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 )
+const goToCreateStudents=()=>{
+  router.push({name:'CreateStudent'})
+}
 
 function viewStudent(student) {
   router.push({ name: 'PrincipalStudentDetail', params: { id: student.id } })

@@ -1,19 +1,11 @@
 <template>
   <div class="p-4 md:p-6">
    
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-      <h1 class="text-2xl font-semibold">Expenditures</h1>
-
-      <button
-        @click="openAddModal"
-        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-      >
-        Add New Expenditure
-      </button>
-    </div>
+    
 
   
-    <div class="flex flex-wrap gap-4 mb-6">
+    <div class="flex flex-wrap gap-4 mb-4 items-center justify-between">
+      <div class="flex flex-wrap gap-2 md:gap-4">
       <select v-model="filters.category" class="border p-2 rounded">
         <option value="">All Categories</option>
         <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
@@ -21,6 +13,14 @@
 
       <input type="date" v-model="filters.date" class="border p-2 rounded" />
       <input type="number" v-model="filters.amount" placeholder="Amount" class="border p-2 rounded" />
+
+      </div>
+      <button
+        @click="openAddModal"
+        class="bg-blue-600 text-white px-3 md:px-4 py-1 md:py-2 rounded hover:bg-blue-700 text-sm md:text-base"
+      >
+        Add New Expenditure
+      </button>
     </div>
 
     

@@ -1,7 +1,5 @@
 <template>
   <div class="p-4 md:p-6 space-y-6">
-    <h1 class="text-3xl font-bold text-gray-700 mb-6">Fees by Category</h1>
-
    
     <div class="bg-white p-6 rounded-xl shadow-lg">
       <p class="text-gray-500 font-medium mb-3">Fees Collected by Month</p>

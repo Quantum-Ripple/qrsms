@@ -18,6 +18,7 @@ import CommunicationsPage from './views/EventsPage.vue'
 import SettingsPage from './views/SettingsPage.vue'
 import ParentDetails from './components/parents/ParentDetails.vue'
 import Academics from './views/Academics.vue'
+import CreateTeacher from './components/CreateTeacher.vue'
 
 export default [
   { path: '', name: 'PrincipalDashboard', component: Dashboard },
@@ -30,6 +31,7 @@ export default [
   // Teachers
   { path: 'teachers', name: 'PrincipalTeachers', component: TeachersPage },
   { path: 'teacher/:id', name: 'TeachersDetail', component: TeachersDetail, props: true },
+   {path: 'teachers/create',name: 'PrincipalCreateTeacher',component: CreateTeacher},
 
   // Events
   { path: 'pr/events', name: 'PrincipalEvents', component: EventsPage },
