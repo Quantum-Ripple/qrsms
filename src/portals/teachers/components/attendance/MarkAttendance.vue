@@ -4,8 +4,8 @@
 
     
     <div class="flex space-x-4 items-center mb-4">
-      <span class="font-semibold">Class: {{ classLevel }}</span>
-      <span class="font-semibold">Stream: {{ stream }}</span>
+      <span class="font-semibold">Class: {{ classLevelName }}</span>
+      <span class="font-semibold">Stream: {{ streamName }}</span>
 
 
       <router-link
@@ -74,6 +74,10 @@ import AbsentIcon from "../icons/AbsentIcon.vue";
 import LateIcon from "../icons/LateIcon.vue";
 import DocumentIcon from "../icons/UnavailableIcon.vue";
 
+import { markRaw } from "vue";
+
+import { useClassStore } from "@/stores/classStore"
+import { watch } from "vue"
 
 
 const router = useRouter()
@@ -86,36 +90,85 @@ export default {
       students: [],
       classLevel: "",
       stream: "",
+      classLevelName: "",
+      streamName: "",
+      classInstance: null,
       attendanceMap: {},
 
       
-      statusOptions: [
-        { value: "PRESENT", label: "Present", icon: PresentIcon, activeClass: "bg-green-500" },
-        { value: "ABSENT", label: "Absent", icon: AbsentIcon, activeClass: "bg-red-500" },
-        { value: "LATE", label: "Late", icon: LateIcon, activeClass: "bg-yellow-500" },
-        { value: "EXCUSED", label: "Excused", icon: DocumentIcon, activeClass: "bg-blue-500" },
-      ]
+     statusOptions: [
+  {
+    value: "PRESENT",
+    label: "Present",
+    icon: markRaw(PresentIcon),
+    activeClass: "bg-green-500"
+  },
+  {
+    value: "ABSENT",
+    label: "Absent",
+    icon: markRaw(AbsentIcon),
+    activeClass: "bg-red-500"
+  },
+  {
+    value: "LATE",
+    label: "Late",
+    icon: markRaw(LateIcon),
+    activeClass: "bg-yellow-500"
+  },
+  {
+    value: "EXCUSED",
+    label: "Excused",
+    icon: markRaw(DocumentIcon),
+    activeClass: "bg-blue-500"
+  }
+]
     };
   },
 
   methods: {
     getStoredClassInfo() {
-      const user = JSON.parse(localStorage.getItem("user"));
-      this.classLevel = user?.class_level;
-      this.stream = user?.stream;
-    },
+    const classStore = useClassStore()
+
+    watch(
+      () => classStore.activeClass,
+      (cls) => {
+        if (!cls) return
+        console.log("ACTIVE CLASS OBJECT:", cls)
+
+        this.classInstance = cls.id
+
+        // IDs for API
+        this.classLevel = cls.class_level_id
+        this.stream = cls.stream_id
+        this.classLevelName = cls.class_level
+        this.streamName = cls.stream
+
+        // load after IDs exist
+        this.loadStudents()
+      },
+      { immediate: true }
+    )
+  },
 
     async loadStudents() {
-      try {
-        this.students = await studentApi.filter(this.classLevel, this.stream);
-        
-        this.students.forEach(s => {
-          this.$set(this.attendanceMap, s.id, "PRESENT");
-        });
-      } catch (err) {
-        console.error("Failed to load students:", err);
-      }
-    },
+          try {
+            this.students = await studentApi.filter(this.classLevel, this.stream);
+
+            // get class instance from student response
+            if (this.students.length > 0) {
+              this.classInstance = this.students[0].class_instance_id;
+            }
+
+            this.students.forEach(s => {
+              this.attendanceMap[s.id] = "PRESENT";
+            });
+
+            console.log("Class instance:", this.classInstance);
+
+          } catch (err) {
+            console.error("Failed to load students:", err);
+          }
+        },
 
     async submitAttendance() {
       const records_input = this.students.map(s => ({
@@ -124,29 +177,33 @@ export default {
       }));
 
       const payload = {
-        class_level: this.classLevel,
-        stream: this.stream,
+        class_instance: this.classInstance,
         
         records_input
       };
-      //console.log(payload);
+      
 
       try {
         await attendanceApi.createAttendanceSession(payload);
+      
         this.$router.push({ name: "TeachersAttendancePage" })
         toast.success("Attendance submitted successfully!");
         
       } catch (err) {
-        console.error("Error submitting attendance:", err);
-        toast.error("Attendance for today already submitted!.");
+        console.error(
+          "Error submitting attendance:",
+          err.response?.data
+        );
+
+        toast.error("Failed submitting attendance");
       }
     }
   },
 
-  async mounted() {
-    this.getStoredClassInfo();
-    await this.loadStudents();
+  mounted() {
+    this.getStoredClassInfo()
   }
+
 };
 </script>
 

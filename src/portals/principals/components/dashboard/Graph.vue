@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-2xl font-semibold text-gray-800">Analytics Overview</h2>
-      <p class="text-sm text-gray-500">Current Academic Year: 2025</p>
+      <p class="text-sm text-gray-500">Current Academic Year: {{ new Date().getFullYear() }}</p>
     </div>
 
     <!-- Graph Grid -->
@@ -75,7 +75,6 @@ Chart.register(
   Legend,
   Filler
 )
-
 // Canvas refs
 const studentsByClassCanvas = ref(null)
 const amountCollectedCanvas = ref(null)

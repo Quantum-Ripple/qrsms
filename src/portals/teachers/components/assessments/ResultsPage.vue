@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-800">Class Results</h2>
+        <h2 class="text-2xl font-bold text-slate-800">{{ grade }} {{ stream }} Results</h2>
       
       </div>
 
@@ -134,6 +134,9 @@ const subjectScores = ref([])
 const loading = ref(false)
 const exporting = ref(false)
 const message = ref("")
+
+const grade=computed(() => classStore.activeClass?.class_level)
+const stream=computed(() => classStore.activeClass?.stream)
 
 const loadExams = async () => {
   const cls = classStore.activeClass

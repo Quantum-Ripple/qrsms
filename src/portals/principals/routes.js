@@ -19,6 +19,10 @@ import SettingsPage from './views/SettingsPage.vue'
 import ParentDetails from './components/parents/ParentDetails.vue'
 import Academics from './views/Academics.vue'
 import CreateTeacher from './components/CreateTeacher.vue'
+import Configuration from './views/Configurations.vue'
+import Promotions from './views/Promotions.vue'
+import Calender from './views/Calender.vue'
+
 
 export default [
   { path: '', name: 'PrincipalDashboard', component: Dashboard },
@@ -59,4 +63,8 @@ export default [
   { path: 'pr/settings', name: 'PrincipalSettings', component: SettingsPage },
 
   { path: 'academics', name: 'Academics', component: Academics },
+  { path: 'configurations', name: 'Configurations', component: Configuration },
+  { path: 'promotions', name: 'Promotions', component: Promotions },
+  { path: 'principal/calendar', name: 'PrincipalCalendar',component: Calender},
+  
 ]

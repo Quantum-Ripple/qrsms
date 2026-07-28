@@ -7,6 +7,11 @@ export default {
     const res = await api.get('/teachers/', { params })
     return res.data
   },
+  async listpaginate(page = 1) {
+    return api.get(`/teachers/?page=${page}`).then(res => res.data)
+  },
+
+ 
 
   // Get a single teacher
   async get(id) {

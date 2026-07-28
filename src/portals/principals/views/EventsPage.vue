@@ -28,7 +28,7 @@ const router = useRouter()
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3">
       <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">
-        School Announcements
+      
       </h1>
 
       <button

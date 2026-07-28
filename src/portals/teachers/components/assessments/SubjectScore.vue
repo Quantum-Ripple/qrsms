@@ -2,7 +2,7 @@
 
 <div class="space-y-6">
 
-<h2 class="text-xl font-bold">Subject Scores</h2>
+<h2 class="text-xl font-bold">{{ subject }} Scores</h2>
 
 <div class="flex gap-4 items-center">
 

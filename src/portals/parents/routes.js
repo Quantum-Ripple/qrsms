@@ -14,6 +14,7 @@ import OnlinePayment from './components/Finance/OnlinePayment.vue'
 import EventDetail from './components/events/EventDetail.vue'
 import Assessment from './views/Assessment.vue'
 
+
 export default [
  
   { path: '', name: 'ParentDashboard', component: Dashboard },

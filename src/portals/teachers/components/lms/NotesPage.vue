@@ -120,10 +120,10 @@ onMounted(fetchNotes);
 <template>
   <div class="p-6 relative">
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-2xl font-semibold">Notes</h2>
+      
       <button @click="showDialog = true"
               class="px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition">
-        Add Notes
+        + Add Notes
       </button>
     </div>
 

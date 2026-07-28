@@ -64,7 +64,9 @@
           </tr>
         </tbody>
       </table>
-    </div>
+
+      </div>
+      
 
     <!-- Card View (Mobile) -->
     <div class="sm:hidden space-y-4">
@@ -96,7 +98,30 @@
       >
         No teachers found.
       </div>
+      
+    
     </div>
+      <div class="flex items-center justify-between px-4 py-3 border-t bg-gray-50">
+        <button
+          :disabled="!data?.previous"
+          @click="page--"
+          class="px-3 py-1 bg-white border rounded disabled:opacity-40"
+        >
+          Previous
+        </button>
+
+        <span class="text-sm text-gray-600">
+          Page {{ page }}
+        </span>
+
+        <button
+          :disabled="!data?.next"
+          @click="page++"
+          class="px-3 py-1 bg-white border rounded disabled:opacity-40"
+        >
+          Next
+        </button>
+      </div>
   </div>
 </template>
 
@@ -113,24 +138,23 @@ const router = useRouter()
 const searchQuery = ref('')
 const showCreateForm = ref(false)
 
-const { data: teachers=[], isLoading, isError}=useQuery({
-  queryKey: ['teachers'],
-  queryFn: ()=> teachersApi.list(),
-  staleTime: 1000*60*5
+const page = ref(1)
+
+const { data, isLoading, isError } = useQuery({
+  queryKey: ['teachers',page],
+  queryFn: () => teachersApi.listpaginate(page.value),
+  keepPreviousData: true
+  //staleTime: 1000 * 60 * 5,
 })
-/*
-onMounted(() => {
-  fetchTeachers()
-})
-*/
+
 async function fetchTeachers() {
   try {
-    teachers.value = await teachersApi.list()
+    teachers.value = await teachersApi.listpaginate()
   } catch (error) {
     console.error('Failed to fetch teachers:', error)
   }
 }
-
+const teachers = computed(() => data.value?.results || [])
 const filteredTeachers = computed(() =>
   teachers.value.filter((t) =>
     `${t.first_name} ${t.last_name}`

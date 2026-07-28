@@ -63,12 +63,12 @@ onMounted(fetchAssignments)
   <div class="p-6 relative">
     
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-2xl font-semibold">Assignments</h2>
+      
       <button
         @click="showDialog = true"
         class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
       >
-        Add Assignment
+        + Add Assignment
       </button>
     </div>
 

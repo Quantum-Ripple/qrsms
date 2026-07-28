@@ -26,14 +26,40 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            <!-- INPUT TEMPLATE -->
-            <!-- Use same pattern everywhere -->
-
+           
+<!--
             <div>
               <label class="label">Admission Number</label>
-              <input v-model="form.admission_number" required type="text"
+              <p v-if="formErrors.admission_number" class="text-red-500 text-sm">
+                    {{ formErrors.admission_number[0] }}
+                  </p>
+                 <input v-model="form.admission_number" required type="text"
                 class="field" />
-            </div>
+            </div>-->
+            <div>
+  <label class="label">Admission Number</label>
+
+  <div class="flex gap-2">
+    <input
+      v-model="form.admission_number"
+      type="text"
+      class="field"
+      :readonly="loadingAdmission"
+    />
+
+    <button
+      type="button"
+      @click="refreshAdmissionNumber"
+      class="px-3 py-2 bg-gray-200 rounded-lg text-sm hover:bg-gray-300"
+    >
+      ↻
+    </button>
+  </div>
+
+  <p v-if="loadingAdmission" class="text-xs text-gray-500">
+    Generating admission number...
+  </p>
+</div>
 
             <div>
               <label class="label">First Name</label>
@@ -55,23 +81,36 @@
 
             <div>
               <label class="label">Class Level</label>
-              <select v-model="form.class_level" required class="field">
+              <select v-model="selectedClassLevel" required class="field">
                 <option value="">Select Class Level</option>
-                <option v-for="grade in GRADES" :key="grade.value" :value="grade.value">
-                  {{ grade.label }}
+                <option
+                  v-for="grade in classLevels"
+                  :key="grade.id"
+                  :value="grade.id"
+                >
+                  {{ grade.name }}
                 </option>
               </select>
             </div>
 
             <div>
-              <label class="label">Stream</label>
-              <select v-model="form.stream" required class="field">
-                <option value="">Select Stream</option>
-                <option v-for="stream in STREAMS" :key="stream.value" :value="stream.value">
-                  {{ stream.label }}
-                </option>
-              </select>
-            </div>
+            <label class="label">Stream</label>
+            <select
+              v-model="form.stream"
+              required
+              class="field"
+              :disabled="!selectedClassLevel"
+            >
+              <option value="">Select Stream</option>
+              <option
+                v-for="stream in streams"
+                :key="stream.id"
+                :value="stream.id"
+              >
+                {{ stream.name }}
+              </option>
+            </select>
+          </div>
 
             <div>
               <label class="label">Gender</label>
@@ -197,16 +236,36 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import { GRADES } from '../../../constants/grades.js'
 import { STREAMS } from '../../../constants/streams.js'
 import studentsApi from '../api/Students.js'
+import { onMounted, ref, watch } from "vue"
+import { fetchClassLevels } from "@/api/classes.js"
+import { fetchNextAdmissionNumber } from "../api/Students.js"
 
 const router = useRouter()
 const toast = useToast()
 const showParent2 = ref(false)
+
+const classLevels = ref([])
+const selectedClassLevel = ref("")
+const streams = ref([])
+const formErrors = ref({})
+const loadingAdmission = ref(false)
+
+watch(selectedClassLevel, (newValue) => {
+  const selected = classLevels.value.find(
+    (cls) => cls.id === Number(newValue)
+  )
+
+  streams.value = selected ? selected.streams : []
+
+  form.value.stream = ""       
+  form.value.class_level = newValue  
+})
 
 const form = ref({
   admission_number: '',
@@ -224,6 +283,21 @@ const form = ref({
   parent2: { first_name:'', last_name:'', email:'', phone:'', relationship:'', password:'None', address:'' },
 })
 
+async function refreshAdmissionNumber() {
+  try {
+    loadingAdmission.value = true
+
+    const res = await fetchNextAdmissionNumber()
+    form.value.admission_number = res.data.next_admission_number
+
+  } catch (error) {
+    console.error(error)
+    toast.error("Failed to refresh admission number")
+  } finally {
+    loadingAdmission.value = false
+  }
+}
+
 async function createStudent() {
   try {
     const payload = {
@@ -237,11 +311,43 @@ async function createStudent() {
     toast.success('Student created successfully!')
     router.push({ name: 'PrincipalStudents' })
 
-  } catch (error) {
-    console.error(error)
-    toast.error('Failed to create student.')
+    } catch (error) {
+      console.error(error)
+      if (error.response && error.response.data) {
+      const errors = error.response.data
+      formErrors.value = error.response?.data || {}
+
+      // Extract and show all messages
+      const messages = Object.values(errors).flat()
+
+      messages.forEach(msg => {
+        toast.error(msg)
+      })
+
+    } else {
+      toast.error('Something went wrong. Please try again.')
+    }
   }
 }
+
+onMounted(async () => {
+  const res = await fetchClassLevels()
+  classLevels.value = res.data
+
+  try {
+    loadingAdmission.value = true
+
+    const res = await fetchNextAdmissionNumber()
+
+    form.value.admission_number = res.data.next_admission_number
+
+  } catch (error) {
+    console.error("Failed to fetch admission number", error)
+   
+  } finally {
+    loadingAdmission.value = false
+  }
+})
 </script>
 
 <style>

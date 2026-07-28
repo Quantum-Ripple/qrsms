@@ -1,6 +1,6 @@
 <template>
   <div class="p-6">
-    <h1 class="text-2xl font-semibold mb-4">Results</h1>
+    
 
     <div class="mb-4">
       <label class="block mb-1 font-medium">Select Assignment:</label>

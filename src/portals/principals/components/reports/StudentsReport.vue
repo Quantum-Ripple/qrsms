@@ -54,36 +54,36 @@ Data Flow / Interaction with the Program:
 
 
 <template>
-  <div class="w-full max-w-full overflow-x-hidden p-4 sm:p-6 bg-gray-50 min-h-screen">
+  <div class="min-h-screen w-full max-w-full overflow-x-hidden bg-gray-50 px-3 py-4 sm:px-6 sm:py-6">
     
-    <div class="flex flex-wrap gap-3 mb-6">
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
       <button
         @click="exportPDF"
-        class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
+        class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 sm:w-auto"
       >
         Export PDF
       </button>
 
       <button
         @click="exportExcel"
-        class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
+        class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-700 sm:w-auto"
       >
         Export Excel
       </button>
 
       <button
         @click="printReport"
-        class="flex items-center gap-2 bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm"
+        class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gray-700 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 sm:w-auto"
       >
         Print
       </button>
     </div>
 
-    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div>
-          <label class="block text-gray-700 font-medium mb-1">Class Level</label>
-          <select v-model="filters.class_level" class="w-full border rounded px-3 py-2 text-sm">
+    <div class="mb-6 rounded-xl bg-white p-4 shadow-md sm:p-5">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div class="min-w-0">
+          <label class="mb-1 block text-sm font-medium text-gray-700">Class Level</label>
+          <select v-model="filters.class_level" class="w-full rounded border px-3 py-2.5 text-sm">
             <option value="">All</option>
             <option v-for="level in classLevels" :key="level" :value="level">
               {{ level }}
@@ -91,9 +91,9 @@ Data Flow / Interaction with the Program:
           </select>
         </div>
 
-        <div>
-          <label class="block text-gray-700 font-medium mb-1">Stream</label>
-          <select v-model="filters.stream" class="w-full border rounded px-3 py-2 text-sm">
+        <div class="min-w-0">
+          <label class="mb-1 block text-sm font-medium text-gray-700">Stream</label>
+          <select v-model="filters.stream" class="w-full rounded border px-3 py-2.5 text-sm">
             <option value="">All</option>
             <option v-for="s in streams" :key="s" :value="s">
               {{ s }}
@@ -101,9 +101,9 @@ Data Flow / Interaction with the Program:
           </select>
         </div>
 
-        <div>
-          <label class="block text-gray-700 font-medium mb-1">Gender</label>
-          <select v-model="filters.gender" class="w-full border rounded px-3 py-2 text-sm">
+        <div class="min-w-0">
+          <label class="mb-1 block text-sm font-medium text-gray-700">Gender</label>
+          <select v-model="filters.gender" class="w-full rounded border px-3 py-2.5 text-sm">
             <option value="">All</option>
             <option value="M">Male</option>
             <option value="F">Female</option>
@@ -113,44 +113,51 @@ Data Flow / Interaction with the Program:
     </div>
 
  
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-6">
-      <div class="bg-white p-4 rounded-lg shadow text-center">
+    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div class="rounded-xl bg-white p-4 text-center shadow sm:p-5">
         <h3 class="text-gray-500 text-sm">Total Students</h3>
         <p class="text-2xl font-bold">{{ filteredStudents.length }}</p>
       </div>
 
-      <div class="bg-white p-4 rounded-lg shadow text-center">
+      <div class="rounded-xl bg-white p-4 text-center shadow sm:p-5">
         <h3 class="text-gray-500 text-sm">Total Boys</h3>
         <p class="text-2xl font-bold text-blue-600">{{ totalBoys }}</p>
       </div>
 
-      <div class="bg-white p-4 rounded-lg shadow text-center">
+      <div class="rounded-xl bg-white p-4 text-center shadow sm:p-5">
         <h3 class="text-gray-500 text-sm">Total Girls</h3>
         <p class="text-2xl font-bold text-pink-600">{{ totalGirls }}</p>
       </div>
     </div>
 
     
-    <div class="sm:hidden space-y-3">
+    <div class="space-y-3 md:hidden">
       <div
         v-for="student in filteredStudents"
         :key="student.id"
-        class="bg-white rounded-lg shadow p-3"
+        class="rounded-xl bg-white p-4 shadow"
       >
-        <div class="font-semibold text-gray-800">
+        <div class="text-base font-semibold text-gray-800 break-words">
           {{ student.full_name }}
         </div>
 
-        <div class="text-sm text-gray-600 mt-1">
+        <div class="mt-1 text-sm text-gray-600">
           Adm No: {{ student.admission_number }}
         </div>
 
-        <div class="mt-2 text-sm">
-          {{ student.class_level }} · {{ student.stream }}
-        </div>
-
-        <div class="mt-1 text-sm font-medium">
-          Gender: {{ student.gender }}
+        <div class="mt-3 grid grid-cols-1 gap-2 text-sm text-gray-700 sm:grid-cols-2">
+          <div class="min-w-0">
+            <span class="block text-xs font-medium uppercase tracking-wide text-gray-400">Class</span>
+            <span class="break-words">{{ student.class_level }}</span>
+          </div>
+          <div class="min-w-0">
+            <span class="block text-xs font-medium uppercase tracking-wide text-gray-400">Stream</span>
+            <span class="break-words">{{ student.stream }}</span>
+          </div>
+          <div class="min-w-0">
+            <span class="block text-xs font-medium uppercase tracking-wide text-gray-400">Gender</span>
+            <span class="break-words">{{ student.gender }}</span>
+          </div>
         </div>
       </div>
 
@@ -164,61 +171,67 @@ Data Flow / Interaction with the Program:
 
     <div
       v-if="filteredStudents.length"
-      class="hidden sm:block overflow-x-auto bg-white rounded-lg shadow"
+      class="hidden min-w-0 overflow-hidden rounded-xl bg-white shadow md:block"
     >
-      <table id="studentsTable" class="w-full table-auto text-sm">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="py-3 px-4 text-left border-b">Full Name</th>
-            <th class="py-3 px-4 text-left border-b">Admission No</th>
-            <th class="py-3 px-4 text-left border-b">Class</th>
-            <th class="py-3 px-4 text-left border-b">Stream</th>
-            <th class="py-3 px-4 text-left border-b">Gender</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="student in filteredStudents"
-            :key="student.id"
-            class="hover:bg-gray-50"
-          >
-            <td class="py-3 px-4 border-b break-words">
-              {{ student.full_name }}
-            </td>
-            <td class="py-3 px-4 border-b whitespace-nowrap">
-              {{ student.admission_number }}
-            </td>
-            <td class="py-3 px-4 border-b whitespace-nowrap">
-              {{ student.class_level }}
-            </td>
-            <td class="py-3 px-4 border-b whitespace-nowrap">
-              {{ student.stream }}
-            </td>
-            <td class="py-3 px-4 border-b whitespace-nowrap">
-              {{ student.gender }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="overflow-x-auto">
+        <table id="studentsTable" class="min-w-[720px] w-full table-auto text-sm">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="border-b px-4 py-3 text-left">Full Name</th>
+              <th class="border-b px-4 py-3 text-left">Admission No</th>
+              <th class="border-b px-4 py-3 text-left">Class</th>
+              <th class="border-b px-4 py-3 text-left">Stream</th>
+              <th class="border-b px-4 py-3 text-left">Gender</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="student in filteredStudents"
+              :key="student.id"
+              class="hover:bg-gray-50"
+            >
+              <td class="border-b px-4 py-3 align-top break-words">
+                {{ student.full_name }}
+              </td>
+              <td class="border-b px-4 py-3 align-top whitespace-nowrap">
+                {{ student.admission_number }}
+              </td>
+              <td class="border-b px-4 py-3 align-top whitespace-nowrap">
+                {{ student.class_level }}
+              </td>
+              <td class="border-b px-4 py-3 align-top whitespace-nowrap">
+                {{ student.stream }}
+              </td>
+              <td class="border-b px-4 py-3 align-top whitespace-nowrap">
+                {{ student.gender }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+
+    <div
+      v-else
+      class="hidden rounded-xl bg-white px-4 py-10 text-center text-gray-500 shadow md:block"
+    >
+      No students found.
+    </div>
+
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue"
 import studentsApi from "../../api/Students.js"
+import { fetchClassLevels } from "../../api/config.js"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 import * as XLSX from "xlsx"
 
 const students = ref([])
-
-const classLevels = [
-  "Grade 1","Grade 2","Grade 3","Grade 4","Grade 5","Grade 6",
-  "Grade 7","Grade 8","Grade 9","Grade 10","Grade 11","Grade 12"
-]
-
-const streams = ["North", "South", "East", "West"]
+const classLevels = ref([])
+const streams = ref([])
 
 const filters = ref({
   class_level: "",
@@ -226,10 +239,47 @@ const filters = ref({
   gender: ""
 })
 
-onMounted(fetchStudents)
+onMounted(() => {
+  fetchStudents()
+  fetchFilterOptions()
+})
 
 async function fetchStudents() {
-  students.value = await studentsApi.list()
+  try {
+    const response = await studentsApi.listAll()
+    students.value = Array.isArray(response?.results) ? response.results : Array.isArray(response) ? response : []
+  } catch (error) {
+    console.error("Failed to load students", error)
+  }
+}
+
+async function fetchFilterOptions() {
+  try {
+    const response = await fetchClassLevels()
+    const payload = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : []
+
+    const levels = payload
+      .map((item) => item?.name)
+      .filter(Boolean)
+
+    const streamValues = payload
+      .flatMap((item) => Array.isArray(item?.streams) ? item.streams : [])
+      .map((stream) => stream?.name)
+      .filter(Boolean)
+
+    classLevels.value = [...new Set(levels)].sort()
+    streams.value = [...new Set(streamValues)].sort()
+
+    if (!classLevels.value.length) {
+      classLevels.value = [...new Set(students.value.map((student) => student.class_level).filter(Boolean))].sort()
+    }
+
+    if (!streams.value.length) {
+      streams.value = [...new Set(students.value.map((student) => student.stream).filter(Boolean))].sort()
+    }
+  } catch (error) {
+    console.error("Failed to load class level options", error)
+  }
 }
 
 const filteredStudents = computed(() =>

@@ -1,9 +1,6 @@
 <template>
   <div class="max-w-7xl mx-auto p-3 sm:p-6 space-y-6 text-gray-800 text-sm sm:text-base">
-    <h2 class="text-lg sm:text-2xl font-bold mb-4 text-gray-600 text-center sm:text-left">
-      Attendance Records
-    </h2>
-
+   
     
     <div class="flex flex-wrap gap-2 sm:gap-3 items-center">
       <select v-model="range" class="border px-2 py-2 rounded w-full sm:w-auto">
@@ -72,7 +69,7 @@
         <thead class="bg-gray-100">
           <tr>
             <th class="border px-2 py-1">Student</th>
-            <th class="border px-2 py-1">Admission #</th>
+            <th class="border px-2 py-1">Admission</th>
             <th class="border px-2 py-1" v-for="day in days" :key="day">
               {{ day }}
             </th>
@@ -129,6 +126,8 @@ export default {
       to: "",
       classLevel: "",
       stream: "",
+      classLevelName: "",
+      streamName: "",
       todaysSession: null,
     };
   },
@@ -153,16 +152,16 @@ export default {
 
         return this.user.teaching_assignments.some(
           a =>
-            a.class_level === this.classLevel &&
-            a.stream === this.stream
+            a.class_level === this.classLevelName &&
+            a.stream === this.streamName
         )
       },
 
         isClassTeacherHere() {
           return (
             this.user.is_class_teacher &&
-            this.user.class_level === this.classLevel &&
-            this.user.stream === this.stream
+            this.user.class_level === this.classLevelName &&
+            this.user.stream === this.streamName
           )
         },
 
@@ -192,8 +191,11 @@ export default {
         () => classStore.activeClass,
         (cls) => {
           if (!cls) return
-          this.classLevel = cls.class_level
-          this.stream = cls.stream
+          this.classLevel = cls.class_level_id
+          this.stream = cls.stream_id
+
+          this.classLevelName = cls.class_level
+          this.streamName = cls.stream
           this.loadStudents()
           this.loadAttendance()
         },

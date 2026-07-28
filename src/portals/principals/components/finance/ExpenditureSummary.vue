@@ -97,7 +97,7 @@
         </div>
 
         <div class="mt-1 text-sm text-gray-600">
-          Approved by: {{ exp.approved_by || "N/A" }}
+          Approved by: {{ exp.approved_by_name || "N/A" }}
         </div>
       </div>
     </div>
@@ -149,7 +149,7 @@
             <td
               class="border px-3 py-2 hidden md:table-cell whitespace-nowrap"
             >
-              {{ exp.approved_by || "N/A" }}
+              {{ exp.approved_by_name || "N/A" }}
             </td>
           </tr>
         </tbody>
@@ -239,7 +239,7 @@ function exportToPDF() {
       exp.expense_category,
       exp.description,
       formatCurrency(exp.amount),
-      exp.approved_by || "N/A",
+      exp.approved_by_name || "N/A",
     ]),
   })
   doc.save("expenditure_summary.pdf")

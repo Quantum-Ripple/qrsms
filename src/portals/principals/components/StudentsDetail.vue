@@ -12,78 +12,79 @@
         </router-link>
       </div>
 
-      <div v-if="student && !editMode" class="space-y-3">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-          <p class="font-medium text-gray-700">Admission Number:</p>
-            <p class="text-gray-800">{{ student.admission_number }}</p>
-          </div>
-          <div>
-            <p class="font-medium text-gray-700">First Name:</p>
-            <p class="text-gray-800">{{ student.first_name }}</p>
-          </div>
-          <div>
-            <p class="font-medium text-gray-700">Middle Name:</p>
-            <p class="text-gray-800">{{ student.middle_name }}</p>
-          </div>
-          <div>
-            <p class="font-medium text-gray-700">Last Name:</p>
-            <p class="text-gray-800">{{ student.last_name }}</p>
-          </div>
-          <div>
-            <p class="font-medium text-gray-700">Full Name:</p>
-            <p class="text-gray-800">{{ student.full_name }}</p>
-          </div>
-            
-          <div>
-            <p class="font-medium text-gray-700">Grade:</p>
-            <p class="text-gray-800">{{ student.class_level }}</p>
-          </div>
-          <div>
-            <p class="font-medium text-gray-700">Stream:</p>
-            <p class="text-gray-800">{{ student.stream }}</p>
-          </div>
-          <div>
-            <p class="font-medium text-gray-700">Gender:</p>
-            <p class="text-gray-800">{{ student.gender }}</p>
-          </div>
-          <div>
-            <p class="font-medium text-gray-700">Date of Birth:</p>
-            <p class="text-gray-800">{{ student.date_of_birth || ' Hidden ' }}</p>
-          </div>
-          <div>
-          <p class="font-medium text-gray-700">Phone Number:</p>
-            <p class="text-gray-800">{{ student.phone }}</p>
-          </div>
-          <div>
-            <p class="font-medium text-gray-700">Email:</p>
-            <p class="text-gray-800">{{ student.email }}</p>
-          </div>
-          <div>
-            <p class="font-medium text-gray-700">Date Joined:</p>
-            <p class="text-red-800">{{ student.date_joined }}</p>
-          </div>
-          <div>
-            <p class="font-medium text-gray-700">Address:</p>
-            <p class="text-gray-800">{{ student.address }}</p>
-          </div>
-          
-        </div>
-      
+      <div v-if="student && !editMode" class="space-y-6">
 
-        <div class="mt-6 flex items-center gap-3">
-          <button @click="editMode = true" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-            Edit
-          </button>
-          <button @click="deleteStudent" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
-            Delete
-          </button>
-          <router-link :to="{ name: 'PrincipalStudents'}" class="text-blue-600 hover:underline text-sm ml-auto">
-            <- Back to students
-          </router-link>
-        </div>
-        </div>
-    
+            <!-- PROFILE HEADER -->
+            <div class="bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl p-6">
+              <h2 class="text-xl font-semibold">{{ student.full_name }}</h2>
+              <p class="text-sm opacity-90">
+                Admission No: {{ student.admission_number }}
+              </p>
+            </div>
+
+            <!-- INFO GRID -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              <div class="info-card">
+                <span class="label">Grade</span>
+                <span>{{ student.current_class_level }}</span>
+              </div>
+
+              <div class="info-card">
+                <span class="label">Stream</span>
+                <span>{{ student.current_stream }}</span>
+              </div>
+
+              <div class="info-card">
+                <span class="label">Gender</span>
+                <span>{{ student.gender }}</span>
+              </div>
+
+              <div class="info-card">
+                <span class="label">Date of Birth</span>
+                <span>{{ student.date_of_birth || '—' }}</span>
+              </div>
+
+              <div class="info-card">
+                <span class="label">Phone</span>
+                <span>{{ student.phone }}</span>
+              </div>
+
+              <div class="info-card">
+                <span class="label">Email</span>
+                <span>{{ student.email }}</span>
+              </div>
+
+              <div class="md:col-span-2 info-card">
+                <span class="label">Address</span>
+                <span>{{ student.address }}</span>
+              </div>
+
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="flex gap-3 pt-4">
+              <button
+                @click="editMode = true"
+                class="bg-blue-600 text-white px-4 py-2 rounded-lg"
+              >
+                Edit
+              </button>
+
+              <button
+                @click="deleteStudent"
+                class="bg-red-600 text-white px-4 py-2 rounded-lg"
+              >
+                Delete
+              </button>
+              <router-link :to="{ name: 'PrincipalStudents'}" class="text-blue-600 hover:underline text-sm ml-auto">
+                      <- Back to students
+                    </router-link>
+            </div>
+
+          </div>
+
+                
 
 
    
@@ -107,25 +108,47 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Admission Number</label>
-            <input v-model="form.admission_number" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+            <input
+            :value="form.admission_number"
+            class="w-full border rounded-lg px-3 py-2 bg-gray-100"
+            readonly
+          />
           </div>
+
+
           <div>
-            <label class="block text-sm font-medium text-gray-600 mb-1">Class Level</label>
-            <select v-model="form.class_level" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
-              <option value="">Select Class Level</option>
-              <option v-for="n in 12" :key="n" :value="'Grade ' + n">Grade {{ n }}</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-600 mb-1">Stream</label>
-            <select v-model="form.stream" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+              <label class="label">Grade</label>
+              <select v-model="form.class_level" required class="field">
+                <option value="">Select Grade</option>
+                <option
+                  v-for="grade in classLevels"
+                  :key="grade.id"
+                  :value="grade.id"
+                >
+                  {{ grade.name }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+            <label class="label">Stream</label>
+            <select
+              v-model="form.stream"
+              required
+              class="field"
+              
+            >
               <option value="">Select Stream</option>
-              <option value="North">North</option>
-              <option value="South">South</option>
-              <option value="East">East</option>
-              <option value="West">West</option>
+              <option
+                v-for="stream in streams"
+                :key="stream.id"
+                :value="stream.id"
+              >
+                {{ stream.name }}
+              </option>
             </select>
           </div>
+
           <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Gender</label>
             <select v-model="form.gender" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
@@ -244,20 +267,30 @@
     
   </div>
 </template>
-
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import studentsApi from '../api/Students.js'
+import { fetchClassLevels } from "@/api/classes.js"
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+
 const student = ref(null)
 const editMode = ref(false)
 const showParent2 = ref(false)
 
+/**
+ * Class & Stream state
+ */
+const classLevels = ref([])
+const streams = ref([])
+
+/**
+ * Main form (single source of truth)
+ */
 const form = ref({
   admission_number: '',
   first_name: '',
@@ -270,60 +303,178 @@ const form = ref({
   email: '',
   phone: '',
   address: '',
-  parent1: { first_name:'', last_name:'', email:'', phone:'', relationship:'', address:'', id:null },
-  parent2: { first_name:'', last_name:'', email:'', phone:'', relationship:'', address:'', id:null },
+  parent1: {
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    relationship: '',
+    address: '',
+    id: null
+  },
+  parent2: {
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    relationship: '',
+    address: '',
+    id: null
+  },
 })
+
+function resolveClassLevelId(value) {
+  if (!value) return ''
+
+  const normalizedValue = String(value).trim().toLowerCase()
+
+  const match = Array.isArray(classLevels.value)
+    ? classLevels.value.find((level) => {
+        const levelName = String(level.name || level.class_level_name || '').trim().toLowerCase()
+        return levelName === normalizedValue || String(level.id) === normalizedValue
+      })
+    : null
+
+  return match ? Number(match.id) : ''
+}
+
+function resolveStreamId(value, classLevelId) {
+  if (!value) return ''
+
+  const normalizedValue = String(value).trim().toLowerCase()
+  const selectedClass = Array.isArray(classLevels.value)
+    ? classLevels.value.find((level) => Number(level.id) === Number(classLevelId))
+    : null
+
+  const match = Array.isArray(selectedClass?.streams)
+    ? selectedClass.streams.find((stream) => {
+        const streamName = String(stream.name || stream.stream_name || '').trim().toLowerCase()
+        return streamName === normalizedValue || String(stream.id) === normalizedValue
+      })
+    : null
+
+  return match ? Number(match.id) : ''
+}
+
+watch(
+  () => form.value.class_level,
+  (newValue) => {
+    const selected = Array.isArray(classLevels.value)
+      ? classLevels.value.find(cls => cls.id === Number(newValue))
+      : null
+
+    streams.value = Array.isArray(selected?.streams) ? selected.streams : []
+
+    if (!streams.value.some(s => s.id === form.value.stream)) {
+      form.value.stream = ""
+    }
+  }
+)
+
 
 onMounted(async () => {
-  const id = route.params.id
   try {
+    const res = await fetchClassLevels()
+    const classLevelData = Array.isArray(res.data)
+      ? res.data
+      : res.data?.results || []
+
+    classLevels.value = classLevelData
+
+    const id = route.params.id
     student.value = await studentsApi.get(id)
 
+    const s = student.value
+
+    const classLevelId = resolveClassLevelId(s.current_class_level || s.class_level || s.class_level_name)
+    const streamId = resolveStreamId(s.current_stream || s.stream || s.stream_name, classLevelId)
+
     form.value = {
-      admission_number: student.value.admission_number,
-      first_name: student.value.first_name,
-      middle_name: student.value.middle_name,
-      last_name: student.value.last_name,
-      class_level: student.value.class_level,
-      stream: student.value.stream,
-      gender: student.value.gender,
-      date_of_birth: student.value.date_of_birth,
-      email: student.value.email,
-      phone: student.value.phone,
-      address: student.value.address,
-      parent1: student.value.parents?.[0] || { first_name:'', last_name:'', email:'', phone:'', relationship:'', address:'', id:null },
-      parent2: student.value.parents?.[1] || { first_name:'', last_name:'', email:'', phone:'', relationship:'', address:'', id:null },
+      admission_number: s.admission_number,
+      first_name: s.first_name,
+      middle_name: s.middle_name,
+      last_name: s.last_name,
+
+      class_level: classLevelId,
+      stream: streamId,
+
+      gender: s.gender,
+      date_of_birth: s.date_of_birth,
+      email: s.email,
+      phone: s.phone,
+      address: s.address,
+
+      parent1: s.parents?.[0] || {},
+      parent2: s.parents?.[1] || {},
     }
 
-    if (student.value.parents?.length > 1) showParent2.value = true
+    if (s.parents?.length > 1) {
+      showParent2.value = true
+    }
+
+    const selectedClass = Array.isArray(classLevels.value)
+      ? classLevels.value.find(c => Number(c.id) === Number(classLevelId))
+      : null
+
+    streams.value = Array.isArray(selectedClass?.streams) ? selectedClass.streams : []
+
   } catch (error) {
-    console.error('Failed to fetch student:', error)
+    console.error(error)
+    toast.error('Failed to load student data')
   }
 })
-
 async function updateStudent() {
   try {
     const payload = {
       ...form.value,
-      parent1: form.value.parent1.first_name ? form.value.parent1 : undefined,
-      parent2: showParent2.value && form.value.parent2.first_name ? form.value.parent2 : undefined,
+
+      parent1: form.value.parent1.first_name
+        ? form.value.parent1
+        : undefined,
+
+      parent2: showParent2.value && form.value.parent2.first_name
+        ? form.value.parent2
+        : undefined,
     }
+
     await studentsApi.update(student.value.id, payload)
+
     toast.success('Student updated successfully!')
     editMode.value = false
+
     student.value = await studentsApi.get(student.value.id)
+
   } catch (error) {
     console.error(error)
     toast.error('Failed to update student.')
   }
 }
 
+/**
+ * Delete student
+ */
 async function deleteStudent() {
   try {
     await studentsApi.remove(student.value.id)
     router.push({ name: 'PrincipalStudents' })
   } catch (error) {
     console.error('Failed to delete student:', error)
+    toast.error('Failed to delete student.')
   }
 }
 </script>
+<style scoped>
+.info-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.label {
+  font-size: 12px;
+  color: #6b7280;
+}
+</style>

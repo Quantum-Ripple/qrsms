@@ -2,12 +2,12 @@
   <div class="p-6 max-w-2xl mx-auto">
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-semibold text-gray-800">Create Announcement</h2>
+      <h2 class="text-2xl font-semibold text-gray-800"></h2>
       <button
-        @click="router.push({ name: 'Events' })"
+        @click="router.push({ name: 'PrincipalEvents' })"
         class="text-blue-600 hover:underline"
       >
-        ← Back to Announcements
+        ← Back
       </button>
     </div>
 

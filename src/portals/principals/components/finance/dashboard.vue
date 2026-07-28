@@ -1,9 +1,7 @@
 <template>
   <div class="w-full p-4 sm:p-6 lg:p-8">
 
-    <h2 class="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
-      Finance Dashboard
-    </h2>
+    
 
 
     <div v-if="loading" class="text-center text-gray-500">Loading...</div>

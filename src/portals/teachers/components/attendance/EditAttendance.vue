@@ -74,6 +74,9 @@ import studentApi from "../../api/Students";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
+import { useClassStore } from "@/stores/classStore"
+import { watch } from "vue"
+
 
 
 import PresentIcon from "../icons/PresentIcon.vue";
@@ -91,8 +94,10 @@ export default {
       records: [],
       sessionLoaded: false,
       saving: false,
+
       classLevel: "",
       stream: "",
+      classInstance: null,
 
       
       statusOptions: [
@@ -106,9 +111,20 @@ export default {
 
   methods: {
     getStoredClassInfo() {
-      const user = JSON.parse(localStorage.getItem("user"));
-      this.classLevel = user?.class_level || "";
-      this.stream = user?.stream || "";
+      const classStore = useClassStore()
+
+      watch(
+        () => classStore.activeClass,
+        (cls) => {
+          if (!cls) return
+
+          this.classLevel = cls.class_level_id
+          this.stream = cls.stream_id
+
+          this.loadSession()
+        },
+        { immediate: true }
+      )
     },
 
     async loadSession() {
@@ -119,12 +135,13 @@ export default {
         this.records = session.records.map(r => {
           const student = students.find(s => s.id === r.student);
           return {
-            id: r.id,
-            student: r.student,
-            student_name: student?.full_name || "Unknown",
-            admission_number: student?.admission_number || "N/A",
-            status: r.status,
-          };
+              id: r.id,
+              student: r.student,
+              student_name: student?.full_name || "Unknown",
+              admission_number: student?.admission_number || "N/A",
+              class_instance: student?.class_instance_id,
+              status: r.status,
+            };
         });
 
         this.sessionLoaded = true;
@@ -139,8 +156,7 @@ export default {
         this.saving = true;
 
         const payload = {
-          class_level: this.classLevel,
-          stream: this.stream,
+          class_instance: this.records[0]?.class_instance || null,
           records_input: this.records.map(r => ({
             id: r.id,
             student: r.student,
@@ -162,11 +178,10 @@ export default {
     },
   },
 
-  async mounted() {
-    this.getStoredClassInfo();
-    this.sessionId = this.$route.params.sessionId;
-    await this.loadSession();
-  },
+  mounted() {
+  this.sessionId = this.$route.params.sessionId;
+  this.getStoredClassInfo();
+},
 };
 </script>
 

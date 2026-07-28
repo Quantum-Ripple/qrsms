@@ -192,7 +192,7 @@ console.log("All exams:", list)
     
     <div class="flex justify-between items-center">
       <h2 class="text-2xl font-bold text-slate-800">
-        Class Performance Dashboard
+        Performance
       </h2>
 
       <div>
@@ -362,13 +362,20 @@ const ensureActiveClass = () => {
   }
 }
 
+
 const syncFromActiveClass = async (cls) => {
   if (!cls) return
+
   classLevel.value = cls.class_level
   stream.value = cls.stream
+
+  exams.value = []
+  selectedExam.value = ""
+  studentScores.value = []
+  scoreDistribution.value = {}
+
   await loadExams()
 }
-
 
 
 watch(
@@ -595,12 +602,9 @@ const loadExams = async () => {
     exams.value = filtered
 
     if (exams.value.length) {
-
-      selectedExam.value =
-        exams.value[exams.value.length - 1].id
-
-      await loadPerformance()
-
+      selectedExam.value = exams.value[exams.value.length - 1].id
+    } else {
+      selectedExam.value = ""
     }
 
   } catch (err) {
@@ -610,6 +614,11 @@ const loadExams = async () => {
   }
 
 }
+
+watch(selectedExam, async (examId) => {
+  if (!examId) return
+  await loadPerformance()
+})
 
 onMounted(async () => {
   ensureActiveClass()

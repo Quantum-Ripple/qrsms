@@ -137,6 +137,7 @@ watch(
   () => classStore.activeClass,
   (cls) => {
     if (!cls) return
+    
     class_level.value = cls.class_level
     stream.value = cls.stream
     fetchStudents()
@@ -144,15 +145,29 @@ watch(
   { immediate: true }
 )
 
-
+/*
 async function fetchStudents() {
+
   try {
     students.value = await studentsApi.filter(
-      class_level.value,
-      stream.value
+      cls.class_level_id,
+      cls.stream_id
     )
   } catch (error) {
     console.error('Failed to fetch students:', error)
+  }
+}*/
+
+async function fetchStudents() {
+  if (!classStore.activeClass) return
+
+  try {
+    students.value = await studentsApi.filter(
+      classStore.activeClass.class_level_id,
+      classStore.activeClass.stream_id
+    )
+  } catch (error) {
+    console.error("Failed to fetch students:", error)
   }
 }
 

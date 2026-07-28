@@ -50,6 +50,8 @@ const navItems = [
   { label: 'Dashboard', route: { name: 'PrincipalDashboard' } },
   { label: 'Students', route: { name: 'PrincipalStudents' } },
   { label: 'Teachers', route: { name: 'PrincipalTeachers' } },
+  { label: 'Academics', route: {name: 'Academics'}},
+
   {
     label: 'Finance',
     children: [
@@ -60,8 +62,13 @@ const navItems = [
   },
 
   { label: 'Reports', route: { name: 'PrincipalReports' } },
+  { label: 'Promotions', route: { name: 'Promotions' } },
 
   { label: 'Communications', route: { name: 'PrincipalCommunications' } },
+
+  { label: 'Calendar', route: {name: 'PrincipalCalendar'}},
+
+  { label: 'Configurations', route: { name: 'Configurations' } },
 
   { label: 'Settings', route: { name: 'PrincipalSettings' } },
 ]

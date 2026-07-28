@@ -173,6 +173,7 @@ const emit = defineEmits(['view'])
 async function fetchEvents() {
   try {
     const response = await eventApi.fetchEvents()
+    
     events.value = response.sort(
       (a, b) => new Date(b.created_at) - new Date(a.created_at)
     )
