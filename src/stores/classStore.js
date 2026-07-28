@@ -9,14 +9,19 @@ export const useClassStore = defineStore("classStore", {
 
     loadInitialClass() {
       const saved = JSON.parse(localStorage.getItem("activeClass"))
-      if (saved) {
+      if (saved && typeof saved === "object") {
         this.activeClass = saved
       }
     },
 
     setClass(cls) {
-      this.activeClass = cls
-      localStorage.setItem("activeClass", JSON.stringify(cls))
+      this.activeClass = cls && typeof cls === "object" ? { ...cls } : null
+
+      if (this.activeClass) {
+        localStorage.setItem("activeClass", JSON.stringify(this.activeClass))
+      } else {
+        localStorage.removeItem("activeClass")
+      }
     },
 
     clearClass() {

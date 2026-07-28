@@ -471,10 +471,14 @@ const loadExams=async()=>{
 
     const all=await getExams()
 
-    exams.value=all.filter(e=>
-      e.class_level===cls.class_level &&
-      e.stream===cls.stream
-    )
+    exams.value=all.filter(e=>{
+      if (cls.class_instance && e.class_instance) {
+        return String(e.class_instance)===String(cls.class_instance)
+      }
+
+      return e.class_level===cls.class_level &&
+        e.stream===cls.stream
+    })
 
     selectedExam.value=exams.value.length?exams.value[0].id:null
 
@@ -494,7 +498,7 @@ const loadSubStrands = async () => {
 
   loading.value.substrands = true
   try {
-    const data = await getSubStrands(cls.subject, cls.class_level)
+    const data = await getSubStrands(cls.subject, cls.class_instance)
     substrands.value = Array.isArray(data) ? data : data.results ?? []
   } catch (err) {
     console.error(err)
@@ -522,7 +526,7 @@ const loadStudentsAndScores=async()=>{
 
   try{
 
-    const res=await studentsApi.filter(cls.class_level,cls.stream)
+    const res=await studentsApi.filter(cls.class_instance)
     students.value=Array.isArray(res)?res:res.results??[]
 
     const scores=await getRubricScores(selectedExam.value)

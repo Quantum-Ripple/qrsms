@@ -22,6 +22,7 @@ const fetchAssignments = async () => {
       subject: a.subject,
       class_level: a.class_level,
       stream: a.stream,
+      class_instance: a.class_instance,
       due_date: a.due_date
     }))
   } catch (err) {

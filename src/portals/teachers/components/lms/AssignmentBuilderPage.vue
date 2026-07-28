@@ -3,16 +3,18 @@ import { reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import QuestionCard from './QuestionCard.vue'
 import { postAssignment } from '../../api/lms'
-
+import { useClassStore } from '@/stores/classStore'
 
 const route = useRoute()
-const router = useRouter() 
+const router = useRouter()
+const classStore = useClassStore()
 
 const assignment = reactive({
   title: route.query.title || '',
   subject: route.query.subject || '',
   class_level: route.query.class_level || '',
   stream: route.query.stream || '',
+  class_instance: route.query.class_instance || classStore.activeClass?.class_instance || '',
   due_date: route.query.due_date || '',
   questions: []
 })

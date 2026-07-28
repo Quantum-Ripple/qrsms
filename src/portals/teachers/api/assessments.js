@@ -22,11 +22,11 @@ export const createStrand = async (payload) => {
   }
 };
 
-export const getSubStrands = async (subject, classLevel) => {
+export const getSubStrands = async (subject, classInstance) => {
   const res = await api.get("/substrands/", {
     params: {
       subject,
-      class_level: classLevel
+      class_instance: classInstance
     }
   })
   return Array.isArray(res.data) ? res.data : res.data.results ?? []

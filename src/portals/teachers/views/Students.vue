@@ -5,8 +5,8 @@
       class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 space-y-3 sm:space-y-0"
     >
       <h2 class="text-2xl font-semibold text-gray-800">Students 
-        <span v-if="class_level && stream">
-          {{ class_level_name }} {{ stream_name }}
+        <span v-if="classStore.activeClass?.class_level_name || classStore.activeClass?.stream_name">
+          {{ classStore.activeClass?.class_level_name }} {{ classStore.activeClass?.stream_name }}
           </span>
         </h2>
 
@@ -158,11 +158,12 @@ async function fetchStudents() {
 async function fetchStudents() {
   const activeClass = classStore.activeClass
 
-  if (!activeClass?.class_instance) return
+  if (!activeClass) return
 
   try {
     students.value = await studentsApi.filter(
-      activeClass.class_instance
+      activeClass.class_level,
+      activeClass.stream
     )
   } catch (error) {
     console.error("Failed to fetch students:", error)

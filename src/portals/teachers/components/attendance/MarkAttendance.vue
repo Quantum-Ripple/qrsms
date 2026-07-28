@@ -135,7 +135,7 @@ export default {
         if (!cls) return
         console.log("ACTIVE CLASS OBJECT:", cls)
 
-        this.classInstance = cls.id
+        this.classInstance = cls.class_instance || null
 
         // IDs for API
         this.classLevel = cls.class_level_id
@@ -152,10 +152,11 @@ export default {
 
     async loadStudents() {
           try {
-            this.students = await studentApi.filter(this.classLevel, this.stream);
+            if (!this.classInstance) return
+            this.students = await studentApi.filter(this.classInstance);
 
-            // get class instance from student response
-            if (this.students.length > 0) {
+            // preserve the active class instance when the API returns students
+            if (!this.classInstance && this.students.length > 0) {
               this.classInstance = this.students[0].class_instance_id;
             }
 

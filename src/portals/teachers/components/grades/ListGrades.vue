@@ -111,6 +111,7 @@ export default {
 
     const classLevel = ref("")
     const stream = ref("")
+    const classInstance = ref(null)
 
     watch(
       () => classStore.activeClass,
@@ -118,6 +119,7 @@ export default {
         if (!cls) return
         classLevel.value = cls.class_level
         stream.value = cls.stream
+        classInstance.value = cls.class_instance || null
         //fetchExams()
       },
       { immediate: true }
@@ -185,9 +187,13 @@ export default {
         const res = await getExams();
         const allExams = Array.isArray(res) ? res : (res.results ?? []);
         
-        exams.value = allExams.filter(
-          (e) => e.class_level === classLevel.value && e.stream === stream.value
-        );
+        exams.value = allExams.filter((e) => {
+          if (classInstance.value && e.class_instance) {
+            return String(e.class_instance) === String(classInstance.value)
+          }
+
+          return e.class_level === classLevel.value && e.stream === stream.value
+        });
 
         if (exams.value.length) {
           selectedExam.value = exams.value[0].id;

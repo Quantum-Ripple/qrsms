@@ -126,6 +126,7 @@ export default {
       to: "",
       classLevel: "",
       stream: "",
+      classInstance: null,
       classLevelName: "",
       streamName: "",
       todaysSession: null,
@@ -150,14 +151,21 @@ export default {
       teachesThisClass() {
         if (!this.user.teaching_assignments) return false
 
-        return this.user.teaching_assignments.some(
-          a =>
-            a.class_level === this.classLevelName &&
+        return this.user.teaching_assignments.some((a) => {
+          if (this.classInstance && a.class_instance) {
+            return String(a.class_instance) === String(this.classInstance)
+          }
+
+          return a.class_level === this.classLevelName &&
             a.stream === this.streamName
-        )
+        })
       },
 
         isClassTeacherHere() {
+          if (this.classInstance && this.user.class_instance) {
+            return String(this.user.class_instance) === String(this.classInstance)
+          }
+
           return (
             this.user.is_class_teacher &&
             this.user.class_level === this.classLevelName &&
@@ -191,11 +199,12 @@ export default {
         () => classStore.activeClass,
         (cls) => {
           if (!cls) return
-          this.classLevel = cls.class_level_id
-          this.stream = cls.stream_id
+          this.classInstance = cls.class_instance || null
+          this.classLevel = cls.class_level
+          this.stream = cls.stream
 
-          this.classLevelName = cls.class_level
-          this.streamName = cls.stream
+          this.classLevelName = cls.class_level_name
+          this.streamName = cls.stream_name
           this.loadStudents()
           this.loadAttendance()
         },
@@ -205,6 +214,7 @@ export default {
 
     async loadStudents() {
       try {
+        if (!this.classLevel || !this.stream) return
         this.students = await studentApi.filter(this.classLevel, this.stream);
       } catch (err) {
         console.error("Failed to load students:", err);
@@ -250,8 +260,7 @@ export default {
         const dateRange = this.computeDateRange();
 
         const res = await attendanceApi.listAttendanceSessions({
-          class_level: this.classLevel,
-          stream: this.stream,
+          class_instance: this.classInstance,
         });
 
         this.attendance = res.filter((a) => dateRange.includes(a.date));

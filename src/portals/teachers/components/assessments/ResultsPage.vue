@@ -145,10 +145,14 @@ const loadExams = async () => {
   try {
     const allExams = await getExams()
 
-    exams.value = allExams.filter(exam =>
-      exam.class_level === cls.class_level &&
-      exam.stream === cls.stream
-    )
+    exams.value = allExams.filter(exam => {
+      if (cls.class_instance && exam.class_instance) {
+        return String(exam.class_instance) === String(cls.class_instance)
+      }
+
+      return exam.class_level === cls.class_level &&
+        exam.stream === cls.stream
+    })
 
     if (exams.value.length) {
       selectedExam.value = exams.value[0].id
@@ -164,7 +168,7 @@ const loadStudents = async () => {
   if (!cls) return
 
   try {
-    const res = await studentsApi.filter(cls.class_level, cls.stream)
+    const res = await studentsApi.filter(cls.class_instance)
     students.value = Array.isArray(res) ? res : res.results ?? []
   } catch (error) {
     console.error("Failed to load students:", error)

@@ -73,9 +73,11 @@ import { createExam } from "../../api/Grades";
 import { STREAMS } from "../../../../constants/streams";
 import { GRADES } from "../../../../constants/grades";
 import { useToast } from "vue-toastification";
+import { useClassStore } from "@/stores/classStore";
 
 const userData = JSON.parse(localStorage.getItem('user') || '{}')
 const school = ref(`${userData.school || ""}`);
+const classStore = useClassStore();
 
 const toast = useToast()
 
@@ -99,7 +101,12 @@ const handleSubmit = async () => {
     error.value = "";
     success.value = false;
 
-    const res = await createExam(form.value);
+    const payload = {
+      ...form.value,
+      class_instance: classStore.activeClass?.class_instance || form.value.class_instance || ""
+    };
+
+    const res = await createExam(payload);
     //console.log("Exam created:", res);
     toast.success("Assessment Created Successfully")
 

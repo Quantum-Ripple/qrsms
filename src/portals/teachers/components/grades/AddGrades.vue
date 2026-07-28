@@ -158,7 +158,11 @@ export default {
 
     const loadStudents = async () => {
       const user = JSON.parse(localStorage.getItem("user"));
-      const res = await StudentsApi.filter(user.class_level, user.stream);
+      const activeClass = JSON.parse(localStorage.getItem("activeClass") || "null");
+      const classInstance = activeClass?.class_instance || user?.class_instance;
+      const res = classInstance
+        ? await StudentsApi.filter(classInstance)
+        : [];
       students.value = res.map((s) => ({
         id: s.id,
         name: `${s.full_name}`,

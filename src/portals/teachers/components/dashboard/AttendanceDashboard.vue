@@ -71,8 +71,7 @@ const isLoading = ref(false);
 let chartInstance = null;
 
 const today = new Date().toISOString().split("T")[0];
-const classLevel = ref("");
-const stream = ref("");
+const classInstance = ref(null);
 
 const noRecords = computed(() =>
   Object.values(attendanceSummary.value).every((v) => v === 0)
@@ -143,8 +142,7 @@ const loadAttendance = async () => {
 
   try {
     const res = await attendanceApi.listAttendanceSessions({
-      class_level: classLevel.value,
-      stream: stream.value,
+      class_instance: classInstance.value,
     });
 
     if (requestId !== currentRequestId) return;
@@ -166,8 +164,7 @@ watch(
   (cls) => {
     if (!cls) return;
 
-    classLevel.value = cls.class_level_id;
-    stream.value = cls.stream_id;
+    classInstance.value = cls.class_instance || null;
 
     loadAttendance();
   },

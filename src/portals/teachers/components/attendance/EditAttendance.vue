@@ -118,6 +118,7 @@ export default {
         (cls) => {
           if (!cls) return
 
+          this.classInstance = cls.class_instance || null
           this.classLevel = cls.class_level_id
           this.stream = cls.stream_id
 
@@ -129,8 +130,10 @@ export default {
 
     async loadSession() {
       try {
+        if (!this.classInstance) return
+
         const session = await getAttendanceSession(this.sessionId);
-        const students = await studentApi.filter(this.classLevel, this.stream);
+        const students = await studentApi.filter(this.classInstance);
 
         this.records = session.records.map(r => {
           const student = students.find(s => s.id === r.student);
@@ -156,7 +159,7 @@ export default {
         this.saving = true;
 
         const payload = {
-          class_instance: this.records[0]?.class_instance || null,
+          class_instance: this.classInstance || this.records[0]?.class_instance || null,
           records_input: this.records.map(r => ({
             id: r.id,
             student: r.student,

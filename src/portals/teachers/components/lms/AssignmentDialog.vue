@@ -3,8 +3,10 @@ import { reactive, ref } from 'vue'
 import { SUBJECTS } from '../../../../constants/subjects'
 import { STREAMS } from '../../../../constants/streams'
 import { GRADES } from '../../../../constants/grades'
+import { useClassStore } from '@/stores/classStore'
 
 const emit = defineEmits(['close', 'continue'])
+const classStore = useClassStore()
 
 /*const availableSubjects = [
   { code: 'MATH', name: 'Mathematics' },
@@ -21,6 +23,7 @@ const form = reactive({
   subject: '',
   class_level: '',
   stream: '',
+  class_instance: '',
   due_date: ''
 })
 
@@ -30,6 +33,7 @@ const goToBuilder = () => {
     subject: form.subject,
     class_level: form.class_level,
     stream: form.stream,
+    class_instance: classStore.activeClass?.class_instance || form.class_instance,
     due_date: form.due_date
   })
   emit('close')

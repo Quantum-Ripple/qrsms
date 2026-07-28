@@ -56,7 +56,7 @@ export const deleteAttendanceSession = async (sessionId) => {
 };
 
 
-export const createSessionFromStudents = async (class_level, stream, students = [], defaultStatus = 'PRESENT') => {
+export const createSessionFromStudents = async (class_instance, students = [], defaultStatus = 'PRESENT') => {
   try {
     const records_input = students.map(s => {
       
@@ -70,7 +70,7 @@ export const createSessionFromStudents = async (class_level, stream, students = 
       return null;
     }).filter(Boolean);
 
-    const payload = { class_level, stream, records_input };
+    const payload = { class_instance, records_input };
     const res = await createAttendanceSession(payload);
     return res;
   } catch (err) {

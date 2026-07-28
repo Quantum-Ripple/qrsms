@@ -90,6 +90,7 @@ const showNotification = ref(false);
 
 const classLevel = ref("");
 const stream = ref("");
+const classInstance = ref(null);
 const className = ref("");
 const streamName= ref("");
 
@@ -101,11 +102,12 @@ const getStoredClassInfo = () => {
   () => classStore.activeClass,
   (cls) => {
     if (!cls) return
-    classLevel.value = cls.class_level_id
-    stream.value = cls.stream_id
+    classLevel.value = cls.class_level
+    stream.value = cls.stream
+    classInstance.value = cls.class_instance || null
 
-    className.value = cls.class_level
-    streamName.value = cls.stream
+    className.value = cls.class_level_name
+    streamName.value = cls.stream_name
    
     loadStats()
   },
@@ -146,6 +148,7 @@ const createChart = () => {
 
 const loadStats = async () => {
   try {
+    if (!classLevel.value || !stream.value) return
     const res = await studentsApi.filter(classLevel.value, stream.value);
     const boys = res.filter((s) => s.gender === "M").length;
     const girls = res.filter((s) => s.gender === "F").length;

@@ -8,7 +8,10 @@ export default {
 
   async filter(class_level, stream) {
     const res = await api.get('/students/filter/', {
-      params: { class_level, stream }
+      params: {
+      class_level,
+      stream
+    }
     })
     return res.data
   },

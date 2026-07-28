@@ -35,7 +35,7 @@
 >
               <button
                 v-for="cls in classes"
-                :key="cls.class_level + cls.stream"
+                :key="cls.class_instance || cls.class_level + cls.stream"
                 @click="selectClass(cls)"
                 class="block w-full text-left px-4 py-2 hover:bg-gray-100"
               >
@@ -94,11 +94,15 @@ const loadClasses = () => {
   const saved = JSON.parse(localStorage.getItem("activeClass"))
 
   // Verify if the saved class belongs to current teacher
-  const isValid = saved && classes.value.some(cls => 
-    cls.class_level === saved.class_level && 
-    cls.stream === saved.stream &&
-    cls.subject === saved.subject
-  )
+  const isValid = saved && classes.value.some(cls => {
+    if (saved.class_instance && cls.class_instance) {
+      return String(cls.class_instance) === String(saved.class_instance)
+    }
+
+    return cls.class_level === saved.class_level &&
+      cls.stream === saved.stream &&
+      cls.subject === saved.subject
+  })
 
   if (isValid) {
     activeClass.value = saved
@@ -134,14 +138,15 @@ onBeforeUnmount(() => {
 const classLabel = computed(() => {
   if (!activeClass.value) return ""
 
- const grade = activeClass.value.class_level_name.replace("Grade ", "G")
-const stream = activeClass.value.stream_name
+  const grade = activeClass.value.class_level_name || activeClass.value.class_level || ""
+  const stream = activeClass.value.stream_name || activeClass.value.stream || ""
+  const compactGrade = String(grade).replace("Grade ", "G")
 
   if (window.innerWidth < 768) {
-    return `${grade}${stream[0]}`   // mobile → G8N
+    return `${compactGrade}${stream[0] || ""}`
   }
 
-  return `${activeClass.value.class_level} ${stream}`
+  return `${grade} ${stream}`.trim()
 })
 
 const props = defineProps({
