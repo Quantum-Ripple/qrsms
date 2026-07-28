@@ -134,8 +134,8 @@ onBeforeUnmount(() => {
 const classLabel = computed(() => {
   if (!activeClass.value) return ""
 
-  const grade = activeClass.value.class_level.replace("Grade ", "G")
-  const stream = activeClass.value.stream
+ const grade = activeClass.value.class_level_name.replace("Grade ", "G")
+const stream = activeClass.value.stream_name
 
   if (window.innerWidth < 768) {
     return `${grade}${stream[0]}`   // mobile → G8N

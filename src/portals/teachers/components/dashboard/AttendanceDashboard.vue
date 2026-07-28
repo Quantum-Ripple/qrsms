@@ -26,8 +26,8 @@
     
     <div v-else class="flex flex-col lg:flex-row lg:space-x-8 space-y-8 lg:space-y-0">
       
-      <div class="flex-1 bg-white p-6 rounded-xl shadow-md flex justify-center items-center">
-        <canvas ref="attendanceChartRef" class="max-w-full max-h-[300px]"></canvas>
+     <div class="flex-1 bg-white p-6 rounded-xl shadow-md h-[350px]">
+        <canvas ref="attendanceChartRef"></canvas>
       </div>
 
     
@@ -78,10 +78,17 @@ const noRecords = computed(() =>
   Object.values(attendanceSummary.value).every((v) => v === 0)
 );
 
-
 const createChart = () => {
-  if (!attendanceChartRef.value) return;
-  if (chartInstance) chartInstance.destroy();
+  if (!attendanceChartRef.value) {
+    console.log("Canvas not ready");
+    return;
+  }
+
+  console.log("Chart data:", Object.values(attendanceSummary.value));
+
+  if (chartInstance) {
+    chartInstance.destroy();
+  }
 
   chartInstance = new Chart(attendanceChartRef.value, {
     type: "pie",
@@ -90,21 +97,12 @@ const createChart = () => {
       datasets: [
         {
           data: Object.values(attendanceSummary.value),
-          backgroundColor: ["#34d399", "#fbbf24", "#f87171", "#60a5fa"],
         },
       ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        legend: { position: "bottom" },
-        title: {
-          display: true,
-          text: `Attendance for ${today}`,
-          font: { size: 18, weight: "bold" },
-        },
-      },
     },
   });
 };
@@ -153,15 +151,14 @@ const loadAttendance = async () => {
 
     calculateSummary(res);
 
+    isLoading.value = false;
+
     await nextTick();
+
     createChart(); 
   } catch (err) {
     console.error("Failed to load attendance summary:", err);
-  } finally {
-    if (requestId === currentRequestId) {
-      isLoading.value = false;
-    }
-  }
+  } 
 };
 
 watch(
@@ -169,8 +166,8 @@ watch(
   (cls) => {
     if (!cls) return;
 
-    classLevel.value = cls.class_level;
-    stream.value = cls.stream;
+    classLevel.value = cls.class_level_id;
+    stream.value = cls.stream_id;
 
     loadAttendance();
   },
@@ -181,15 +178,13 @@ const refreshData = async () => {
   await loadAttendance();
 };
 
-onMounted(async () => {
-  getStoredClassInfo();
-});
+
 </script>
 
 <style scoped>
 canvas {
-  max-width: 100%;
-  max-height: 300px;
+  width: 100% !important;
+  height: 100% !important;
 }
 </style>
 

@@ -6,7 +6,7 @@
     >
       <h2 class="text-2xl font-semibold text-gray-800">Students 
         <span v-if="class_level && stream">
-          {{ class_level }} {{ stream }}
+          {{ class_level_name }} {{ stream_name }}
           </span>
         </h2>
 
@@ -130,16 +130,13 @@ const classStore = useClassStore()
 const students = ref([])
 const searchQuery = ref('')
 
-const class_level = ref("")
-const stream = ref("")
 
 watch(
   () => classStore.activeClass,
   (cls) => {
     if (!cls) return
     
-    class_level.value = cls.class_level
-    stream.value = cls.stream
+    
     fetchStudents()
   },
   { immediate: true }
@@ -159,12 +156,13 @@ async function fetchStudents() {
 }*/
 
 async function fetchStudents() {
-  if (!classStore.activeClass) return
+  const activeClass = classStore.activeClass
+
+  if (!activeClass?.class_instance) return
 
   try {
     students.value = await studentsApi.filter(
-      classStore.activeClass.class_level_id,
-      classStore.activeClass.stream_id
+      activeClass.class_instance
     )
   } catch (error) {
     console.error("Failed to fetch students:", error)
