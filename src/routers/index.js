@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Auth from '../api/Auth'
 
-import PortalSelector from '../views/PortalSelector.vue'
 import LoginPage from '../views/LoginPage.vue'
 
 import StudentRoutes from '../portals/students/routes'
@@ -44,8 +43,7 @@ function getPortalPathForUser(user) {
 const routes = [
   {
     path: '/',
-    name: 'PortalSelector',
-    component: PortalSelector,
+    redirect: '/login',
     meta: { public: true }
   },
   {
