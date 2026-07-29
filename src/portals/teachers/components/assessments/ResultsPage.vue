@@ -114,6 +114,8 @@
   </div>
 </template>
 
+
+
 <script setup>
 import { ref, computed, watch, onMounted } from "vue"
 import { useClassStore } from "@/stores/classStore"
@@ -135,8 +137,8 @@ const loading = ref(false)
 const exporting = ref(false)
 const message = ref("")
 
-const grade=computed(() => classStore.activeClass?.class_level)
-const stream=computed(() => classStore.activeClass?.stream)
+const grade=computed(() => classStore.activeClass?.class_level_name)
+const stream=computed(() => classStore.activeClass?.stream_name)
 
 const loadExams = async () => {
   const cls = classStore.activeClass
@@ -145,8 +147,8 @@ const loadExams = async () => {
   try {
     const allExams = await getExams()
 
-    exams.value = allExams.filter(exam => {
-      if (cls.class_instance && exam.class_instance) {
+            exams.value = allExams.filter(exam => {
+              if (cls.class_instance && exam.class_instance) {
         return String(exam.class_instance) === String(cls.class_instance)
       }
 
@@ -168,7 +170,7 @@ const loadStudents = async () => {
   if (!cls) return
 
   try {
-    const res = await studentsApi.filter(cls.class_instance)
+    const res = await studentsApi.filter(cls.class_level, cls.stream)
     students.value = Array.isArray(res) ? res : res.results ?? []
   } catch (error) {
     console.error("Failed to load students:", error)

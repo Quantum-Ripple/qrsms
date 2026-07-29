@@ -37,8 +37,12 @@ export const createBulkInvoices = async (payload) => {
 }
 
 
-export const getInvoices = async () => {
-  const response = await api.get('/invoices/')
+
+export const getInvoices = async (params={}) => {
+  const response = await api.get('/invoices/', {
+    params
+  })
+
   return response.data
 }
 

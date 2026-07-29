@@ -8,9 +8,13 @@
         <label class="block mb-1">Class</label>
         <select v-model="classLevel" class="border rounded px-3 py-2 w-full">
           <option value="">Select Class</option>
-          <option v-for="c in GRADES" :key="c.value" :value="c.value">
-            {{ c.label }}
-          </option>
+          <option
+              v-for="cls in classLevels"
+              :key="cls.id"
+              :value="cls.id"
+            >
+              {{ cls.name }}
+            </option>
         </select>
       </div>
     
@@ -18,10 +22,14 @@
   <label class="block mb-1">Term</label>
   <select v-model="term" class="border rounded px-3 py-2 w-full">
     <option value="">Select Term</option>
-    <option v-for="t in terms" :key="t" :value="t">
-      {{ t }}
-    </option>
-  </select>
+      <option
+        v-for="t in terms"
+        :key="t.id"
+        :value="t.id"
+      >
+        {{ t.name }}
+      </option>
+        </select>
 </div>
 
 
@@ -30,7 +38,7 @@
         <select v-model="feeStructure" class="border rounded px-3 py-2 w-full">
           <option value="">Select Fee Structure</option>
           <option v-for="f in feeStructures" :key="f.id" :value="f.id">
-            {{ f.class_level }} - {{ f.term }} - {{ f.amount }}
+            {{ f.class_level_name }} - {{ f.term_name }} - {{ f.amount }}
           </option>
         </select>
       </div>
@@ -51,7 +59,8 @@ import { ref, onMounted } from 'vue'
 import { getFees, createBulkInvoices } from '../../api/fee'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
-import { GRADES } from '../../../../constants/grades'
+import { getClassLevels } from '@/api/classes'
+import { listTerms } from '../../api/term'
 
 const router = useRouter()
 const toast=useToast()
@@ -59,15 +68,24 @@ const feeStructures = ref([])
 
 const classLevel = ref('')
 const feeStructure = ref('')
-const term = ref('')
+
 const loading = ref(false)
+const term = ref('')
+const classLevels = ref([])
+const terms = ref([])
 
 
-//const classLevels = ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4']
-const terms = ['Term 1','Term 2','Term 3']
+const loadClassLevels = async () => {
+  classLevels.value = await getClassLevels()
+}
 
+const loadTerms = async () => {
+  terms.value = await listTerms()
+}
 
 onMounted(async () => {
+  await loadClassLevels()
+  await loadTerms()
   feeStructures.value = await getFees()
 })
 

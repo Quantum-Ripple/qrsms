@@ -6,6 +6,13 @@ export const fetchClassLevels = () => {
 }
 
 
+
+export const getClassLevels = async () => {
+  /*used by finance portal to fetch class levels for fee structures*/
+  const response = await api.get('/class-levels/')
+  return response.data
+}
+
 export const createClassLevel = (data) => {
   return api.post('/class-levels/', data)
 }

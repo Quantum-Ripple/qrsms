@@ -37,24 +37,40 @@
       <div>
         <p class="text-xs text-gray-500">Class Level</p>
         <div v-if="editing">
-          <select v-model="editableFee.class_level" class="w-full border rounded px-2 py-1">
-            <option v-for="grade in GRADES" :key="grade.value" :value="grade.value">{{ grade.label }}</option>
-          </select>
+          <select
+                v-model="editableFee.class_level"
+                class="w-full border rounded px-2 py-1"
+              >
+                <option
+                  v-for="cls in classLevels"
+                  :key="cls.id"
+                  :value="cls.id"
+                >
+                  {{ cls.name }}
+                </option>
+              </select>
         </div>
-        <p v-else class="text-lg font-medium">{{ fee.class_level }}</p>
+        <p v-else class="text-lg font-medium">{{ fee.class_level_name }}</p>
       </div>
 
     
       <div>
         <p class="text-xs text-gray-500">Term</p>
         <div v-if="editing">
-          <select v-model="editableFee.term" class="w-full border rounded px-2 py-1">
-            <option value="Term 1">Term 1</option>
-            <option value="Term 2">Term 2</option>
-            <option value="Term 3">Term 3</option>
-          </select>
+          <select
+              v-model="editableFee.term"
+              class="w-full border rounded px-2 py-1"
+            >
+              <option
+                v-for="term in terms"
+                :key="term.id"
+                :value="term.id"
+              >
+                {{ term.name }}
+              </option>
+            </select>
         </div>
-        <p v-else class="text-lg font-medium">{{ fee.term }}</p>
+        <p v-else class="text-lg font-medium">{{ fee.term_name}}</p>
       </div>
 
      
@@ -63,7 +79,7 @@
         <div v-if="editing">
           <input type="number" v-model.number="editableFee.year" class="w-full border rounded px-2 py-1" />
         </div>
-        <p v-else class="text-lg font-medium">{{ fee.year }}</p>
+        <p v-else class="text-lg font-medium">{{ fee.academic_year }}</p>
       </div>
 
     
@@ -111,7 +127,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getFeeById, updateFee, deleteFee } from '../../api/fee'
-import { GRADES } from '../../../../constants/grades'
+import { getClassLevels } from '@/api/classes'
+import { listTerms } from '../../api/term'
 import { useToast } from 'vue-toastification'
 
 
@@ -124,11 +141,9 @@ const editableFee = reactive({ class_level: '', term: '', year: null, amount: nu
 const loading = ref(false)
 const editing = ref(false)
 
-/*const grades = [
-  'Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6',
-  'Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'
-]
-*/
+const classLevels = ref([])
+const terms = ref([])
+
 const fetchFee = async () => {
   try {
     loading.value = true
@@ -139,6 +154,14 @@ const fetchFee = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const loadClassLevels = async () => {
+  classLevels.value = await getClassLevels()
+}
+
+const loadTerms = async () => {
+  terms.value = await listTerms()
 }
 
 const toggleEdit = () => {
@@ -182,5 +205,9 @@ const confirmDelete = async () => {
 const formatCurrency = (amount) =>
   new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES' }).format(amount)
 
-onMounted(fetchFee)
+onMounted(async () => {
+  await loadClassLevels()
+  await loadTerms()
+  await fetchFee()
+})
 </script>

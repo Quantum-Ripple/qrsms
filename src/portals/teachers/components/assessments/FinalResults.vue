@@ -170,6 +170,7 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref, computed, watch, onMounted } from "vue"
 import * as XLSX from "xlsx"
@@ -247,7 +248,7 @@ const loadStudents = async () => {
   const cls = classStore.activeClass
   if (!cls) return
 
-  const res = await studentsApi.filter(cls.class_instance)
+  const res = await studentsApi.filter(cls.class_level, cls.stream)
   students.value = Array.isArray(res) ? res : res.results ?? []
 }
 

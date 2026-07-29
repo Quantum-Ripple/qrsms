@@ -526,7 +526,7 @@ const loadStudentsAndScores=async()=>{
 
   try{
 
-    const res=await studentsApi.filter(cls.class_instance)
+    const res=await studentsApi.filter(cls.class_level,cls.stream,cls.subject)
     students.value=Array.isArray(res)?res:res.results??[]
 
     const scores=await getRubricScores(selectedExam.value)

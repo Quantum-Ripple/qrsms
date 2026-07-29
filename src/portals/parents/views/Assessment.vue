@@ -9,10 +9,7 @@
             <h1 class="mt-1 text-3xl font-bold text-slate-900">
               Student Performance
             </h1>
-            <p class="mt-2 text-sm text-slate-600 max-w-2xl">
-              View academic performance across different exams and assessments,
-              compare subject scores, and monitor overall progress over time.
-            </p>
+       
           </div>
 
           <div class="bg-white border border-slate-200 rounded-2xl shadow-sm px-4 py-4 min-w-[280px]">
@@ -167,9 +164,7 @@
             <h2 class="text-lg font-semibold text-slate-900">
               Subject Performance Trend
             </h2>
-            <p class="text-sm text-slate-500">
-              Compare how the student performed in each subject across different exams.
-            </p>
+          
           </div>
 
           <div v-if="chartData.datasets.length > 0" class="h-[380px]">

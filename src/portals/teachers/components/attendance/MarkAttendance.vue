@@ -138,10 +138,10 @@ export default {
         this.classInstance = cls.class_instance || null
 
         // IDs for API
-        this.classLevel = cls.class_level_id
-        this.stream = cls.stream_id
-        this.classLevelName = cls.class_level
-        this.streamName = cls.stream
+        this.classLevel = cls.class_level
+        this.stream = cls.stream
+        this.classLevelName = cls.class_level_name
+        this.streamName = cls.stream_name
 
         // load after IDs exist
         this.loadStudents()
@@ -153,7 +153,7 @@ export default {
     async loadStudents() {
           try {
             if (!this.classInstance) return
-            this.students = await studentApi.filter(this.classInstance);
+            this.students = await studentApi.filter(this.classLevel, this.stream);
 
             // preserve the active class instance when the API returns students
             if (!this.classInstance && this.students.length > 0) {

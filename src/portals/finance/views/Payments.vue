@@ -9,11 +9,16 @@
       />
 
       <select v-model="filterGrade" class="border rounded px-3 py-2">
-        <option value="">All Classes</option>
-        <option v-for="c in GRADES" :key="c.value" :value="c.value">
-          {{ c.label }}
-        </option>
-      </select>
+          <option value="">All Classes</option>
+
+          <option
+            v-for="cls in classLevels"
+            :key="cls.id"
+            :value="cls.name"
+          >
+            {{ cls.name }}
+          </option>
+        </select>
 
       <input
         type="date"
@@ -81,9 +86,25 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { getPayments } from '../api/fee.js'
-import { GRADES } from '../../../constants/grades'
+
 import { PAYMENTS } from '../../../constants/payment.js'
 
+import { getClassLevels } from '@/api/classes'
+
+const classLevels = ref([])
+
+const loadClassLevels = async () => {
+  try {
+    const data = await getClassLevels()
+
+    console.log("Class Levels:", data)
+    console.log("Is Array?", Array.isArray(data))
+
+    classLevels.value = data
+  } catch (err) {
+    console.error("Failed to load class levels:", err)
+  }
+}
 const router = useRouter()
 
 const payments = ref([])
@@ -146,7 +167,10 @@ const downloadPayment = (id) => {
   router.push({ name: 'PaymentDetails', params: { id } })
 }
 
-onMounted(fetchPayments)
+onMounted(async () => {
+  await loadClassLevels()
+  await fetchPayments()
+})
 </script>
 
 <style scoped>

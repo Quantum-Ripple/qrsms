@@ -85,7 +85,7 @@
     
     <div v-if="feeStructure" class="bg-white p-4 rounded-xl shadow border">
       <h2 class="text-lg font-semibold text-gray-700 mb-3">
-        {{ feeStructure.class_level }} - {{ feeStructure.term }} {{ feeStructure.year }}
+        {{ feeStructure.class_level_name }} - {{ feeStructure.term_name }} {{ feeStructure.year }}
       </h2>
       <p class="text-gray-800">
         <span class="font-medium">School:</span> {{ feeStructure.school_name }}

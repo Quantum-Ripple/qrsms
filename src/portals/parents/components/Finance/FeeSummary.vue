@@ -97,8 +97,8 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-800">
           <p><span class="font-medium">Name:</span> {{ data.student.full_name }}</p>
           <p><span class="font-medium">Admission No:</span> {{ data.student.admission_number }}</p>
-          <p><span class="font-medium">Class:</span> {{ data.student.class_level }}</p>
-          <p><span class="font-medium">Stream:</span> {{ data.student.stream }}</p>
+          <p><span class="font-medium">Class:</span> {{ data.student.current_class_level }}</p>
+          <p><span class="font-medium">Stream:</span> {{ data.student.current_stream }}</p>
         </div>
       </div>
 
@@ -145,6 +145,7 @@ const fetchFinance = async (studentId) => {
   error.value = null;
   try {
     const res = await getStudentFinanceDetails(studentId);
+   
     data.value = res.data;
   } catch (err) {
     console.error(err);
@@ -178,6 +179,7 @@ onMounted(async () => {
   try {
     const res = await getStudent();
     students.value = res;
+
 
 
     if (!students.value.length) {

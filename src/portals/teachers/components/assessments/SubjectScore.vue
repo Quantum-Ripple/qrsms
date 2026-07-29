@@ -131,14 +131,18 @@ if (!cls) return
 
 const all = await getExams()
 
-exams.value = all.filter(e => {
+/*exams.value = all.filter(e => {
 if (cls.class_instance && e.class_instance) {
   return String(e.class_instance) === String(cls.class_instance)
-}
+}*/
+exams.value = all.filter(e => {
+  if (cls.class_instance && e.class_instance) {
+    return String(e.class_instance) === String(cls.class_instance)
+  }
 
-return e.class_level === cls.class_level &&
-e.stream === cls.stream
+  return String(e.class_level) === String(cls.class_level_id)
 })
+
 
 if (exams.value.length)
 selectedExam.value = exams.value[0].id
@@ -152,7 +156,7 @@ const cls = classStore.activeClass
 if (!cls) return
 
 try {
-  const res = await studentsApi.filter(cls.class_instance)
+  const res = await studentsApi.filter(cls.class_level, cls.stream)
   students.value = Array.isArray(res) ? res : res.results ?? []
   //console.log("students", students.value)
 } catch (error) {

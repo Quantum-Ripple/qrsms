@@ -119,8 +119,8 @@ export default {
           if (!cls) return
 
           this.classInstance = cls.class_instance || null
-          this.classLevel = cls.class_level_id
-          this.stream = cls.stream_id
+          this.classLevel = cls.class_level
+          this.stream = cls.stream
 
           this.loadSession()
         },
@@ -133,7 +133,7 @@ export default {
         if (!this.classInstance) return
 
         const session = await getAttendanceSession(this.sessionId);
-        const students = await studentApi.filter(this.classInstance);
+        const students = await studentApi.filter(this.classLevel, this.stream);
 
         this.records = session.records.map(r => {
           const student = students.find(s => s.id === r.student);
@@ -142,7 +142,9 @@ export default {
               student: r.student,
               student_name: student?.full_name || "Unknown",
               admission_number: student?.admission_number || "N/A",
-              class_instance: student?.class_instance_id,
+              //class_instance: student?.class_instance_id,
+               class_level: student?.class_level_id,
+               stream: student?.stream_id,
               status: r.status,
             };
         });

@@ -13,44 +13,57 @@
         
         <div>
           <label class="block mb-1 font-medium">Class Level</label>
-          <select
-            v-model="form.class_level"
-            class="w-full border rounded px-3 py-2"
-            required
-          >
-            <option value="">Select class</option>
-            <option v-for="grade in GRADES" :key="grade.value" :value="grade.value">
-              {{ grade.label }}
-            </option>
-          </select>
+         <select
+              v-model="form.class_level"
+              class="w-full border rounded px-3 py-2"
+              required
+            >
+              <option value="">Select class</option>
+
+              <option
+                v-for="cls in classLevels"
+                :key="cls.id"
+                :value="cls.id"
+              >
+                {{ cls.name }}
+              </option>
+            </select>
         </div>
 
       
         <div>
           <label class="block mb-1 font-medium">Term</label>
           <select
-            v-model="form.term"
-            class="w-full border rounded px-3 py-2"
-            required
-          >
-            <option value="">Select term</option>
-            <option value="Term 1">Term 1</option>
-            <option value="Term 2">Term 2</option>
-            <option value="Term 3">Term 3</option>
-          </select>
-        </div>
+              v-model="form.term"
+              class="w-full border p-2 rounded"
+              required
+              >
 
-    
-        <div>
-          <label class="block mb-1 font-medium">Academic Year</label>
-          <input
-            type="number"
-            v-model.number="form.year"
-            class="w-full border rounded px-3 py-2"
-            placeholder="2026"
-            required
-          />
+              <option disabled value="">
+              Select Term
+              </option>
+
+              <option
+              v-for="term in terms"
+              :key="term.id"
+              :value="term.id"
+              >
+              {{term.name}}
+              </option>
+
+              </select>
         </div>
+            <div>
+              <label class="block mb-1 font-medium">Academic Year</label>
+              <input
+                type="number"
+                v-model.number="form.year"
+                class="w-full border rounded px-3 py-2"
+                placeholder="2026"
+                required
+              />
+            </div>
+
 
         <div>
           <label class="block mb-1 font-medium">Fee Amount</label>
@@ -88,11 +101,45 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { createFee } from '../../api/fee'
-import { GRADES } from '../../../../constants/grades'
+import { listTerms } from '../../api/term'
 import { useToast } from 'vue-toastification'
+
+import { getClassLevels } from '@/api/classes'
+
+const academicYear = ref(null)
+
+const loadCurrentYear = async()=>{
+   academicYear.value = await getCurrentAcademicYear()
+}
+
+const terms = ref([])
+
+const loadTerms = async () => {
+  try {
+    const data = await listTerms()
+
+    console.log("Terms from API:", data)
+
+    terms.value = data
+
+  } catch(error) {
+    console.error("Loading terms failed:", error)
+  }
+}
+
+const classLevels = ref([])
+
+const loadClassLevels = async () => {
+  classLevels.value = await getClassLevels()
+}
+
+onMounted(async () => {
+  await loadClassLevels()
+  await loadTerms()
+})
 
 const router = useRouter()
 const loading = ref(false)

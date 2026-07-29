@@ -14,11 +14,16 @@
       />
 
       <select v-model="selectedClass" class="border rounded px-3 py-2">
-        <option value="">All Classes</option>
-        <option v-for="c in GRADES" :key="c.value" :value="c.value">
-          {{ c.label }}
-        </option>
-      </select>
+          <option value="">All Classes</option>
+
+          <option
+            v-for="cls in classLevels"
+            :key="cls.id"
+            :value="cls.name"
+          >
+            {{ cls.name }}
+          </option>
+        </select>
       </div>
       <button
         @click="goToCreate"
@@ -47,9 +52,9 @@
             :key="fee.id"
             class="border-t hover:bg-gray-50"
           >
-            <td class="p-3">{{ fee.class_level }}</td>
-            <td class="p-3">{{ fee.term }}</td>
-            <td class="p-3">{{ fee.year }}</td>
+            <td class="p-3">{{ fee.class_level_name }}</td>
+            <td class="p-3">{{ fee.term_name }}</td>
+            <td class="p-3">{{ fee.academic_year }}</td>
             <td class="p-3 font-medium">
               {{ formatCurrency(fee.amount) }}
             </td>
@@ -78,7 +83,25 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getFees } from '../api/fee'
-import { GRADES } from '../../../constants/grades'
+
+import { getClassLevels } from '@/api/classes'
+
+const classLevels = ref([])
+
+const loadClassLevels = async () => {
+  try {
+    const data = await getClassLevels()
+
+    console.log("Class Levels:", data)
+    console.log("Is Array?", Array.isArray(data))
+
+    classLevels.value = data
+  } catch (err) {
+    console.error("Failed to load class levels:", err)
+  }
+}
+
+
 
 const router = useRouter()
 const fees = ref([])
@@ -86,26 +109,45 @@ const search = ref('')
 const selectedClass = ref('')
 
 const fetchFees = async () => {
-  fees.value = await getFees()
+  try {
+    const data = await getFees()
+
+    console.log("Fees from API:", data)
+    console.log("Is Array?", Array.isArray(data))
+
+    fees.value = data
+  } catch (err) {
+    console.error("Failed to fetch fees:", err)
+  }
 }
 
-onMounted(fetchFees)
+
+onMounted(async () => {
+    await loadClassLevels()
+    await fetchFees()
+})
+
 
 /*const classLevels = computed(() => {
   return [...new Set(fees.value.map(f => f.class_level))]
 })
 */
+
 const filteredFees = computed(() => {
   return fees.value.filter(fee => {
+    const className = fee.class_level_name || ""
+
     const matchesSearch =
-      fee.class_level.toLowerCase().includes(search.value.toLowerCase())
+      className.toLowerCase().includes(search.value.toLowerCase())
 
     const matchesClass =
-      !selectedClass.value || fee.class_level === selectedClass.value
+      !selectedClass.value ||
+      className === selectedClass.value
 
     return matchesSearch && matchesClass
   })
 })
+
 const goToCreate = () => {
   router.push({ name: 'FeeCreate'})
 }
