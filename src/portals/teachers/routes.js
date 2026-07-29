@@ -24,7 +24,7 @@ import StrandScore from './components/assessments/StrandScore.vue'
 import SubjectScore from './components/assessments/SubjectScore.vue'
 import ExamResults from './components/assessments/ResultsPage.vue'
 import FinalResults from './components/assessments/FinalResults.vue'
-import Timetable from './views/Timetable.vue'
+
 
 export default [
   {
@@ -52,11 +52,7 @@ export default [
     name: 'TeachersAssessmentsPage',
     component: Assessments,
   },
-  {
-    path: 'timetable',
-    name: 'Timetable',
-    component: Timetable
-  },
+ 
   {
     path: 'term-scores',
     name: 'TeachersFinalResults',

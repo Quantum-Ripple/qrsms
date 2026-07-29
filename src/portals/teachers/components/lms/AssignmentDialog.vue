@@ -28,15 +28,19 @@ const form = reactive({
 })
 
 const goToBuilder = () => {
-  emit('continue', {
+  if (!classStore.activeClass?.class_instance) {
+    alert("Please select a class first.")
+    return
+  }
+
+  emit("continue", {
     title: form.title,
     subject: form.subject,
-    class_level: form.class_level,
-    stream: form.stream,
-    class_instance: classStore.activeClass?.class_instance || form.class_instance,
-    due_date: form.due_date
+    class_instance: classStore.activeClass.class_instance,
+    due_date: form.due_date,
   })
-  emit('close')
+
+  emit("close")
 }
 </script>
 
@@ -63,19 +67,16 @@ const goToBuilder = () => {
           </option>
         </select>
 
-        <select v-model="form.class_level" class="w-full p-2 border rounded">
-          <option disabled value="">Select Class</option>
-          <option v-for="g in GRADES" :key="g.value" :value="g.value">
-            {{ g.value }}
-          </option>
-        </select>
+        <div class="rounded bg-gray-100 p-3">
+            <p class="text-sm text-gray-500">Class</p>
 
-        <select v-model="form.stream" class="w-full p-2 border rounded">
-          <option disabled value="">Select Stream</option>
-          <option v-for="s in STREAMS" :key="s.Value">
-            {{ s.label }}
-          </option>
-        </select>
+            <p class="font-medium">
+              {{ classStore.activeClass?.class_level_name }}
+              {{ classStore.activeClass?.stream_name }}
+            </p>
+          </div>
+
+   
 
         <div>
           <label class="block text-sm font-medium mb-1">Deadline</label>

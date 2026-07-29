@@ -9,44 +9,31 @@
 
       <input v-model="form.date" type="date" class="w-full border p-2 rounded" required>
 
-      <select v-model="form.term" class="w-full border p-2 rounded" required>
-        <option disabled value="">Select Term</option>
-        <option>Term 1</option>
-        <option>Term 2</option>
-        <option>Term 3</option>
-      </select>
-
-      <input v-model="form.academic_year" type="text" placeholder="Academic Year (e.g. 2026)" class="w-full border p-2 rounded" required>
-
       <select
-          v-model="form.class_level"
+          v-model="form.term"
           class="w-full border p-2 rounded"
           required
         >
-          <option disabled value="">Select Class Level</option>
+          <option disabled value="">Select Term</option>
+
           <option
-            v-for="g in GRADES"
-            :key="g.value"
-            :value="g.value"
+            v-for="term in terms"
+            :key="term.id"
+            :value="term.id"
           >
-            {{ g.label }}
+            {{ term.name }} ({{ term.academic_year_name }})
           </option>
         </select>
 
-        <select
-            v-model="form.stream"
-            class="w-full border p-2 rounded"
-            required
-          >
-            <option disabled value="">Select Stream</option>
-            <option
-              v-for="s in STREAMS"
-              :key="s.value"
-              :value="s.value"
-            >
-              {{ s.label }}
-            </option>
-          </select>
+  
+     <div class="border rounded p-3 bg-gray-50">
+        <p class="text-sm text-gray-500">Class</p>
+
+        <p class="font-medium">
+          {{ classStore.activeClass?.class_level_name }}
+          {{ classStore.activeClass?.stream_name }}
+        </p>
+      </div>
 
 
       <button 
@@ -67,13 +54,14 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+
 import { createExam } from "../../api/Grades";
 
-import { STREAMS } from "../../../../constants/streams";
-import { GRADES } from "../../../../constants/grades";
+import { listTerms } from "../../api/term";
 import { useToast } from "vue-toastification";
 import { useClassStore } from "@/stores/classStore";
+
+import { ref, onMounted } from "vue";
 
 const userData = JSON.parse(localStorage.getItem('user') || '{}')
 const school = ref(`${userData.school || ""}`);
@@ -84,17 +72,25 @@ const toast = useToast()
 const form = ref({
   name: "",
   date: "",
-  term: "",
-  academic_year: "",
-  class_level: "",
-  stream: "",
-  school: ref(`${userData.school || ""}`),
 
-  
+
+  school: userData.school,
 });
+
+
+
+const terms = ref([]);
 
 const success = ref(false);
 const error = ref("");
+
+onMounted(async () => {
+  try {
+    terms.value = await listTerms();
+  } catch (err) {
+    console.error(err);
+  }
+});
 
 const handleSubmit = async () => {
   try {

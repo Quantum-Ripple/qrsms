@@ -66,7 +66,7 @@ const navItems = [
     ], 
   },
   { label: 'Assignments', route: { name: 'TeachersAssignmentsPage' } },
-  { label: 'Timetable', route: { name: 'Timetable'}},
+
   { label: 'Announcements', route: { name: 'TeachersAnnouncementsPage' } },
   { label: 'Settings', route: { name: 'TeachersSettings' } },
 ]
