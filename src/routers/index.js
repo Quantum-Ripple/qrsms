@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Auth from '../api/Auth'
 
 import LoginPage from '../views/LoginPage.vue'
+import PrivacyPage from '../views/privacy.vue'
+import TermsPage from '../views/terms.vue'
 
 import StudentRoutes from '../portals/students/routes'
 import TeacherRoutes from '../portals/teachers/routes'
@@ -50,6 +52,18 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: LoginPage,
+    meta: { public: true }
+  },
+  {
+    path: '/privacy',
+    name: 'PrivacyPolicy',
+    component: PrivacyPage,
+    meta: { public: true }
+  },
+  {
+    path: '/terms',
+    name: 'TermsOfUse',
+    component: TermsPage,
     meta: { public: true }
   },
   {

@@ -10,6 +10,7 @@ const username = ref('')
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
+const agreedToPolicies = ref(false)
 const portalRole = ref('student')  
 
 const ALLOWED_ROLES = ref(['student'])
@@ -25,6 +26,11 @@ onMounted(() => {
 })
 
 const handleLogin = async () => {
+  if (!agreedToPolicies.value) {
+    error.value = 'Please accept the Privacy Policy and Terms of Use to continue.'
+    return
+  }
+
   error.value = ''
   loading.value = true
 
@@ -159,9 +165,24 @@ const handleLogin = async () => {
         class="border rounded w-full p-2 mb-3"
       />
 
+      <div class="mb-4 flex items-start gap-2 text-sm text-slate-600">
+        <input
+          id="acceptPolicies"
+          v-model="agreedToPolicies"
+          type="checkbox"
+          class="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+        />
+        <label for="acceptPolicies" class="leading-6">
+          I have read and agree to the
+          <router-link to="/terms" class="font-medium text-blue-600 hover:underline">Terms of Use</router-link>
+          and
+          <router-link to="/privacy" class="font-medium text-blue-600 hover:underline">Privacy Policy</router-link>.
+        </label>
+      </div>
+
       <button
         @click="handleLogin"
-        :disabled="loading"
+        :disabled="loading || !agreedToPolicies"
         class="bg-blue-600 text-white w-full py-2 rounded hover:bg-blue-700 disabled:opacity-60"
       >
         <span v-if="!loading">Login</span>
