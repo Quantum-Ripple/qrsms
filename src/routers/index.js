@@ -11,6 +11,7 @@ import PrincipalRoutes from '../portals/principals/routes'
 import FinanceRoutes from '../portals/finance/routes'
 import ParentRoutes from '../portals/parents/routes'
 
+
 const ROLE_TO_PORTAL_PATH = {
   student: '/student',
   teacher: '/teachers',
@@ -103,10 +104,20 @@ const routes = [
   }
 ]
 
+
+ 
+
+const router = createRouter({
+  history: createWebHashHistory(), 
+  routes
+})
+
+/*
 const router = createRouter({
   history: createWebHistory(),
   routes
 })
+*/
 
 router.beforeEach((to, from, next) => {
   const isAuthenticated = Auth.isAuthenticated()
