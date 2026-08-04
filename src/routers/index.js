@@ -33,11 +33,23 @@ function normalizeRole(role) {
   return (role || '').toString().toLowerCase()
 }
 
+
+function getPortalPrefix(path) {
+  const segments = (path || '').split('/').filter(Boolean);
+  
+  // If the first path segment matches your GitHub repo name, skip it to read the actual portal path
+  if (segments[0] === 'qrsms') {
+    return segments[1] || '';
+  }
+  
+  return segments[0] || '';
+}
+/*
 function getPortalPrefix(path) {
   const firstSegment = (path || '').split('/').filter(Boolean)[0]
   return firstSegment || ''
 }
-
+*/
 function getPortalPathForUser(user) {
   const role = normalizeRole(user?.role)
   return ROLE_TO_PORTAL_PATH[role] || null
