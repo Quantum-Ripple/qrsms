@@ -105,19 +105,19 @@ const routes = [
 ]
 
 
- 
+ /*
 
 const router = createRouter({
   history: createWebHashHistory(), 
   routes
 })
 
-/*
+*/
 const router = createRouter({
   history: createWebHistory(),
   routes
 })
-*/
+
 
 router.beforeEach((to, from, next) => {
   const isAuthenticated = Auth.isAuthenticated()

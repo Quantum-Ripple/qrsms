@@ -8,7 +8,7 @@ export default defineConfig({
     vue(),
     tailwindcss(),
   ],
-  base: '/qrsms/',
+  base: '/',
   resolve: {
     alias: {
      
