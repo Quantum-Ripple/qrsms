@@ -49,7 +49,14 @@ import { useRouter } from 'vue-router'
 const navItems = [
   { label: 'Dashboard', route: { name: 'PrincipalDashboard' } },
   { label: 'Students', route: { name: 'PrincipalStudents' } },
-  { label: 'Teachers', route: { name: 'PrincipalTeachers' } },
+  {
+    label: 'Staff',
+    children: [
+      { label: 'Teachers', route: { name: 'PrincipalTeachers' } },
+      { label: 'Non-Teaching Staff', route: { name: 'PrincipalOtherStaff' } },
+    ],
+  },
+  { label: 'Attendance', route: { name: 'PrincipalAttendance' } },
   { label: 'Academics', route: {name: 'Academics'}},
 
   {

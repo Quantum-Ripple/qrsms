@@ -37,4 +37,27 @@ export default {
     const res = await api.delete(`/teachers/${id}/`)
     return res.status === 204 || res.status === 200
   },
+  async listOtherStaff(page = 1) {
+    return api.get(`/non-teaching-staff/?page=${page}`).then(res => res.data)
+  },
+
+  async getOtherStaff(id) {
+    const res = await api.get(`/non-teaching-staff/${id}/`)
+    return res.data
+  },
+
+  async createOtherStaff(payload) {
+    const res = await api.post('/non-teaching-staff/', payload)
+    return res.data
+  },
+
+  async updateOtherStaff(id, payload) {
+    const res = await api.patch(`/non-teaching-staff/${id}/`, payload)
+    return res.data
+  },
+
+  async removeOtherStaff(id) {
+    const res = await api.delete(`/non-teaching-staff/${id}/`)
+    return res.status === 204 || res.status === 200
+  },
 }

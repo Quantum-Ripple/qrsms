@@ -3,6 +3,9 @@ import StudentsPage from './views/StudentsPage.vue'
 import StudentsDetail from './components/StudentsDetail.vue'
 import CreateStudent from './components/CreateStudent.vue'
 import TeachersPage from './views/TeachersPage.vue'
+import OtherStaffPage from './views/OtherStaff.vue'
+import CreateOtherStaff from './components/CreateOtherStaff.vue'
+import OtherStaffDetail from './components/OtherStaffDetail.vue'
 import TeachersDetail from './components/TeachersDetail.vue'
 import EventsPage from './views/EventsPage.vue'
 import EventDetail from './components/events/EventDetail.vue'
@@ -22,6 +25,8 @@ import CreateTeacher from './components/CreateTeacher.vue'
 import Configuration from './views/Configurations.vue'
 import Promotions from './views/Promotions.vue'
 import Calender from './views/Calender.vue'
+import AttendancePage from './views/Attendance.vue'
+import AttendanceSessionDetail from './views/AttendanceSessionDetail.vue'
 
 
 export default [
@@ -34,6 +39,9 @@ export default [
 
   // Teachers
   { path: 'teachers', name: 'PrincipalTeachers', component: TeachersPage },
+  { path: 'other-staff', name: 'PrincipalOtherStaff', component: OtherStaffPage },
+  { path: 'other-staff/create', name: 'PrincipalCreateOtherStaff', component: CreateOtherStaff },
+  { path: 'other-staff/:id', name: 'OtherStaffDetail', component: OtherStaffDetail, props: true },
   { path: 'teacher/:id', name: 'TeachersDetail', component: TeachersDetail, props: true },
    {path: 'teachers/create',name: 'PrincipalCreateTeacher',component: CreateTeacher},
 
@@ -53,6 +61,10 @@ export default [
   { path: 'principal/student-reports', name: 'StudentReports', component: StudentsReport },
   { path: 'principal/transactions', name: 'Transactions', component: Transactions },
 
+  // Attendance
+  { path: 'attendance', name: 'PrincipalAttendance', component: AttendancePage },
+  { path: 'attendance/:id', name: 'PrincipalAttendanceSessionDetail', component: AttendanceSessionDetail, props: true },
+
   // Communications
   { path: 'pr/communications', name: 'PrincipalCommunications', component: CommunicationsPage },
 
@@ -65,6 +77,5 @@ export default [
   { path: 'academics', name: 'Academics', component: Academics },
   { path: 'configurations', name: 'Configurations', component: Configuration },
   { path: 'promotions', name: 'Promotions', component: Promotions },
-  { path: 'principal/calendar', name: 'PrincipalCalendar',component: Calender},
-  
+  { path: 'principal/calendar', name: 'PrincipalCalendar', component: Calender },
 ]
