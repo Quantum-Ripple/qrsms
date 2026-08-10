@@ -38,7 +38,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="teacher in filteredTeachers"
+            v-for="teacher in teachers"
             :key="teacher.id"
             class="hover:bg-gray-50 transition cursor-pointer"
             @click="viewTeachers(teacher)"
@@ -57,7 +57,7 @@
             </td>
           </tr>
 
-          <tr v-if="filteredTeachers.length === 0">
+          <tr v-if="teachers.length === 0">
             <td colspan="5" class="text-center py-4 text-gray-500">
               No teachers found.
             </td>
@@ -71,7 +71,7 @@
     <!-- Card View (Mobile) -->
     <div class="sm:hidden space-y-4">
       <div
-        v-for="teacher in filteredTeachers"
+        v-for="teacher in teachers"
         :key="teacher.id"
         class="bg-white rounded-lg shadow border p-4 hover:shadow-md transition"
       >
@@ -93,7 +93,7 @@
       </div>
 
       <div
-        v-if="filteredTeachers.length === 0"
+        v-if="teachers.length === 0"
         class="text-center text-gray-500 py-8"
       >
         No teachers found.
@@ -124,55 +124,65 @@
       </div>
   </div>
 </template>
-
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-//import CreateTeacher from '../components/CreateTeacher.vue'
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import teachersApi from '../api/Teachers.js'
 
 const router = useRouter()
 
-//const teachers = ref([])
 const searchQuery = ref('')
+const debouncedSearch = ref('')
 const showCreateForm = ref(false)
-
 const page = ref(1)
 
-const { data, isLoading, isError } = useQuery({
-  queryKey: ['teachers',page],
-  queryFn: () => teachersApi.listpaginate(page.value),
-  keepPreviousData: true
-  //staleTime: 1000 * 60 * 5,
+let searchTimeout = null
+
+// Debounce the search so we don't make an API request
+// for every character typed.
+watch(searchQuery, (value) => {
+  clearTimeout(searchTimeout)
+
+  searchTimeout = setTimeout(() => {
+    debouncedSearch.value = value.trim()
+    page.value = 1
+  }, 300)
 })
 
-async function fetchTeachers() {
-  try {
-    teachers.value = await teachersApi.listpaginate()
-  } catch (error) {
-    console.error('Failed to fetch teachers:', error)
-  }
-}
+const { data, isLoading, isError } = useQuery({
+  queryKey: ['teachers', page, debouncedSearch],
+
+  queryFn: () =>
+    teachersApi.listpaginate(
+      page.value,
+      debouncedSearch.value
+    ),
+
+  keepPreviousData: true
+})
+
 const teachers = computed(() => data.value?.results || [])
-const filteredTeachers = computed(() =>
-  teachers.value.filter((t) =>
-    `${t.first_name} ${t.last_name}`
-      .toLowerCase()
-      .includes(searchQuery.value.toLowerCase())
-  )
-)
 
 const goToCreateTeacher = () => {
-  router.push({ name: 'PrincipalCreateTeacher' })
+  router.push({
+    name: 'PrincipalCreateTeacher'
+  })
 }
 
 function viewTeachers(teacher) {
-  router.push({ name: 'TeachersDetail', params: { id: teacher.id } })
+  router.push({
+    name: 'TeachersDetail',
+    params: {
+      id: teacher.id
+    }
+  })
 }
+
+onBeforeUnmount(() => {
+  clearTimeout(searchTimeout)
+})
 </script>
 
 <style scoped>
-
 </style>
-

@@ -93,7 +93,14 @@ const form = ref({
   description: ''
 })
 
-const categories = ['Utilities', 'Salary', 'Maintenance', 'Miscellaneous']
+
+const categories = [
+  'Utilities',
+  'Salaries',
+  'Maintenance',
+  'Supplies',
+  'Miscellaneous'
+]
 
 watch(
   () => props.expense,

@@ -18,34 +18,67 @@
           <span class="text-lg font-semibold" data-testid="app-title">{{ title }}</span>
         </div>
 
-        <div class="relative flex items-center">
+        
+      <div class="relative flex items-center">
 
+        <button
+          id="classMenuButton"
+          @click="showClassMenu = !showClassMenu"
+          class="px-3 py-1 border rounded-md text-sm font-medium hover:bg-gray-100"
+        >
+          {{ classLabel }} ▾
+        </button>
+
+        <div
+          v-if="showClassMenu"
+          id="classMenu"
+          class="absolute right-0 top-10 w-52 bg-white border rounded-lg shadow-lg z-20"
+        >
+
+          <!-- Class list -->
+          <div class="max-h-60 overflow-y-auto py-1">
             <button
-              id="classMenuButton"
-              @click="showClassMenu = !showClassMenu"
-              class="px-3 py-1 border rounded-md text-sm font-medium hover:bg-gray-100"
+              v-for="cls in classes"
+              :key="cls.class_instance || cls.class_level + cls.stream"
+              @click="selectClass(cls)"
+              class="block w-full text-left px-4 py-2 hover:bg-gray-100"
             >
-              {{ classLabel }} ▾
+              {{ cls.class_level_name }} {{ cls.stream_name }}
             </button>
-
-            <div
-  v-if="showClassMenu"
-  id="classMenu"
-  class="absolute right-0 top-10 w-44 bg-white border rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto"
->
-              <button
-                v-for="cls in classes"
-                :key="cls.class_instance || cls.class_level + cls.stream"
-                @click="selectClass(cls)"
-                class="block w-full text-left px-4 py-2 hover:bg-gray-100"
-              >
-                {{ cls.class_level }} {{ cls.stream }}
-              </button>
-            </div>
-
           </div>
-        
-        
+
+          <!-- Divider -->
+          <div class="border-t"></div>
+
+          <!-- Logout -->
+          <button
+            type="button"
+            @click="$emit('logout')"
+            class="w-full flex items-center px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-100"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-5 h-5 mr-3 text-gray-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-10V5m0 0H5a2 2 0 00-2 2v10a2 2 0 002 2h8"
+              />
+            </svg>
+
+            Logout
+          </button>
+
+        </div>
+
+      </div>
+
+
 
         
         <div class="md:hidden">

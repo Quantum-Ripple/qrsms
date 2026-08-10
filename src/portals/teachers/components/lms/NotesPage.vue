@@ -219,8 +219,8 @@ onMounted(fetchNotes);
         </label>
 
         <div class="w-full p-2 border rounded mb-3 bg-gray-100">
-          {{ classStore.activeClass?.class_level }}
-          {{ classStore.activeClass?.stream }}
+          {{ classStore.activeClass?.class_level_name }}
+          {{ classStore.activeClass?.stream_name }}
         </div>
 
         <label class="block text-sm font-medium mb-1">
@@ -265,7 +265,7 @@ onMounted(fetchNotes);
         ></textarea>
 
         <label class="block text-sm font-medium mb-1">
-          Upload File
+          Click to Upload File
         </label>
 
         <input

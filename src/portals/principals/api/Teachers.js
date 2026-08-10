@@ -7,9 +7,19 @@ export default {
     const res = await api.get('/teachers/', { params })
     return res.data
   },
-  async listpaginate(page = 1) {
-    return api.get(`/teachers/?page=${page}`).then(res => res.data)
-  },
+ async listpaginate(page = 1, search = '') {
+  const params = {
+    page,
+  }
+
+  if (search.trim()) {
+    params.search = search.trim()
+  }
+
+  const res = await api.get('/teachers/', { params })
+
+  return res.data
+},
 
  
 

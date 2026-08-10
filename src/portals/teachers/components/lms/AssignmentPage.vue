@@ -15,6 +15,8 @@ const fetchAssignments = async () => {
   loading.value = true
   try {
     const data = await listAssignments()
+
+   
     
     assignments.value = data.map(a => ({
       id: a.id,
@@ -23,7 +25,8 @@ const fetchAssignments = async () => {
       class_level: a.class_level,
       stream: a.stream,
       class_instance: a.class_instance,
-      due_date: a.due_date
+      due_date: a.due_date,
+      class_instance_name: a.class_instance_display,
     }))
   } catch (err) {
     console.error('Failed to fetch assignments:', err)
@@ -81,7 +84,7 @@ onMounted(fetchAssignments)
       >
         <div>
           <h3 class="font-semibold">{{ a.title }}</h3>
-          <p class="text-sm text-gray-600">{{ a.class_level }} · {{ a.subject }} · {{ a.stream }}</p>
+          <p class="text-sm text-gray-600">{{ a.class_instance_name }} · {{ a.subject }} </p>
           <p class="text-sm text-gray-500">Due: {{ a.due_date }}</p>
         </div>
 

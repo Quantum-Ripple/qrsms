@@ -169,7 +169,8 @@ Where changes are material, we will notify users through the platform or by othe
     body: `Quantum Ripple LTD
 
 Email:
-quantumrippleltd@gmail.com
+info@quantumripple.co.ke
+
 
 Website:
 https://www.quantumripple.co.ke
@@ -192,7 +193,7 @@ If you have questions about this Privacy Policy or wish to exercise your privacy
 
                 <div class="flex flex-wrap gap-4 text-sm text-slate-500">
                   <span><strong>Effective:</strong> July 30, 2026</span>
-                  <span><strong>Last Updated:</strong> July 30, 2026</span>
+                  <span><strong>Last Updated:</strong> August 10, 2026</span>
                 </div>
               </div>
             <h1 class="mt-2 text-3xl font-semibold text-slate-900">How Quantum Ripple protects your data</h1>

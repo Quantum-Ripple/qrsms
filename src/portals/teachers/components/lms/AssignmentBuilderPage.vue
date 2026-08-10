@@ -98,7 +98,7 @@ const submitAssignment = async () => {
     <div class="mb-6">
       <p><strong>Title:</strong> {{ assignment.title }}</p>
       <p><strong>Subject:</strong> {{ assignment.subject }}</p>
-      <p><strong>Class:</strong> {{ assignment.class_level }} – {{ assignment.stream }}</p>
+      <p><strong>Class:</strong> {{ assignment.class_level_name }} – {{ assignment.stream_name }}</p>
       <p><strong>Deadline:</strong> {{ assignment.due_date }}</p>
     </div>
 

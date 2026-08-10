@@ -479,10 +479,7 @@ const refreshInvoices = async () => {
     })
 
 
-    console.log(
-      "Invoice response:",
-      response
-    )
+    
 
 
     /*

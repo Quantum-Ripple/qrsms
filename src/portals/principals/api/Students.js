@@ -8,7 +8,7 @@ export default {
     return res.data
   },
 
-  async listAll(params = {}) {
+  /*async listAll(params = {}) {
     const allResults = []
     let page = 1
 
@@ -38,10 +38,84 @@ export default {
 
     return allResults
   },
+*/
+async listAll(params = {}) {
+  // First request tells us how many records/pages exist.
+  const firstResponse = await api.get('/students/', {
+    params: {
+      ...params,
+      page: 1,
+    },
+  })
 
-  async listpaginate(page = 1) {
+  const firstData = firstResponse.data
+
+  // Non-paginated response
+  if (Array.isArray(firstData)) {
+    return firstData
+  }
+
+  const firstResults = Array.isArray(firstData?.results)
+    ? firstData.results
+    : []
+
+  const totalCount = Number(firstData?.count || firstResults.length)
+
+  // Determine page size from the first response.
+  const pageSize = firstResults.length || totalCount
+
+  if (!pageSize || totalCount <= pageSize) {
+    return firstResults
+  }
+
+  const totalPages = Math.ceil(totalCount / pageSize)
+
+  // Fetch remaining pages concurrently.
+  const requests = []
+
+  for (let page = 2; page <= totalPages; page++) {
+    requests.push(
+      api.get('/students/', {
+        params: {
+          ...params,
+          page,
+        },
+      })
+    )
+  }
+
+  const responses = await Promise.all(requests)
+
+  const remainingResults = responses.flatMap((response) => {
+    const data = response.data
+
+    return Array.isArray(data?.results)
+      ? data.results
+      : Array.isArray(data)
+        ? data
+        : []
+  })
+
+  return [...firstResults, ...remainingResults]
+},
+  
+  async listpaginate(page = 1, search = '') {
+    const params = {
+        page,
+    }
+
+    if (search.trim()) {
+        params.search = search.trim()
+    }
+
+    const res = await api.get('/students/', { params })
+
+    return res.data
+},
+
+  /*async listpaginate(page = 1) {
     return api.get(`/students/?page=${page}`).then(res => res.data)
-  },
+  },*/
 
  
   async get(id) {

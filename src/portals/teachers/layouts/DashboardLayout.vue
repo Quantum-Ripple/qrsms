@@ -12,10 +12,11 @@
     <div class="flex-1 flex flex-col">
       <!-- Top App Bar -->
       <SimpleAppBar
-        class="relative z-50"
-        :title="PageTitle"
-        @menu-toggle="toggleSidebar"
-      />
+          class="relative z-50"
+          :title="PageTitle"
+          @menu-toggle="toggleSidebar"
+          @logout="onLogout"
+        />
 
       <!-- Main Content -->
       <main class="flex-1 overflow-y-auto p-4 md:p-6">

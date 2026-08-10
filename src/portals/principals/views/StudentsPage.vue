@@ -42,7 +42,7 @@
 
           <tbody>
             <tr
-              v-for="student in filteredStudents"
+              v-for="student in students"
               :key="student.id"
               class="border-t hover:bg-gray-50 cursor-pointer"
               @click="viewStudent(student)"
@@ -62,7 +62,7 @@
               </td>
             </tr>
 
-            <tr v-if="filteredStudents.length === 0">
+            <tr v-if="students.length === 0">
               <td colspan="6" class="text-center py-6 text-gray-500">
                 No students found
               </td>
@@ -74,7 +74,7 @@
       <!-- MOBILE CARDS -->
       <div class="sm:hidden divide-y">
         <div
-          v-for="student in filteredStudents"
+          v-for="student in students"
           :key="student.id"
           class="p-4 space-y-2"
         >
@@ -129,9 +129,10 @@
 
   </div>
 </template>
+
 <script setup>
 
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import studentsApi from '../api/Students.js'
@@ -139,42 +140,34 @@ import studentsApi from '../api/Students.js'
 const router = useRouter()
 
 const searchQuery = ref('')
+const debouncedSearch = ref('')
 const page = ref(1)
 
+let searchTimeout = null
+
+// Debounce search so we don't send an API request for every keystroke.
+watch(searchQuery, (value) => {
+  clearTimeout(searchTimeout)
+
+  searchTimeout = setTimeout(() => {
+    debouncedSearch.value = value.trim()
+    page.value = 1
+  }, 300)
+})
+
 const { data } = useQuery({
-  queryKey: ['students', page],
-  queryFn: () => studentsApi.listpaginate(page.value),
+  queryKey: ['students', page, debouncedSearch],
+
+  queryFn: () =>
+    studentsApi.listpaginate(
+      page.value,
+      debouncedSearch.value
+    ),
+
   keepPreviousData: true,
 })
 
 const students = computed(() => data.value?.results || [])
-
-const normalizedSearchQuery = computed(() => searchQuery.value.trim().toLowerCase())
-
-const filteredStudents = computed(() => {
-  const query = normalizedSearchQuery.value
-
-  if (!query) return students.value
-
-  return students.value.filter((student) => {
-    const searchableText = [
-      student.full_name,
-      student.admission_number,
-      student.class_level,
-      student.stream,
-      student.gender,
-      student.class_level_name,
-      student.stream_name,
-      student.first_name,
-      student.last_name,
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase()
-
-    return searchableText.includes(query)
-  })
-})
 
 function goToCreateStudents() {
   router.push({ name: 'CreateStudent' })
@@ -186,6 +179,10 @@ function viewStudent(student) {
     params: { id: student.id }
   })
 }
+
+onBeforeUnmount(() => {
+  clearTimeout(searchTimeout)
+})
 
 </script>
 

@@ -30,28 +30,30 @@
 
       <div v-else class="text-gray-500 italic">No parents found.</div>
 
-      <div class="mt-6">
-        <button
-          @click="$router.back()"
-          class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
-        >
-          Back to Student
-        </button>
-      </div>
+     <div class="mt-6">
+          <button
+            @click="backToStudent"
+            class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+          >
+            Back to Student
+          </button>
+        </div>
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import studentsApi from '../../api/Students.js'
 
 const route = useRoute()
+const router = useRouter()
+
 const parents = ref([])
 
+const studentId = route.params.id
+
 onMounted(async () => {
-  const studentId = route.params.id
   try {
     const student = await studentsApi.get(studentId)
     parents.value = student.parents || []
@@ -59,4 +61,13 @@ onMounted(async () => {
     console.error('Failed to fetch parents:', error)
   }
 })
+
+function backToStudent() {
+  router.push({
+    name: 'PrincipalStudentDetail',
+    params: {
+      id: studentId
+    }
+  })
+}
 </script>

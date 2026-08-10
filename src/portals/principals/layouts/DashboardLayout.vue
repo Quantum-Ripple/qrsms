@@ -15,6 +15,7 @@
         class="relative z-50"
         :title="PageTitle"
         @menu-toggle="toggleSidebar"
+        @logout="onLogout"
       />
       <main class="flex-1 overflow-y-auto p-4 md:p-6">
         <router-view />
@@ -56,8 +57,8 @@ const navItems = [
       { label: 'Non-Teaching Staff', route: { name: 'PrincipalOtherStaff' } },
     ],
   },
-  { label: 'Attendance', route: { name: 'PrincipalAttendance' } },
-  { label: 'Academics', route: {name: 'Academics'}},
+  //{ label: 'Attendance', route: { name: 'PrincipalAttendance' } },
+  //{ label: 'Academics', route: {name: 'Academics'}},
 
   {
     label: 'Finance',

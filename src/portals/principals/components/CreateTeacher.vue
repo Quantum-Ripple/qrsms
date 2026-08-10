@@ -242,6 +242,23 @@ function getStreams(classId) {
 
   return Array.isArray(selected?.streams) ? selected.streams : []
 }
+
+function buildAssignmentPayload() {
+  return assignments.value
+    .filter(
+      (assignment) =>
+        assignment.class_level &&
+        assignment.stream &&
+        assignment.subject
+    )
+    .map((assignment) => ({
+      class_level: Number(assignment.class_level),
+      stream: Number(assignment.stream),
+      subject: assignment.subject,
+    }))
+}
+
+/*
 function buildAssignmentPayload() {
   return assignments.value
     .filter((assignment) => assignment.class_level && assignment.stream && assignment.subject)
@@ -261,13 +278,14 @@ function buildAssignmentPayload() {
       }
     })
 }
-
+*/
 async function createTeacher() {
   try {
     const payload = {
       ...form.value,
       assignments: buildAssignmentPayload()
     }
+    console.log("Creating teacher with payload:", payload)
 
     await teachersApi.create(payload)
 

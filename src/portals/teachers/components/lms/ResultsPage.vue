@@ -15,7 +15,7 @@
           :key="assignment.id"
           :value="assignment"
         >
-          {{ assignment.title }} - {{ assignment.class_level }} / {{ assignment.stream }}
+          {{ assignment.title }} - {{ assignment.class_instance_display }} - {{ assignment.subject }}
         </option>
       </select>
     </div>
@@ -45,13 +45,21 @@
           </td>
 
           <td class="border px-4 py-2 text-center">
-            <button
-              class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-              @click="viewStudentResponse(student)"
-            >
-              View
-            </button>
-          </td>
+                <button
+                  v-if="student.total_score !== 0"
+                  class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                  @click="viewStudentResponse(student)"
+                >
+                  View
+                </button>
+
+                <span
+                  v-else
+                  class="text-gray-400 text-sm italic"
+                >
+                  Not attempted
+                </span>
+              </td>
         </tr>
       </tbody>
     </table>
