@@ -251,89 +251,279 @@ Usage Context:
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue"
+import { ref, computed } from "vue"
+import { useQuery } from "@tanstack/vue-query"
 import * as XLSX from "xlsx"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 import { getTransactions } from "../../api/finance"
 import { useRouter } from "vue-router"
 
-const transactions = ref([])
-const searchQuery = ref("")
-const filter = ref({ method: "" })
-const dateRange = ref({ start: "", end: "" })
+
 const router = useRouter()
 
-onMounted(fetchTransactions)
 
-async function fetchTransactions() {
-  transactions.value = await getTransactions()
-}
+// --------------------------------------------------
+// SCHOOL
+// --------------------------------------------------
+
+const user = JSON.parse(localStorage.getItem("user") || "{}")
+const school_id = user.school || ""
+
+
+// --------------------------------------------------
+// FILTERS
+// --------------------------------------------------
+
+const searchQuery = ref("")
+
+const filter = ref({
+  method: ""
+})
+
+const dateRange = ref({
+  start: "",
+  end: ""
+})
+
+
+// --------------------------------------------------
+// TRANSACTIONS QUERY
+// --------------------------------------------------
+
+const {
+  data: transactionsData,
+  isFetching: transactionsFetching,
+} = useQuery({
+  queryKey: ["transactions-report", school_id],
+
+  queryFn: async () => {
+    const response = await getTransactions()
+
+    return Array.isArray(response?.results)
+      ? response.results
+      : Array.isArray(response)
+        ? response
+        : []
+  },
+
+  // Financial data should have a shorter freshness window.
+  staleTime: 10*60 * 1000,
+
+  // Always check the server when returning to this page,
+  // while keeping cached data visible.
+  refetchOnMount: "always",
+})
+
+
+const transactions = computed(
+  () => transactionsData.value || []
+)
+
+
+// --------------------------------------------------
+// FILTERED TRANSACTIONS
+// --------------------------------------------------
 
 const filteredTransactions = computed(() =>
   transactions.value.filter(txn => {
+
     const matchesSearch =
-      txn.full_name?.toLowerCase().includes(searchQuery.value.toLowerCase())
+      txn.full_name
+        ?.toLowerCase()
+        .includes(
+          searchQuery.value.toLowerCase()
+        )
+
+
     const matchesMethod =
-      !filter.value.method || txn.payment_method === filter.value.method
+      !filter.value.method ||
+      txn.payment_method === filter.value.method
+
+
     const matchesDate =
-      (!dateRange.value.start || txn.date >= dateRange.value.start) &&
-      (!dateRange.value.end || txn.date <= dateRange.value.end)
-    return matchesSearch && matchesMethod && matchesDate
+      (!dateRange.value.start ||
+        txn.date >= dateRange.value.start) &&
+
+      (!dateRange.value.end ||
+        txn.date <= dateRange.value.end)
+
+
+    return (
+      matchesSearch &&
+      matchesMethod &&
+      matchesDate
+    )
   })
 )
+
+
+// --------------------------------------------------
+// TOTAL AMOUNT
+// --------------------------------------------------
 
 const totalAmount = computed(() =>
-  filteredTransactions.value.reduce((sum, txn) => sum + Number(txn.amount), 0)
+  filteredTransactions.value.reduce(
+    (sum, txn) =>
+      sum + Number(txn.amount),
+    0
+  )
 )
+
+
+// --------------------------------------------------
+// CASH PAYMENTS
+// --------------------------------------------------
 
 const cashPayments = computed(() =>
-  filteredTransactions.value.filter(txn => txn.payment_method === "Cash").length
+  filteredTransactions.value.filter(
+    txn => txn.payment_method === "Cash"
+  ).length
 )
 
+
+// --------------------------------------------------
+// DATE FORMATTING
+// --------------------------------------------------
+
 function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString("en-GB")
+
+  return new Date(
+    dateStr
+  ).toLocaleDateString("en-GB")
 }
+
+
+// --------------------------------------------------
+// CURRENCY FORMATTING
+// --------------------------------------------------
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat("en-KE", {
-    style: "currency",
-    currency: "KES",
-  }).format(value)
+
+  return new Intl.NumberFormat(
+    "en-KE",
+    {
+      style: "currency",
+      currency: "KES",
+    }
+  ).format(value)
 }
+
+
+// --------------------------------------------------
+// INVOICE
+// --------------------------------------------------
 
 function goToInvoice(id) {
-  router.push({ name: "GenerateInvoice", params: { id } })
+
+  router.push({
+    name: "GenerateInvoice",
+    params: { id }
+  })
 }
+
+
+// --------------------------------------------------
+// EXCEL
+// --------------------------------------------------
 
 function exportExcel() {
-  const ws = XLSX.utils.json_to_sheet(filteredTransactions.value)
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, "Transactions")
-  XLSX.writeFile(wb, "transactions.xlsx")
+
+  const ws =
+    XLSX.utils.json_to_sheet(
+      filteredTransactions.value
+    )
+
+  const wb =
+    XLSX.utils.book_new()
+
+  XLSX.utils.book_append_sheet(
+    wb,
+    ws,
+    "Transactions"
+  )
+
+  XLSX.writeFile(
+    wb,
+    "transactions.xlsx"
+  )
 }
+
+
+// --------------------------------------------------
+// PDF
+// --------------------------------------------------
 
 function exportPDF() {
+
   const doc = new jsPDF()
-  doc.text("Transactions Reports", 14, 10)
+
+  doc.text(
+    "Transactions Reports",
+    14,
+    10
+  )
+
   autoTable(doc, {
-    head: [["Date", "Full Name", "Class", "Method", "Amount"]],
-    body: filteredTransactions.value.map(txn => [
-      formatDate(txn.date),
-      txn.full_name,
-      txn.class_level,
-      txn.payment_method,
-      formatCurrency(txn.amount),
-    ]),
+
+    head: [
+      [
+        "Date",
+        "Full Name",
+        "Class",
+        "Method",
+        "Amount"
+      ]
+    ],
+
+    body:
+      filteredTransactions.value.map(txn => [
+
+        formatDate(txn.date),
+
+        txn.full_name,
+
+        txn.class_level,
+
+        txn.payment_method,
+
+        formatCurrency(txn.amount),
+
+      ]),
   })
-  doc.save("transactions_reports.pdf")
+
+  doc.save(
+    "transactions_reports.pdf"
+  )
 }
 
+
+// --------------------------------------------------
+// PRINT
+// --------------------------------------------------
+
 function printReport() {
-  const content = document.getElementById("transactionsTable").outerHTML
-  const win = window.open("", "", "width=900,height=600")
-  win.document.write(`<html><body>${content}</body></html>`)
+
+  const content =
+    document
+      .getElementById("transactionsTable")
+      .outerHTML
+
+
+  const win =
+    window.open(
+      "",
+      "",
+      "width=900,height=600"
+    )
+
+
+  win.document.write(
+    `<html><body>${content}</body></html>`
+  )
+
   win.document.close()
+
   win.print()
 }
 </script>

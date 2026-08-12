@@ -45,75 +45,158 @@
   </div>
 </template>
 
-
 <script setup>
-import { ref, onMounted } from 'vue'
-import { Chart, PieController, ArcElement, Tooltip, Legend } from 'chart.js'
+
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import { useQuery } from '@tanstack/vue-query'
+import {
+  Chart,
+  PieController,
+  ArcElement,
+  Tooltip,
+  Legend
+} from 'chart.js'
+
 import { fetchSchoolStatistics } from '../../api/Dashboard'
 
+
 Chart.register(PieController, ArcElement, Tooltip, Legend)
+
 
 const genderCanvas = ref(null)
 const roleCanvas = ref(null)
 
+
 let genderChart = null
 let roleChart = null
 
-// Stats
-const totalStudents = ref(0)
-const totalTeachers = ref(0)
-const totalStaffs = ref(0)
 
+// School
 const user = JSON.parse(localStorage.getItem("user") || "{}")
-const school_id = ref(user.school || "")
+const school_id = user.school || ""
 
-onMounted(async () => {
-  try {
-    const stats = await fetchSchoolStatistics(school_id.value)
 
-    totalStudents.value = stats.total_students
-    totalTeachers.value = stats.total_teachers
-    totalStaffs.value = stats.total_staff
+// Dashboard statistics
+const {
+  data: stats,
+  isFetching,
+} = useQuery({
+  queryKey: ['school-dashboard', school_id],
 
-    // Destroy existing charts if already mounted
-    if (genderChart) genderChart.destroy()
-    if (roleChart) roleChart.destroy()
+  queryFn: () =>
+    fetchSchoolStatistics(school_id),
 
-    // Boys vs Girls Chart
+  staleTime:5 * 60 * 1000,
+
+  refetchOnMount: 'always',
+})
+
+
+// KPI values
+const totalStudents = computed(
+  () => stats.value?.total_students ?? 0
+)
+
+const totalTeachers = computed(
+  () => stats.value?.total_teachers ?? 0
+)
+
+const totalStaffs = computed(
+  () => stats.value?.total_staff ?? 0
+)
+
+
+// Update charts whenever fresh/cached statistics arrive
+watch(
+  stats,
+  async (newStats) => {
+
+    if (!newStats) return
+
+    await nextTick()
+
+    // Destroy existing charts
+    if (genderChart) {
+      genderChart.destroy()
+    }
+
+    if (roleChart) {
+      roleChart.destroy()
+    }
+
+
+    // Boys vs Girls
     genderChart = new Chart(genderCanvas.value, {
       type: 'pie',
+
       data: {
         labels: ['Boys', 'Girls'],
+
         datasets: [
           {
-            data: [stats.male_students, stats.female_students],
-            backgroundColor: ['#3b82f6', '#f97316']
+            data: [
+              newStats.male_students,
+              newStats.female_students
+            ],
+
+            backgroundColor: [
+              '#3b82f6',
+              '#f97316'
+            ]
           }
         ]
       },
-      options: { responsive: true, maintainAspectRatio: false }
+
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
     })
+
 
     // Students vs Teachers vs Staff
     roleChart = new Chart(roleCanvas.value, {
       type: 'pie',
+
       data: {
-        labels: ['Students', 'Teachers', 'Staff'],
+        labels: [
+          'Students',
+          'Teachers',
+          'Staff'
+        ],
+
         datasets: [
           {
             data: [
-              stats.total_students,
-              stats.total_teachers,
-              stats.total_staff
+              newStats.total_students,
+              newStats.total_teachers,
+              newStats.total_staff
             ],
-            backgroundColor: ['#3b82f6', '#10b981', '#facc15']
+
+            backgroundColor: [
+              '#3b82f6',
+              '#10b981',
+              '#facc15'
+            ]
           }
         ]
       },
-      options: { responsive: true, maintainAspectRatio: false }
+
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
     })
-  } catch (error) {
-    console.error("Error in Data.vue onMounted hook:", error);
+
+  },
+  {
+    immediate: true
   }
+)
+
+
+// Cleanup
+onMounted(() => {
+  
 })
 </script>

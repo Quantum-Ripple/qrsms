@@ -154,7 +154,7 @@ watch(searchQuery, (value) => {
     page.value = 1
   }, 300)
 })
-
+/*
 const { data } = useQuery({
   queryKey: ['students', page, debouncedSearch],
 
@@ -165,6 +165,20 @@ const { data } = useQuery({
     ),
 
   keepPreviousData: true,
+})*/
+const { data, isLoading, isFetching } = useQuery({
+  queryKey: ['students', page, debouncedSearch],
+
+  queryFn: () =>
+    studentsApi.listpaginate(
+      page.value,
+      debouncedSearch.value
+    ),
+
+  keepPreviousData: true,
+
+  staleTime:5 * 60 * 1000,
+  refetchOnMount: 'always',
 })
 
 const students = computed(() => data.value?.results || [])

@@ -491,9 +491,12 @@
 </template>
 
 
+
 <script setup>
 
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed } from 'vue'
+import { useQuery, useQueryClient } from '@tanstack/vue-query'
+
 
 import {
   fetchConfigurations,
@@ -503,10 +506,12 @@ import {
   deleteStream
 } from '../api/config'
 
+
 import {
   getAcademicYears,
   createAcademicYear
 } from '../api/promotions'
+
 
 import {
   listTerms,
@@ -515,12 +520,27 @@ import {
 } from '../api/term'
 
 
-/* =========================================================
-   ACADEMIC YEARS
-========================================================= */
+// =========================================================
+// QUERY CLIENT
+// =========================================================
 
-const academicYears = ref([])
+const queryClient = useQueryClient()
 
+
+// =========================================================
+// SCHOOL
+// =========================================================
+
+const user = JSON.parse(
+  localStorage.getItem('user') || '{}'
+)
+
+const school_id = user.school || ''
+
+
+// =========================================================
+// ACADEMIC YEARS
+// =========================================================
 
 const showYearModal = ref(false)
 
@@ -533,45 +553,88 @@ const newYear = ref({
 })
 
 
-const loadAcademicYears = async () => {
+const {
+  data: academicYearsData,
+  isFetching: academicYearsFetching
+} = useQuery({
 
-  const res = await getAcademicYears()
+  queryKey: [
+    'academic-years',
+    school_id
+  ],
 
-  academicYears.value = res.data
+  queryFn: async () => {
 
-}
+    const res = await getAcademicYears()
+
+    return res.data || []
+
+  },
+
+  // Configuration data does not change frequently.
+  staleTime: 15 * 60 * 1000,
+
+  // Refresh when entering the page if stale.
+  refetchOnMount: 'always'
+
+})
+
+
+const academicYears = computed(
+  () => academicYearsData.value || []
+)
 
 
 const currentYear = computed(() =>
-  academicYears.value.find(y => y.is_current)
+  academicYears.value.find(
+    year => year.is_current
+  )
 )
 
 
 const addAcademicYear = async () => {
 
-  await createAcademicYear(newYear.value)
+  try {
 
-  showYearModal.value = false
+    await createAcademicYear(
+      newYear.value
+    )
 
-  newYear.value = {
-    year: '',
-    start_date: '',
-    end_date: '',
-    is_current: false
+
+    showYearModal.value = false
+
+
+    newYear.value = {
+      year: '',
+      start_date: '',
+      end_date: '',
+      is_current: false
+    }
+
+
+    // Refresh academic years.
+    await queryClient.invalidateQueries({
+      queryKey: [
+        'academic-years',
+        school_id
+      ]
+    })
+
+  } catch (error) {
+
+    console.error(
+      'Creating academic year failed:',
+      error
+    )
+
   }
-
-  await loadAcademicYears()
 
 }
 
 
-/* =========================================================
-   TERMS
-========================================================= */
-
-const terms = ref([])
-
-const termsLoading = ref(false)
+// =========================================================
+// TERMS
+// =========================================================
 
 const showTermModal = ref(false)
 
@@ -584,68 +647,118 @@ const newTerm = ref({
 })
 
 
-const loadTerms = async () => {
+const {
+  data: termsData,
+  isFetching: termsFetching
+} = useQuery({
 
-  termsLoading.value = true
+  queryKey: [
+    'terms',
+    school_id
+  ],
 
-  try {
+  queryFn: async () => {
 
     const res = await listTerms()
 
-    terms.value = res
+    return res || []
 
-  } catch (error) {
+  },
 
-    console.error('Loading terms failed:', error)
+  staleTime: 10 * 60 * 1000,
 
-  } finally {
+  refetchOnMount: 'always'
 
-    termsLoading.value = false
+})
 
-  }
 
-}
+const terms = computed(
+  () => termsData.value || []
+)
 
 
 const addTerm = async () => {
-  if (!newTerm.value.name?.trim()) return
 
-  if (!newTerm.value.academic_year) return
+  if (!newTerm.value.name?.trim()) {
+    return
+  }
 
-  if (!newTerm.value.start_date) return
+  if (!newTerm.value.academic_year) {
+    return
+  }
 
-  if (!newTerm.value.end_date) return
+  if (!newTerm.value.start_date) {
+    return
+  }
+
+  if (!newTerm.value.end_date) {
+    return
+  }
+
 
   try {
+
     await createTerm({
-      name: newTerm.value.name.trim(),
-      academic_year: newTerm.value.academic_year,
-      start_date: newTerm.value.start_date,
-      end_date: newTerm.value.end_date
+
+      name:
+        newTerm.value.name.trim(),
+
+      academic_year:
+        newTerm.value.academic_year,
+
+      start_date:
+        newTerm.value.start_date,
+
+      end_date:
+        newTerm.value.end_date
+
     })
+
 
     showTermModal.value = false
 
+
     newTerm.value = {
+
       name: '',
+
       academic_year: '',
+
       start_date: '',
+
       end_date: ''
+
     }
 
-    await loadTerms()
+
+    // Refresh terms.
+    await queryClient.invalidateQueries({
+      queryKey: [
+        'terms',
+        school_id
+      ]
+    })
+
 
   } catch (error) {
+
     console.error(
       'Creating term failed:',
       error.response?.data || error
     )
+
   }
+
 }
+
 
 const removeTerm = async (id) => {
 
-  if (!confirm('Are you sure you want to delete this term?')) {
+  if (
+    !confirm(
+      'Are you sure you want to delete this term?'
+    )
+  ) {
     return
   }
 
@@ -654,24 +767,31 @@ const removeTerm = async (id) => {
 
     await deleteTerm(id)
 
-    await loadTerms()
+
+    // Refresh terms.
+    await queryClient.invalidateQueries({
+      queryKey: [
+        'terms',
+        school_id
+      ]
+    })
+
 
   } catch (error) {
 
-    console.error('Deleting term failed:', error)
+    console.error(
+      'Deleting term failed:',
+      error
+    )
 
   }
 
 }
 
 
-/* =========================================================
-   CLASS LEVELS / STREAMS
-========================================================= */
-
-const configurations = ref([])
-
-const loading = ref(false)
+// =========================================================
+// CLASS LEVELS / STREAMS
+// =========================================================
 
 const showGradeModal = ref(false)
 
@@ -681,27 +801,35 @@ const newGrade = ref({
 })
 
 
-const loadConfigurations = async () => {
+const {
+  data: configurationsData,
+  isFetching: configurationsFetching
+} = useQuery({
 
-  loading.value = true
+  queryKey: [
+    'configurations',
+    school_id
+  ],
 
-  try {
+  queryFn: async () => {
 
-    const res = await fetchConfigurations()
+    const res =
+      await fetchConfigurations()
 
-    configurations.value = res.data
+    return res.data || []
 
-  } catch (error) {
+  },
 
-    console.error('Loading configurations failed:', error)
+  staleTime: 10 * 60 * 1000,
 
-  } finally {
+  refetchOnMount: 'always'
 
-    loading.value = false
+})
 
-  }
 
-}
+const configurations = computed(
+  () => configurationsData.value || []
+)
 
 
 const addGrade = async () => {
@@ -714,7 +842,10 @@ const addGrade = async () => {
   try {
 
     await createClassLevel({
-      name: newGrade.value.name.trim()
+
+      name:
+        newGrade.value.name.trim()
+
     })
 
 
@@ -726,18 +857,31 @@ const addGrade = async () => {
     }
 
 
-    await loadConfigurations()
+    // Refresh class levels + streams.
+    await queryClient.invalidateQueries({
+      queryKey: [
+        'configurations',
+        school_id
+      ]
+    })
+
 
   } catch (error) {
 
-    console.error('Creating grade failed:', error)
+    console.error(
+      'Creating grade failed:',
+      error
+    )
 
   }
 
 }
 
 
-const addStream = async (classLevelId, name) => {
+const addStream = async (
+  classLevelId,
+  name
+) => {
 
   if (!name?.trim()) {
     return
@@ -747,16 +891,31 @@ const addStream = async (classLevelId, name) => {
   try {
 
     await createStream({
-      class_level: classLevelId,
-      name: name.trim()
+
+      class_level:
+        classLevelId,
+
+      name:
+        name.trim()
+
     })
 
 
-    await loadConfigurations()
+    // Refresh class levels + streams.
+    await queryClient.invalidateQueries({
+      queryKey: [
+        'configurations',
+        school_id
+      ]
+    })
+
 
   } catch (error) {
 
-    console.error('Creating stream failed:', error)
+    console.error(
+      'Creating stream failed:',
+      error
+    )
 
   }
 
@@ -765,7 +924,11 @@ const addStream = async (classLevelId, name) => {
 
 const removeStream = async (id) => {
 
-  if (!confirm('Are you sure you want to delete this stream?')) {
+  if (
+    !confirm(
+      'Are you sure you want to delete this stream?'
+    )
+  ) {
     return
   }
 
@@ -774,11 +937,22 @@ const removeStream = async (id) => {
 
     await deleteStream(id)
 
-    await loadConfigurations()
+
+    // Refresh class levels + streams.
+    await queryClient.invalidateQueries({
+      queryKey: [
+        'configurations',
+        school_id
+      ]
+    })
+
 
   } catch (error) {
 
-    console.error('Deleting stream failed:', error)
+    console.error(
+      'Deleting stream failed:',
+      error
+    )
 
   }
 
@@ -787,7 +961,11 @@ const removeStream = async (id) => {
 
 const removeClass = async (id) => {
 
-  if (!confirm('Delete this grade and all streams?')) {
+  if (
+    !confirm(
+      'Delete this grade and all streams?'
+    )
+  ) {
     return
   }
 
@@ -796,29 +974,25 @@ const removeClass = async (id) => {
 
     await deleteClassLevel(id)
 
-    await loadConfigurations()
+
+    // Refresh class levels + streams.
+    await queryClient.invalidateQueries({
+      queryKey: [
+        'configurations',
+        school_id
+      ]
+    })
+
 
   } catch (error) {
 
-    console.error('Deleting grade failed:', error)
+    console.error(
+      'Deleting grade failed:',
+      error
+    )
 
   }
 
 }
-
-
-/* =========================================================
-   INITIAL LOAD
-========================================================= */
-
-onMounted(async () => {
-
-  await Promise.all([
-    loadConfigurations(),
-    loadAcademicYears(),
-    loadTerms()
-  ])
-
-})
 
 </script>

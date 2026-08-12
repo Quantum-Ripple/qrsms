@@ -1,57 +1,4 @@
 
-<!--
-Purpose:
-This page is designed to allow school principals to view, filter, and export
-student records in a structured and user-friendly manner. It provides a clear
-overview of students while enabling dynamic filtering and reporting functionality.
-
-Key Features:
-1. Filtering:
-   - Users can filter the student list based on:
-     • Class Level (Grade 1 to Grade 12)
-     • Stream (North, South, East, West)
-     • Gender (Male, Female)
-   - The filtering is reactive, updating the student list and summary cards
-     instantly as the filter criteria are changed.
-
-2. Summary Cards:
-   - Displays a quick overview of the filtered students:
-     • Total Students
-     • Total Boys
-     • Total Girls
-   - These summaries update automatically based on applied filters.
-
-3. Student Table / List:
-   - Provides a responsive view of students:
-     • A table for medium to large screens
-     • Card-based layout for small screens (mobile)
-   - Columns include Full Name, Admission Number, Class Level, Stream, and Gender.
-   - Clicking on a student opens the detailed view for that student.
-
-4. Export & Print Functionality:
-   - Buttons at the top allow the principal to:
-     • Export the filtered student list to PDF
-     • Export the filtered student list to Excel
-     • Print the filtered student list
-   - These actions operate on the currently filtered data, ensuring the
-     exported or printed reports match what the principal is viewing.
-
-Data Flow / Interaction with the Program:
-- The component fetches the student data from the `studentsApi.list()` endpoint
-  on mount.
-- All filtering is done **reactively on the frontend**, ensuring fast updates
-  without repeated backend calls.
-- Summary cards compute totals using `computed` properties based on
-  `filteredStudents`.
-- The page integrates seamlessly with the Vue Router:
-  • Clicking on a student navigates to the detailed student view page.
-- Export and print functionality uses standard libraries (e.g., jsPDF, XLSX)
-  to generate downloadable or printable reports.
-
-
--->
-
-
 
 <template>
   <div class="min-h-screen w-full max-w-full overflow-x-hidden bg-gray-50 px-3 py-4 sm:px-6 sm:py-6">
@@ -222,16 +169,15 @@ Data Flow / Interaction with the Program:
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue"
+/*import { ref, computed } from "vue"
+import { useQuery } from "@tanstack/vue-query"
 import studentsApi from "../../api/Students.js"
 import { fetchClassLevels } from "../../api/config.js"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 import * as XLSX from "xlsx"
 
-const students = ref([])
-const classLevels = ref([])
-const streams = ref([])
+
 
 const filters = ref({
   class_level: "",
@@ -239,48 +185,35 @@ const filters = ref({
   gender: ""
 })
 
-onMounted(() => {
-  fetchStudents()
-  fetchFilterOptions()
+
+const user = JSON.parse(localStorage.getItem("user") || "{}")
+const school_id = user.school || ""
+
+
+const {
+  data: studentsData,
+  isFetching: studentsFetching,
+} = useQuery({
+  queryKey: ["students-report", school_id],
+
+  queryFn: async () => {
+    const response = await studentsApi.listAll()
+
+    return Array.isArray(response?.results)
+      ? response.results
+      : Array.isArray(response)
+        ? response
+        : []
+  },
+
+  staleTime: 0,
+
+  refetchOnMount: "always",
 })
 
-async function fetchStudents() {
-  try {
-    const response = await studentsApi.listAll()
-    students.value = Array.isArray(response?.results) ? response.results : Array.isArray(response) ? response : []
-  } catch (error) {
-    console.error("Failed to load students", error)
-  }
-}
 
-async function fetchFilterOptions() {
-  try {
-    const response = await fetchClassLevels()
-    const payload = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : []
 
-    const levels = payload
-      .map((item) => item?.name)
-      .filter(Boolean)
-
-    const streamValues = payload
-      .flatMap((item) => Array.isArray(item?.streams) ? item.streams : [])
-      .map((stream) => stream?.name)
-      .filter(Boolean)
-
-    classLevels.value = [...new Set(levels)].sort()
-    streams.value = [...new Set(streamValues)].sort()
-
-    if (!classLevels.value.length) {
-      classLevels.value = [...new Set(students.value.map((student) => student.class_level).filter(Boolean))].sort()
-    }
-
-    if (!streams.value.length) {
-      streams.value = [...new Set(students.value.map((student) => student.stream).filter(Boolean))].sort()
-    }
-  } catch (error) {
-    console.error("Failed to load class level options", error)
-  }
-}
+const students = computed(() => studentsData.value || [])
 
 const filteredStudents = computed(() =>
   students.value.filter(s =>
@@ -327,5 +260,240 @@ function printReport() {
   win.document.write(`<html><body>${printContent}</body></html>`)
   win.document.close()
   win.print()
+}*/
+
+
+import { ref, computed } from "vue"
+import { useQuery } from "@tanstack/vue-query"
+import studentsApi from "../../api/Students.js"
+import { fetchClassLevels } from "../../api/config.js"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
+import * as XLSX from "xlsx"
+
+
+// --------------------------------------------------
+// SCHOOL
+// --------------------------------------------------
+
+const user = JSON.parse(localStorage.getItem("user") || "{}")
+const school_id = user.school || ""
+
+
+// --------------------------------------------------
+// STUDENTS REPORT QUERY
+// --------------------------------------------------
+
+const {
+  data: studentsData,
+  isFetching: studentsFetching,
+} = useQuery({
+  queryKey: ["students-report", school_id],
+
+  queryFn: async () => {
+    const response = await studentsApi.listAll()
+
+    return Array.isArray(response?.results)
+      ? response.results
+      : Array.isArray(response)
+        ? response
+        : []
+  },
+
+  staleTime: 10 * 60 * 1000,
+
+  refetchOnMount: "always",
+})
+
+
+const students = computed(() => studentsData.value || [])
+
+
+// --------------------------------------------------
+// CLASS / STREAM OPTIONS
+// --------------------------------------------------
+
+const {
+  data: filterOptionsData,
+} = useQuery({
+  queryKey: ["class-levels", school_id],
+
+  queryFn: async () => {
+    const response = await fetchClassLevels()
+
+    return Array.isArray(response?.data)
+      ? response.data
+      : Array.isArray(response)
+        ? response
+        : []
+  },
+
+  staleTime: 0,
+
+  refetchOnMount: "always",
+})
+
+
+const classLevels = computed(() => {
+
+  const payload = filterOptionsData.value || []
+
+  const levels = payload
+    .map(item => item?.name)
+    .filter(Boolean)
+
+  if (!levels.length) {
+    return [
+      ...new Set(
+        students.value
+          .map(student => student.class_level)
+          .filter(Boolean)
+      )
+    ].sort()
+  }
+
+  return [...new Set(levels)].sort()
+})
+
+
+const streams = computed(() => {
+
+  const payload = filterOptionsData.value || []
+
+  const streamValues = payload
+    .flatMap(item =>
+      Array.isArray(item?.streams)
+        ? item.streams
+        : []
+    )
+    .map(stream => stream?.name)
+    .filter(Boolean)
+
+  if (!streamValues.length) {
+    return [
+      ...new Set(
+        students.value
+          .map(student => student.stream)
+          .filter(Boolean)
+      )
+    ].sort()
+  }
+
+  return [...new Set(streamValues)].sort()
+})
+
+
+// --------------------------------------------------
+// FILTERS
+// --------------------------------------------------
+
+const filters = ref({
+  class_level: "",
+  stream: "",
+  gender: ""
+})
+
+
+// --------------------------------------------------
+// FILTERED REPORT
+// --------------------------------------------------
+
+const filteredStudents = computed(() =>
+  students.value.filter(s =>
+    (!filters.value.class_level ||
+      s.class_level === filters.value.class_level) &&
+
+    (!filters.value.stream ||
+      s.stream === filters.value.stream) &&
+
+    (!filters.value.gender ||
+      s.gender === filters.value.gender)
+  )
+)
+
+
+// --------------------------------------------------
+// TOTALS
+// --------------------------------------------------
+
+const totalGirls = computed(() =>
+  filteredStudents.value.filter(
+    s => s.gender === "F"
+  ).length
+)
+
+
+const totalBoys = computed(() =>
+  filteredStudents.value.filter(
+    s => s.gender === "M"
+  ).length
+)
+
+
+// --------------------------------------------------
+// EXPORT FUNCTIONS
+// --------------------------------------------------
+
+function exportPDF() {
+  const doc = new jsPDF()
+
+  autoTable(doc, {
+    head: [
+      ["Full Name", "Admission No", "Class", "Stream", "Gender"]
+    ],
+
+    body: filteredStudents.value.map(s => [
+      s.full_name,
+      s.admission_number,
+      s.class_level,
+      s.stream,
+      s.gender
+    ])
+  })
+
+  doc.save("student_report.pdf")
 }
+
+
+function exportExcel() {
+
+  const ws = XLSX.utils.json_to_sheet(
+    filteredStudents.value
+  )
+
+  const wb = XLSX.utils.book_new()
+
+  XLSX.utils.book_append_sheet(
+    wb,
+    ws,
+    "Students"
+  )
+
+  XLSX.writeFile(
+    wb,
+    "student_report.xlsx"
+  )
+}
+
+
+function printReport() {
+
+  const printContent =
+    document.getElementById("studentsTable").outerHTML
+
+  const win = window.open(
+    "",
+    "",
+    "width=900,height=600"
+  )
+
+  win.document.write(
+    `<html><body>${printContent}</body></html>`
+  )
+
+  win.document.close()
+  win.print()
+}
+
+
 </script>

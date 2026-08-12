@@ -153,16 +153,152 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
+import { useQuery } from '@tanstack/vue-query'
 import teachersApi from '../../api/Teachers.js'
 import { fetchClassLevels } from '../../api/config.js'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import * as XLSX from 'xlsx'
 
-const teachers = ref([])
-const classLevels = ref([])
-const streams = ref([])
+
+// --------------------------------------------------
+// SCHOOL
+// --------------------------------------------------
+
+const user = JSON.parse(localStorage.getItem('user') || '{}')
+const school_id = user.school || ''
+
+
+// --------------------------------------------------
+// TEACHERS QUERY
+// --------------------------------------------------
+
+const {
+  data: teachersData,
+  isFetching: teachersFetching,
+} = useQuery({
+  queryKey: ['teachers-report', school_id],
+
+  queryFn: async () => {
+    const response = await teachersApi.list()
+
+    return Array.isArray(response?.results)
+      ? response.results
+      : Array.isArray(response)
+        ? response
+        : []
+  },
+
+  // Cached data is considered fresh for 5 minutes.
+  staleTime: 10 * 60 * 1000,
+
+  // If the data is stale, show it immediately and
+  // refresh it in the background when returning here.
+  refetchOnMount: 'always',
+})
+
+
+const teachers = computed(() => teachersData.value || [])
+
+
+// --------------------------------------------------
+// CLASS / STREAM OPTIONS QUERY
+// --------------------------------------------------
+
+const {
+  data: filterOptionsData,
+} = useQuery({
+  queryKey: ['class-levels', school_id],
+
+  queryFn: async () => {
+    const response = await fetchClassLevels()
+
+    return Array.isArray(response?.data)
+      ? response.data
+      : Array.isArray(response)
+        ? response
+        : []
+  },
+
+  staleTime: 5 * 60 * 1000,
+
+  refetchOnMount: 'always',
+})
+
+
+// --------------------------------------------------
+// CLASS LEVELS
+// --------------------------------------------------
+
+const classLevels = computed(() => {
+
+  const payload = filterOptionsData.value || []
+
+  const levelValues = payload
+    .map(item => item?.name)
+    .filter(Boolean)
+
+
+  // Fallback to teacher assignments
+  if (!levelValues.length) {
+    return [
+      ...new Set(
+        teachers.value
+          .flatMap(teacher => teacher.assignments || [])
+          .map(assignment => assignment.class_level_name)
+          .filter(Boolean)
+      )
+    ].sort()
+  }
+
+
+  return [
+    ...new Set(levelValues)
+  ].sort()
+})
+
+
+// --------------------------------------------------
+// STREAMS
+// --------------------------------------------------
+
+const streams = computed(() => {
+
+  const payload = filterOptionsData.value || []
+
+  const streamValues = payload
+    .flatMap(item =>
+      Array.isArray(item?.streams)
+        ? item.streams
+        : []
+    )
+    .map(stream => stream?.name)
+    .filter(Boolean)
+
+
+  // Fallback to teacher assignments
+  if (!streamValues.length) {
+    return [
+      ...new Set(
+        teachers.value
+          .flatMap(teacher => teacher.assignments || [])
+          .map(assignment => assignment.stream_name)
+          .filter(Boolean)
+      )
+    ].sort()
+  }
+
+
+  return [
+    ...new Set(streamValues)
+  ].sort()
+})
+
+
+// --------------------------------------------------
+// FILTERS
+// --------------------------------------------------
 
 const filters = ref({
   gender: '',
@@ -170,98 +306,155 @@ const filters = ref({
   stream: ''
 })
 
-onMounted(() => {
-  fetchTeachers()
-  fetchFilterOptions()
-})
 
-async function fetchTeachers() {
-  try {
-    const response = await teachersApi.list()
-    teachers.value = Array.isArray(response?.results) ? response.results : Array.isArray(response) ? response : []
-  } catch (error) {
-    console.error('Failed to load teachers', error)
-  }
-}
-
-async function fetchFilterOptions() {
-  try {
-    const response = await fetchClassLevels()
-    const payload = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : []
-
-    const levelValues = payload.map((item) => item?.name).filter(Boolean)
-    const streamValues = payload
-      .flatMap((item) => Array.isArray(item?.streams) ? item.streams : [])
-      .map((stream) => stream?.name)
-      .filter(Boolean)
-
-    classLevels.value = [...new Set(levelValues)].sort()
-    streams.value = [...new Set(streamValues)].sort()
-
-    if (!classLevels.value.length) {
-      classLevels.value = [...new Set(
-        teachers.value
-          .flatMap((teacher) => teacher.assignments || [])
-          .map((assignment) => assignment.class_level_name)
-          .filter(Boolean)
-      )].sort()
-    }
-
-    if (!streams.value.length) {
-      streams.value = [...new Set(
-        teachers.value
-          .flatMap((teacher) => teacher.assignments || [])
-          .map((assignment) => assignment.stream_name)
-          .filter(Boolean)
-      )].sort()
-    }
-  } catch (error) {
-    console.error('Failed to load class level options', error)
-  }
-}
+// --------------------------------------------------
+// FILTERED TEACHERS
+// --------------------------------------------------
 
 const filteredTeachers = computed(() =>
   teachers.value.filter((teacher) => {
-    const matchesGender = !filters.value.gender || teacher.gender === filters.value.gender
-    const matchesClass = !filters.value.class_level ||
-      teacher.assignments?.some((assignment) => assignment.class_level_name === filters.value.class_level)
-    const matchesStream = !filters.value.stream ||
-      teacher.assignments?.some((assignment) => assignment.stream_name === filters.value.stream)
 
-    return matchesGender && matchesClass && matchesStream
+    const matchesGender =
+      !filters.value.gender ||
+      teacher.gender === filters.value.gender
+
+
+    const matchesClass =
+      !filters.value.class_level ||
+      teacher.assignments?.some(
+        assignment =>
+          assignment.class_level_name ===
+          filters.value.class_level
+      )
+
+
+    const matchesStream =
+      !filters.value.stream ||
+      teacher.assignments?.some(
+        assignment =>
+          assignment.stream_name ===
+          filters.value.stream
+      )
+
+
+    return (
+      matchesGender &&
+      matchesClass &&
+      matchesStream
+    )
   })
 )
 
-const maleTeachers = computed(() => filteredTeachers.value.filter((teacher) => teacher.gender === 'Male').length)
-const femaleTeachers = computed(() => filteredTeachers.value.filter((teacher) => teacher.gender === 'Female').length)
+
+// --------------------------------------------------
+// TOTALS
+// --------------------------------------------------
+
+const maleTeachers = computed(() =>
+  filteredTeachers.value.filter(
+    teacher => teacher.gender === 'Male'
+  ).length
+)
+
+
+const femaleTeachers = computed(() =>
+  filteredTeachers.value.filter(
+    teacher => teacher.gender === 'Female'
+  ).length
+)
+
+
+// --------------------------------------------------
+// EXPORT PDF
+// --------------------------------------------------
 
 function exportPDF() {
+
   const doc = new jsPDF()
+
   autoTable(doc, {
-    head: [['Full Name', 'Email', 'Phone', 'Gender', 'Assignments']],
+
+    head: [
+      [
+        'Full Name',
+        'Email',
+        'Phone',
+        'Gender',
+        'Assignments'
+      ]
+    ],
+
     body: filteredTeachers.value.map((teacher) => [
+
       `${teacher.first_name || ''} ${teacher.last_name || ''}`.trim(),
+
       teacher.email || '',
+
       teacher.phone_number || '',
+
       teacher.gender || '',
+
       teacher.assignments?.length || 0
+
     ])
   })
+
   doc.save('teacher_report.pdf')
 }
 
+
+// --------------------------------------------------
+// EXPORT EXCEL
+// --------------------------------------------------
+
 function exportExcel() {
-  const ws = XLSX.utils.json_to_sheet(filteredTeachers.value)
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'Teachers')
-  XLSX.writeFile(wb, 'teacher_report.xlsx')
+
+  const ws =
+    XLSX.utils.json_to_sheet(
+      filteredTeachers.value
+    )
+
+  const wb =
+    XLSX.utils.book_new()
+
+  XLSX.utils.book_append_sheet(
+    wb,
+    ws,
+    'Teachers'
+  )
+
+  XLSX.writeFile(
+    wb,
+    'teacher_report.xlsx'
+  )
 }
 
+
+// --------------------------------------------------
+// PRINT
+// --------------------------------------------------
+
 function printReport() {
-  const printContent = document.getElementById('teachersTable').outerHTML
-  const win = window.open('', '', 'width=900,height=600')
-  win.document.write(`<html><body>${printContent}</body></html>`)
+
+  const printContent =
+    document
+      .getElementById('teachersTable')
+      .outerHTML
+
+  const win =
+    window.open(
+      '',
+      '',
+      'width=900,height=600'
+    )
+
+  win.document.write(
+    `<html><body>${printContent}</body></html>`
+  )
+
   win.document.close()
+
   win.print()
 }
 </script>
+

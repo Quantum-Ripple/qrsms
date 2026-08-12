@@ -62,8 +62,12 @@
   </div>
 </template>
 
+
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+
+import { ref, computed } from 'vue'
+import { useQuery } from '@tanstack/vue-query'
+
 import CalendarGrid from '../components/CalendarGrid.vue'
 import EventModal from '../components/EventModal.vue'
 
@@ -72,133 +76,288 @@ import {
   getCategories
 } from '../api/calendar'
 
-// ======================
+
+// =========================================================
+// SCHOOL
+// =========================================================
+
+const user = JSON.parse(
+  localStorage.getItem('user') || '{}'
+)
+
+const school_id = user.school || ''
+
+
+// =========================================================
 // STATE
-// ======================
+// =========================================================
 
 const today = new Date()
 
-const events = ref([])
-const loading = ref(false)
 
-const categories = ref([])
 const selectedCategory = ref(null)
 
-const currentMonth = ref(today.getMonth())
-const currentYear = ref(today.getFullYear())
+
+const currentMonth = ref(
+  today.getMonth()
+)
+
+const currentYear = ref(
+  today.getFullYear()
+)
+
 
 const showPanel = ref(false)
+
 const selectedDate = ref(null)
+
 const selectedEvents = ref([])
 
-// ======================
-// COMPUTED
-// ======================
+
+// =========================================================
+// CATEGORIES
+// =========================================================
+
+const {
+  data: categoriesData,
+  isFetching: categoriesFetching
+} = useQuery({
+
+  queryKey: [
+    'calendar-categories',
+    school_id
+  ],
+
+  queryFn: async () => {
+
+    const response =
+      await getCategories()
+
+    return response || []
+
+  },
+
+  // Categories rarely change.
+  staleTime: 10 * 60 * 1000,
+
+  refetchOnMount: 'always'
+
+})
+
+
+const categories = computed(
+  () => categoriesData.value || []
+)
+
+
+// =========================================================
+// MONTH
+// =========================================================
 
 const monthNames = [
-  'January','February','March','April','May','June',
-  'July','August','September','October','November','December'
+
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
+
 ]
+
 
 const currentMonthName = computed(
   () => monthNames[currentMonth.value]
 )
 
-// ======================
-// FETCH
-// ======================
 
-const fetchCategories = async () => {
-  try {
-    categories.value = await getCategories()
-  } catch (err) {
-    console.error('Fetch categories failed', err)
-  }
-}
+// =========================================================
+// DATE RANGE
+// =========================================================
 
-const fetchEvents = async () => {
-  try {
-    loading.value = true
+const startDate = computed(() => {
 
-    const start = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2,'0')}-01`
-    const end = new Date(currentYear.value, currentMonth.value + 1, 0)
-      .toISOString()
-      .split('T')[0]
+  return `${currentYear.value}-${
+    String(
+      currentMonth.value + 1
+    ).padStart(2, '0')
+  }-01`
 
-    const params = {
-      start_date: start,
-      end_date: end
-    }
-
-    if (selectedCategory.value) {
-      params.category = selectedCategory.value
-    }
-
-    events.value = await getEvents(params)
-
-  } catch (err) {
-    console.error('Fetch events failed', err)
-  } finally {
-    loading.value = false
-  }
-}
-
-// ======================
-// NAVIGATION
-// ======================
-
-const prevMonth = () => {
-  if (currentMonth.value === 0) {
-    currentMonth.value = 11
-    currentYear.value--
-  } else {
-    currentMonth.value--
-  }
-}
-
-const nextMonth = () => {
-  if (currentMonth.value === 11) {
-    currentMonth.value = 0
-    currentYear.value++
-  } else {
-    currentMonth.value++
-  }
-}
-
-const goToday = () => {
-  currentMonth.value = today.getMonth()
-  currentYear.value = today.getFullYear()
-}
-
-// ======================
-// INTERACTION
-// ======================
-
-const handleDayClick = (date) => {
-  selectedDate.value = date
-  selectedEvents.value = events.value.filter(e => e.date === date)
-  showPanel.value = true
-}
-
-const closePanel = () => {
-  showPanel.value = false
-}
-
-// ======================
-// LIFECYCLE
-// ======================
-
-onMounted(async () => {
-  await fetchCategories()
-  await fetchEvents()
 })
 
-// ======================
-// WATCHERS
-// ======================
 
-watch([currentMonth, currentYear], fetchEvents)
-watch(selectedCategory, fetchEvents)
+const endDate = computed(() => {
+
+  const lastDay =
+    new Date(
+      currentYear.value,
+      currentMonth.value + 1,
+      0
+    )
+
+  return lastDay
+    .toISOString()
+    .split('T')[0]
+
+})
+
+
+// =========================================================
+// EVENTS QUERY
+// =========================================================
+
+const {
+  data: eventsData,
+  isFetching: eventsFetching,
+  isPending: eventsPending
+} = useQuery({
+
+  queryKey: [
+
+    'calendar-events',
+
+    school_id,
+
+    currentYear,
+
+    currentMonth,
+
+    selectedCategory
+
+  ],
+
+  queryFn: async () => {
+
+    const params = {
+
+      start_date:
+        startDate.value,
+
+      end_date:
+        endDate.value
+
+    }
+
+
+    if (selectedCategory.value) {
+
+      params.category =
+        selectedCategory.value
+
+    }
+
+
+    const response =
+      await getEvents(params)
+
+
+    return response || []
+
+  },
+
+
+  // Calendar data can safely remain
+  // fresh for a short period.
+  staleTime: 5 * 60 * 1000,
+
+
+  // Always check when returning to
+  // the calendar if the data is stale.
+  refetchOnMount: 'always',
+
+
+  // Keep the previous month's events
+  // visible while the new month loads.
+  placeholderData: previousData =>
+    previousData
+
+})
+
+
+const events = computed(
+  () => eventsData.value || []
+)
+
+
+// =========================================================
+// NAVIGATION
+// =========================================================
+
+const prevMonth = () => {
+
+  if (currentMonth.value === 0) {
+
+    currentMonth.value = 11
+
+    currentYear.value--
+
+  } else {
+
+    currentMonth.value--
+
+  }
+
+}
+
+
+const nextMonth = () => {
+
+  if (currentMonth.value === 11) {
+
+    currentMonth.value = 0
+
+    currentYear.value++
+
+  } else {
+
+    currentMonth.value++
+
+  }
+
+}
+
+
+const goToday = () => {
+
+  currentMonth.value =
+    today.getMonth()
+
+  currentYear.value =
+    today.getFullYear()
+
+}
+
+
+// =========================================================
+// INTERACTION
+// =========================================================
+
+const handleDayClick = (date) => {
+
+  selectedDate.value = date
+
+  selectedEvents.value =
+    events.value.filter(
+      event => event.date === date
+    )
+
+  showPanel.value = true
+
+}
+
+
+const closePanel = () => {
+
+  showPanel.value = false
+
+}
 
 </script>
 
