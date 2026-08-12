@@ -17,3 +17,7 @@ export function initiateMpesaSTKPush(data) {
 
   return api.post(`/mpesa/stk/`, data)
 }
+
+export function getMpesaTransactionStatus(transactionId) {
+  return api.get(`/mpesa/transactions/${transactionId}/`)
+}
