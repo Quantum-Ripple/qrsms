@@ -225,17 +225,20 @@
           <div class="flex gap-2 mt-3">
 
             <input
-              v-model="grade.newStream"
+              v-model="streamInputs[grade.id]"
               placeholder="New stream"
               class="border p-2 rounded w-full"
             />
 
-            <button
-              @click="addStream(grade.id, grade.newStream)"
-              class="bg-blue-500 text-white px-3 rounded hover:bg-blue-600"
-            >
-              Add
-            </button>
+            <LoadingButton
+                type="button"
+                :loading="streamLoading[grade.id]"
+                loading-text="Adding..."
+                class="bg-blue-500 text-white px-3 rounded hover:bg-blue-600"
+                @click="addStream(grade.id)"
+              >
+                Add
+              </LoadingButton>
 
           </div>
 
@@ -496,6 +499,8 @@
 
 import { ref, computed } from 'vue'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
+
+import LoadingButton from '@/components/LoadingButton.vue'
 
 
 import {
@@ -799,6 +804,8 @@ const showGradeModal = ref(false)
 const newGrade = ref({
   name: ''
 })
+const streamInputs = ref({})
+const streamLoading = ref({})
 
 
 const {
@@ -876,32 +883,30 @@ const addGrade = async () => {
   }
 
 }
+/*
+const addStream = async (classLevelId) => {
+  const name = streamInputs.value[classLevelId]?.trim()
 
+  console.log('Adding stream:', {
+    classLevelId,
+    name
+  })
 
-const addStream = async (
-  classLevelId,
-  name
-) => {
-
-  if (!name?.trim()) {
+  if (!name) {
+    console.warn('Stream name is empty')
     return
   }
 
-
   try {
-
     await createStream({
-
-      class_level:
-        classLevelId,
-
-      name:
-        name.trim()
-
+      class_level: classLevelId,
+      name: name
     })
 
+    // Clear the input after successful creation
+    streamInputs.value[classLevelId] = ''
 
-    // Refresh class levels + streams.
+    // Refresh configurations
     await queryClient.invalidateQueries({
       queryKey: [
         'configurations',
@@ -909,18 +914,49 @@ const addStream = async (
       ]
     })
 
-
   } catch (error) {
-
     console.error(
       'Creating stream failed:',
-      error
+      error.response?.data || error
     )
+  }
+}
+*/
 
+const addStream = async (classLevelId) => {
+  const name = streamInputs.value[classLevelId]?.trim()
+
+  if (!name) {
+    return
   }
 
-}
+  streamLoading.value[classLevelId] = true
 
+  try {
+    await createStream({
+      class_level: classLevelId,
+      name: name
+    })
+
+    streamInputs.value[classLevelId] = ''
+
+    await queryClient.invalidateQueries({
+      queryKey: [
+        'configurations',
+        school_id
+      ]
+    })
+
+  } catch (error) {
+    console.error(
+      'Creating stream failed:',
+      error.response?.data || error
+    )
+
+  } finally {
+    streamLoading.value[classLevelId] = false
+  }
+}
 
 const removeStream = async (id) => {
 

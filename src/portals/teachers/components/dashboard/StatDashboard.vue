@@ -163,11 +163,31 @@ const loadStats = async () => {
 const loadAnnouncement = async () => {
   try {
     const res = await eventApi.fetchEvents();
+
     if (res.length > 0) {
-      latestAnnouncement.value = res.sort(
+      // Sort newest first
+      const sorted = [...res].sort(
         (a, b) => new Date(b.created_at) - new Date(a.created_at)
-      )[0];
-      unreadCount.value = res.length;
+      );
+
+      // Latest announcement
+      latestAnnouncement.value = sorted[0];
+
+      // Count announcements created today
+      const today = new Date();
+
+      unreadCount.value = sorted.filter((announcement) => {
+        const announcementDate = new Date(announcement.created_at);
+
+        return (
+          announcementDate.getFullYear() === today.getFullYear() &&
+          announcementDate.getMonth() === today.getMonth() &&
+          announcementDate.getDate() === today.getDate()
+        );
+      }).length;
+    } else {
+      latestAnnouncement.value = null;
+      unreadCount.value = 0;
     }
   } catch (err) {
     console.error("Failed to load announcements:", err);

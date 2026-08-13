@@ -222,12 +222,14 @@
             Cancel
           </router-link>
 
-          <button
-            type="submit"
-            class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm transition"
-          >
-            Create Student
-          </button>
+         <LoadingButton
+  type="submit"
+  :loading="loading"
+  loading-text="Creating..."
+  class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm transition"
+>
+  Create Student
+</LoadingButton>
         </div>
 
       </form>
@@ -245,6 +247,9 @@ import studentsApi from '../api/Students.js'
 import { onMounted, ref, watch } from "vue"
 import { fetchClassLevels } from "@/api/classes.js"
 import { fetchNextAdmissionNumber } from "../api/Students.js"
+import LoadingButton from '@/components/LoadingButton.vue'
+
+const loading = ref(false)
 
 const router = useRouter()
 const toast = useToast()
@@ -299,6 +304,7 @@ async function refreshAdmissionNumber() {
 }
 
 async function createStudent() {
+  loading.value = true
   try {
     const payload = {
       ...form.value,
@@ -327,6 +333,8 @@ async function createStudent() {
     } else {
       toast.error('Something went wrong. Please try again.')
     }
+  } finally {
+    loading.value = false
   }
 }
 

@@ -179,12 +179,14 @@
             Cancel
           </router-link>
 
-          <button
+          <LoadingButton
             type="submit"
+            :loading="loading"
+            loading-text="Creating..."
             class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Create Teacher
-          </button>
+          </LoadingButton>
 
         </div>
 
@@ -200,7 +202,10 @@ import teachersApi from '../api/Teachers.js'
 import { useToast } from 'vue-toastification'
 import { fetchClassLevels } from '@/api/classes.js'
 import { SUBJECTS } from '@/constants/subjects.js'
+import LoadingButton from '@/components/LoadingButton.vue'
 
+
+const loading = ref(false)
 const router = useRouter()
 const toast = useToast()
 
@@ -258,28 +263,9 @@ function buildAssignmentPayload() {
     }))
 }
 
-/*
-function buildAssignmentPayload() {
-  return assignments.value
-    .filter((assignment) => assignment.class_level && assignment.stream && assignment.subject)
-    .map((assignment) => {
-      const selectedClass = Array.isArray(classLevels.value)
-        ? classLevels.value.find((level) => Number(level.id) === Number(assignment.class_level))
-        : null
 
-      const selectedStream = Array.isArray(selectedClass?.streams)
-        ? selectedClass.streams.find((stream) => Number(stream.id) === Number(assignment.stream))
-        : null
-
-      return {
-        class_level: [selectedClass?.name || selectedClass?.class_level_name || assignment.class_level],
-        stream: [selectedStream?.name || selectedStream?.stream_name || assignment.stream],
-        subject: assignment.subject,
-      }
-    })
-}
-*/
 async function createTeacher() {
+  loading.value = true
   try {
     const payload = {
       ...form.value,
@@ -295,7 +281,9 @@ async function createTeacher() {
   } catch (err) {
     console.error(err)
     toast.error("Failed to create teacher.")
-  }
+  }finally {
+    loading.value = false
+}
 }
 
 onMounted(async () => {

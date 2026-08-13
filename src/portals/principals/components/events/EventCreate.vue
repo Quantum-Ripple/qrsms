@@ -81,11 +81,20 @@
             <span>Parents</span>
           </label>
           <label class="flex items-center space-x-2">
+        <input
+          type="radio"
+          value="finance"
+          v-model="form.target_audience"
+        />
+        <span>Finance</span>
+      </label>
+          <label class="flex items-center space-x-2">
             <input
               type="radio"
               value="all"
               v-model="form.target_audience"
             />
+            
             <span>All</span>
           </label>
         </div>
