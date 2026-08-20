@@ -213,12 +213,14 @@
             Cancel
           </router-link>
 
-          <button
+          <LoadingButton
             type="submit"
+            :loading="loading"
+            loading-text="Creating..."
             class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Create Staff
-          </button>
+          </LoadingButton>
 
         </div>
       </form>
@@ -233,9 +235,12 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import teachersApi from '../api/Teachers.js'
 import { useToast } from 'vue-toastification'
+import LoadingButton from '@/components/LoadingButton.vue'
 
 const router = useRouter()
 const toast = useToast()
+
+const loading = ref(false)
 
 const form = ref({
   first_name: '',
@@ -254,6 +259,7 @@ const form = ref({
 
 
 async function createOtherStaff() {
+  loading.value = true
   try {
     const payload = {
       ...form.value,
@@ -271,6 +277,8 @@ async function createOtherStaff() {
   } catch (error) {
     console.error('Create other staff failed:', error)
     toast.error('Failed to create staff')
+  } finally {
+    loading.value = false
   }
 
 }

@@ -96,7 +96,7 @@ const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct',
 
 // Read user -> school id
 const user = JSON.parse(localStorage.getItem("user") || "{}")
-const school_id = user.school_id || ""
+const school_id = user.school || ""
 
 // Helper: safely destroy charts
 function destroyCharts() {
@@ -115,11 +115,14 @@ onMounted(async () => {
 
   try {
     // fetch required data in parallel
+
+   
     const [stats, financeSummary, monthly] = await Promise.all([
-      fetchSchoolStatistics(school_id || 1),
+      fetchSchoolStatistics(school_id),
       getFinanceSummary(),
       getMonthlyFinanceSummary()
     ])
+  
 
     // -------- Students per class ----------
     let classLabels = []
