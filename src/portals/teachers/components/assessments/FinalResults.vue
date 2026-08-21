@@ -374,7 +374,6 @@ const tableRows = computed(() => {
     }
   })
 })
-
 const saveWeights = async () => {
   if (!selectedExam.value || !weightsValid.value) return
 
@@ -396,11 +395,13 @@ const saveWeights = async () => {
     }
 
     weightMessage.value = "Weights saved successfully."
-    toast.success("Weights saved Successfully!")
+    toast.success("Weights saved successfully!")
+
   } catch (error) {
     console.error("Failed to save weights:", error)
     weightMessage.value = "Failed to save weights."
-    toast.success("Failed to save Weights!!")
+    toast.error("Failed to save weights!")
+
   } finally {
     savingWeights.value = false
   }
