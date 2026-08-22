@@ -57,6 +57,7 @@ const navItems = [
       { label: 'Non-Teaching Staff', route: { name: 'PrincipalOtherStaff' } },
     ],
   },
+  { label: 'Parents', route: { name: 'ParentsList' } },
   //{ label: 'Attendance', route: { name: 'PrincipalAttendance' } },
   //{ label: 'Academics', route: {name: 'Academics'}},
 

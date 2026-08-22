@@ -5,7 +5,7 @@
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-semibold text-gray-800">Student Details</h2>
         <router-link
-          :to="{ name: 'ParentDetails', params: { id: student?.id } }"
+          :to="{ name: 'ParentDetail', params: { id: student?.id } }"
           class="text-blue-600 hover:underline text-sm"
         >
           View Parents →
@@ -454,13 +454,33 @@ async function updateStudent() {
  * Delete student
  */
 async function deleteStudent() {
-  try {
-    await studentsApi.remove(student.value.id)
-    router.push({ name: 'PrincipalStudents' })
-  } catch (error) {
-    console.error('Failed to delete student:', error)
-    toast.error('Failed to delete student.')
+
+  const confirmed = window.confirm(
+    `Are you sure you want to delete ${student.value.full_name}? This action cannot be undone.`
+  )
+
+  if (!confirmed) {
+    return
   }
+
+  try {
+
+    await studentsApi.remove(student.value.id)
+
+    toast.success('Student deleted successfully.')
+
+    router.push({
+      name: 'PrincipalStudents'
+    })
+
+  } catch (error) {
+
+    console.error('Failed to delete student:', error)
+
+    toast.error('Failed to delete student.')
+
+  }
+
 }
 </script>
 <style scoped>

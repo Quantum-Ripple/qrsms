@@ -959,7 +959,6 @@ const addStream = async (classLevelId) => {
 }
 
 const removeStream = async (id) => {
-
   if (
     !confirm(
       'Are you sure you want to delete this stream?'
@@ -968,13 +967,9 @@ const removeStream = async (id) => {
     return
   }
 
-
   try {
-
     await deleteStream(id)
 
-
-    // Refresh class levels + streams.
     await queryClient.invalidateQueries({
       queryKey: [
         'configurations',
@@ -982,21 +977,22 @@ const removeStream = async (id) => {
       ]
     })
 
-
   } catch (error) {
+
+    const message =
+      error.response?.data?.detail ||
+      'Unable to delete this stream.'
+
+    alert(message)
 
     console.error(
       'Deleting stream failed:',
-      error
+      error.response?.data || error
     )
-
   }
-
 }
 
-
 const removeClass = async (id) => {
-
   if (
     !confirm(
       'Delete this grade and all streams?'
@@ -1005,13 +1001,9 @@ const removeClass = async (id) => {
     return
   }
 
-
   try {
-
     await deleteClassLevel(id)
 
-
-    // Refresh class levels + streams.
     await queryClient.invalidateQueries({
       queryKey: [
         'configurations',
@@ -1019,16 +1011,19 @@ const removeClass = async (id) => {
       ]
     })
 
-
   } catch (error) {
+
+    const message =
+      error.response?.data?.detail ||
+      'Unable to delete this grade.'
+
+    alert(message)
 
     console.error(
       'Deleting grade failed:',
-      error
+      error.response?.data || error
     )
-
   }
-
 }
 
 </script>

@@ -27,6 +27,9 @@ import Promotions from './views/Promotions.vue'
 import Calender from './views/Calender.vue'
 import AttendancePage from './views/Attendance.vue'
 import AttendanceSessionDetail from './views/AttendanceSessionDetail.vue'
+import ParentList from './views/ParentsList.vue'
+import ParentPage from './components/parents/ParentsPage.vue'
+import ParentEdit from './components/parents/ParentEdit.vue'
 
 
 export default [
@@ -69,8 +72,34 @@ export default [
   { path: 'pr/communications', name: 'PrincipalCommunications', component: CommunicationsPage },
 
   // Parents
-  { path: 'pr/parents/:id', name: 'ParentDetails', component: ParentDetails, props: true },
+  { 
+    path: 'pr/parents', 
+    name: 'ParentsList', 
+    component: ParentList 
+  },
 
+  { 
+    path: 'pr/parents/manage/:id', 
+    name: 'ParentPage', 
+    component: ParentPage, 
+    props: true 
+  },
+
+  { 
+    path: 'pr/parents/:id', 
+    name: 'ParentDetail', 
+    component: ParentDetails, 
+    props: true 
+  },
+  { 
+    path: 'pr/parents/:id/edit', 
+    name: 'ParentEdit', 
+    component: ParentEdit, 
+    props: true 
+  },
+
+
+  
   // Settings
   { path: 'pr/settings', name: 'PrincipalSettings', component: SettingsPage },
 

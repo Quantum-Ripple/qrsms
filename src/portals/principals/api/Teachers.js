@@ -70,4 +70,12 @@ export default {
     const res = await api.delete(`/non-teaching-staff/${id}/`)
     return res.status === 204 || res.status === 200
   },
+  async resetPassword(id, data) {
+    const res = await api.post(
+      `/teachers/${id}/reset-password/`,
+      data
+    )
+
+    return res.data
+  }
 }
