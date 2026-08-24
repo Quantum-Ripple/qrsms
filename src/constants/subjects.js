@@ -24,5 +24,5 @@ export const SUBJECTS = Object.freeze([
   { value: "TECH", label: "Pre-Technical Studies" },
   { value: "ENV", label: "Environmental Studies" },
   { value: "LANGUAGE", label: "Language" },
-  { value: "LIFE", label: "Life Skills" },
+  
 ]);
