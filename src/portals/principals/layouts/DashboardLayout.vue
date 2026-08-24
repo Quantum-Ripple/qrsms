@@ -70,6 +70,8 @@ const navItems = [
     ],
   },
 
+  { label: 'Exam Management', route: { name: 'ExamManagement' } },
+
   { label: 'Reports', route: { name: 'PrincipalReports' } },
   { label: 'Promotions', route: { name: 'Promotions' } },
 
