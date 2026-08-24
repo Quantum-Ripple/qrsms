@@ -19,4 +19,10 @@ export const SUBJECTS = Object.freeze([
   { value: "AGRI", label: "Agriculture" },
   { value: "LANG", label: "Foreign Language" },
   { value: "SIGN", label: "Kenya Sign Language" },
+
+  { value: "CART", label: "Creative Arts" },
+  { value: "TECH", label: "Pre-Technical Studies" },
+  { value: "ENV", label: "Environmental Studies" },
+  { value: "LANGUAGE", label: "Language" },
+  { value: "LIFE", label: "Life Skills" },
 ]);

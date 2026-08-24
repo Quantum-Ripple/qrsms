@@ -271,7 +271,7 @@ async function createTeacher() {
       ...form.value,
       assignments: buildAssignmentPayload()
     }
-    console.log("Creating teacher with payload:", payload)
+    //console.log("Creating teacher with payload:", payload)
 
     await teachersApi.create(payload)
 
