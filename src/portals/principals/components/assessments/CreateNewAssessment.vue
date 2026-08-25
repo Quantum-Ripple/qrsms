@@ -3,33 +3,33 @@
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
     @click.self="closeModal"
   >
-    <div class="w-full max-w-lg bg-white rounded-xl shadow-xl">
+    <div class="w-full max-w-2xl bg-white rounded-xl shadow-xl">
+
       <!-- Header -->
       <div class="flex items-center justify-between px-6 py-4 border-b">
         <div>
           <h2 class="text-xl font-bold text-gray-800">
             Create Assessment
           </h2>
-
-          <p class="text-sm text-gray-500 mt-1">
-            Set the assessment details and select the grades taking it.
-          </p>
         </div>
 
         <button
           type="button"
           @click="closeModal"
           class="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+          :disabled="submitting"
         >
           &times;
         </button>
       </div>
 
+
       <!-- Form -->
       <form
         @submit.prevent="handleSubmit"
-        class="p-6 space-y-5"
+        class="p-6 space-y-4"
       >
+
         <!-- Exam Name -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -45,63 +45,74 @@
           />
         </div>
 
-        <!-- Start Date -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Start Date
-          </label>
 
-          <input
-            v-model="form.start_date"
-            type="date"
-            class="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            required
-          />
-        </div>
+        <!-- Dates + Term -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-        <!-- End Date -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            End Date
-          </label>
+          <!-- Start Date -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Start Date
+            </label>
 
-          <input
-            v-model="form.end_date"
-            type="date"
-            :min="form.start_date || undefined"
-            class="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            required
-          />
-        </div>
+            <input
+              v-model="form.start_date"
+              type="date"
+              class="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
 
-        <!-- Term -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Term
-          </label>
 
-          <select
-            v-model="form.term"
-            class="w-full border border-gray-300 p-2.5 rounded-lg bg-white outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            required
-          >
-            <option disabled value="">
-              Select Term
-            </option>
+          <!-- End Date -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              End Date
+            </label>
 
-            <option
-              v-for="term in terms"
-              :key="term.id"
-              :value="term.id"
+            <input
+              v-model="form.end_date"
+              type="date"
+              :min="form.start_date || undefined"
+              class="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+
+
+          <!-- Term -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Term
+            </label>
+
+            <select
+              v-model="form.term"
+              class="w-full border border-gray-300 p-2.5 rounded-lg bg-white outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
             >
-              {{ term.name }} ({{ term.academic_year_name }})
-            </option>
-          </select>
+              <option disabled value="">
+                Select Term
+              </option>
+
+              <option
+                v-for="term in terms"
+                :key="term.id"
+                :value="term.id"
+              >
+                {{ term.name }} ({{ term.academic_year_name }})
+              </option>
+            </select>
+          </div>
+
         </div>
+
 
         <!-- Grades -->
         <div>
+
           <div class="flex items-center justify-between mb-2">
+
             <label class="block text-sm font-medium text-gray-700">
               Grades Taking the Exam
             </label>
@@ -110,15 +121,19 @@
               type="button"
               @click="toggleAllGrades"
               class="text-sm text-blue-600 hover:text-blue-700 font-medium"
-              :disabled="classLevels.length === 0"
+              :disabled="classLevels.length === 0 || loadingGrades"
             >
               {{ allGradesSelected ? "Clear All" : "Select All" }}
             </button>
+
           </div>
 
+
           <div
-            class="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto"
+            class="border border-gray-300 rounded-lg p-3"
           >
+
+            <!-- Loading -->
             <div
               v-if="loadingGrades"
               class="text-sm text-gray-500 py-2"
@@ -126,6 +141,8 @@
               Loading grades...
             </div>
 
+
+            <!-- Empty -->
             <div
               v-else-if="classLevels.length === 0"
               class="text-sm text-gray-500 py-2"
@@ -133,33 +150,49 @@
               No grades found for this school.
             </div>
 
-            <label
-              v-for="level in classLevels"
-              :key="level.id"
-              class="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 px-2 rounded"
-            >
-              <input
-                v-model="form.target_class_levels"
-                type="checkbox"
-                :value="level.id"
-                class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
 
-              <span class="text-sm text-gray-700">
-                {{ level.name }}
-              </span>
-            </label>
+            <!-- Grades -->
+            <div
+              v-else
+              class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"
+            >
+
+              <label
+                v-for="level in classLevels"
+                :key="level.id"
+                class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition"
+              >
+
+                <input
+                  v-model="form.target_class_levels"
+                  type="checkbox"
+                  :value="level.id"
+                  class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+
+                <span class="text-sm text-gray-700">
+                  {{ level.name }}
+                </span>
+
+              </label>
+
+            </div>
+
           </div>
 
+
+          <!-- Selected Count -->
           <p
             v-if="form.target_class_levels.length > 0"
-            class="text-xs text-gray-500 mt-2"
+            class="text-xs text-gray-500 mt-1"
           >
             {{ form.target_class_levels.length }}
             grade{{ form.target_class_levels.length === 1 ? "" : "s" }}
             selected.
           </p>
+
         </div>
+
 
         <!-- Error -->
         <div
@@ -169,8 +202,10 @@
           {{ error }}
         </div>
 
+
         <!-- Actions -->
-        <div class="flex justify-end gap-3 pt-4 border-t">
+        <div class="flex justify-end gap-3 pt-3 border-t">
+
           <button
             type="button"
             @click="closeModal"
@@ -182,13 +217,16 @@
 
           <button
             type="submit"
-            class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="submitting"
           >
             {{ submitting ? "Creating..." : "Create Assessment" }}
           </button>
+
         </div>
+
       </form>
+
     </div>
   </div>
 </template>
@@ -316,7 +354,9 @@ const handleSubmit = async () => {
       target_class_levels: form.value.target_class_levels,
     };
 
-    console.log("Creating exam with payload:", payload);
+
+
+    //console.log("Creating exam with payload:", payload);
 
     await createExam(payload);
 
