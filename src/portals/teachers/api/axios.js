@@ -4,7 +4,7 @@ import axios from "axios"
 
 const api = axios.create({
   //baseURL: "http://127.0.0.1:8000/api/v1",
-  baseURL: "https://sms-r7w6.onrender.com/api",
+  baseURL: "https://sms-zpq6.onrender.com/api",
 
   //headers: {
     //"Content-Type": "application/json",
@@ -61,8 +61,9 @@ api.interceptors.response.use(
 
         const response = await axios.post(
           //"http://127.0.0.1:8000/api/v1/token/refresh/",
-          "https://sms-r7w6.onrender.com/api/token/refresh/",
-          //ensure correct endpoint
+          
+          "https://sms-zpq6.onrender.com/api/token/refresh/",
+     
 
           { refresh: refreshToken }
         )
