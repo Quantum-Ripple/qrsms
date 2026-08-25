@@ -59,7 +59,7 @@ const navItems = [
   //{ label: 'Assessments', route: { name: 'TeachersAssessmentsPage' } },
   { label: 'Assessments' ,
      children: [
-      { label: 'Create Assessment', route: { name: 'CreateExam' } },
+      //{ label: 'Create Assessment', route: { name: 'CreateExam' } },
       { label: 'Rubric', route: { name: 'TeachersRubrics' } },
       { label: 'Subject Score', route: { name: 'TeachersSubjectScore' } },
       { label: 'Term Scores', route: { name: 'TeachersResults' } },

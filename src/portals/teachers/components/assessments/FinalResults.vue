@@ -225,24 +225,91 @@ const levelFromScore = (score) => {
 }
 
 const loadExams = async () => {
+
   const cls = classStore.activeClass
+
   if (!cls) return
 
-  const allExams = await getExams()
+  try {
 
-  exams.value = allExams.filter(exam => {
-    if (cls.class_instance && exam.class_instance) {
-      return String(exam.class_instance) === String(cls.class_instance)
+    const all = await getExams()
+
+    exams.value = all.filter(exam => {
+
+      /*
+       * NEW PRINCIPAL-CREATED EXAMS
+       *
+       * Match the teacher's class level against
+       * the grades targeted by the exam.
+       */
+      if (
+        Array.isArray(exam.target_class_levels) &&
+        exam.target_class_levels.length
+      ) {
+
+        return exam.target_class_levels.some(
+          levelId =>
+            String(levelId) ===
+            String(cls.class_level)
+        )
+
+      }
+
+      /*
+       * LEGACY EXAMS CREATED FOR A CLASS INSTANCE
+       */
+      if (
+        cls.class_instance &&
+        exam.class_instance
+      ) {
+
+        return (
+          String(exam.class_instance) ===
+          String(cls.class_instance)
+        )
+
+      }
+
+      /*
+       * LEGACY EXAMS CREATED FOR A CLASS LEVEL
+       */
+      if (exam.class_level) {
+
+        return (
+          String(exam.class_level) ===
+          String(cls.class_level)
+        )
+
+      }
+
+      return false
+
+    })
+
+    if (exams.value.length) {
+
+      selectedExam.value = exams.value[0].id
+
+    } else {
+
+      selectedExam.value = null
+
     }
 
-    return exam.class_level === cls.class_level &&
-      exam.stream === cls.stream
-  })
+  } catch (error) {
 
-  if (exams.value.length) {
-    selectedExam.value = exams.value[0].id
+    console.error(
+      "Failed to load exams:",
+      error
+    )
+
+    exams.value = []
+    selectedExam.value = null
+
   }
+
 }
+
 
 const loadStudents = async () => {
   const cls = classStore.activeClass
