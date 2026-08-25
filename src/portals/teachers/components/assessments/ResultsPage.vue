@@ -125,6 +125,8 @@ import { getExams } from "@/portals/teachers/api/Grades"
 import studentsApi from "../../api/Students"
 import { getAllSubjectScores } from "../../api/assessments"
 
+import { SUBJECTS } from '../../../../constants/subjects'
+
 const classStore = useClassStore()
 
 const exams = ref([])
@@ -225,6 +227,8 @@ const levelFromScore = (score) => {
   return "BE2"
 }
 
+
+/*
 const subjectLabel = (code) => {
   const labels = {
     MAT: "Math",
@@ -242,6 +246,14 @@ const subjectLabel = (code) => {
   }
 
   return labels[code] || code
+}*/
+
+const subjectLabel = (code) => {
+  const subject = SUBJECTS.find(
+    subject => subject.value === code
+  )
+
+  return subject?.label || code
 }
 
 const tableRows = computed(() => {
