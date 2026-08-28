@@ -148,6 +148,88 @@
           </div>
         </div>
 
+        <!-- TRANSPORT -->
+<div class="border rounded-xl p-6 bg-gray-50">
+  <h4 class="text-md font-semibold mb-2 text-gray-700">
+    Transport
+  </h4>
+
+  <p class="text-sm text-gray-500 mb-5">
+    Select whether this student will use school transport.
+  </p>
+
+  <!-- USES TRANSPORT -->
+  <div class="flex items-center gap-3 mb-5">
+    <input
+      id="uses_transport"
+      v-model="form.uses_transport"
+      type="checkbox"
+      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+    />
+
+    <label
+      for="uses_transport"
+      class="text-sm font-medium text-gray-700"
+    >
+      This student uses school transport
+    </label>
+  </div>
+
+  <!-- TRANSPORT OPTIONS -->
+  <div
+    v-if="form.uses_transport"
+    class="grid grid-cols-1 md:grid-cols-2 gap-6"
+  >
+
+    <!-- ROUTE -->
+    <div>
+      <label class="label">
+        Transport Route
+      </label>
+
+      <select
+        v-model="form.transport_route"
+        required
+        class="field"
+      >
+        <option :value="null">
+          Select Transport Route
+        </option>
+
+        <option
+          v-for="route in transportRoutes"
+          :key="route.id"
+          :value="route.id"
+        >
+          {{ route.name }}
+        </option>
+      </select>
+    </div>
+
+    <!-- TRIP TYPE -->
+    <div>
+      <label class="label">
+        Trip Type
+      </label>
+
+      <select
+        v-model="form.transport_trip_type"
+        required
+        class="field"
+      >
+        <option value="ROUND_TRIP">
+          Round Trip
+        </option>
+
+        <option value="ONE_WAY">
+          One Way
+        </option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
         <!-- PARENT 1 -->
         <div class="border rounded-xl p-6 bg-gray-50">
           <h4 class="text-md font-semibold mb-5 text-gray-700">
@@ -241,15 +323,17 @@
 
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
-import { GRADES } from '../../../constants/grades.js'
-import { STREAMS } from '../../../constants/streams.js'
+
 import studentsApi from '../api/Students.js'
 import { onMounted, ref, watch } from "vue"
 import { fetchClassLevels } from "@/api/classes.js"
 import { fetchNextAdmissionNumber } from "../api/Students.js"
+import { fetchTransportRoutes } from '@/api/transport.js'
 import LoadingButton from '@/components/LoadingButton.vue'
 
 const loading = ref(false)
+
+const transportRoutes = ref([])
 
 const router = useRouter()
 const toast = useToast()
@@ -284,6 +368,11 @@ const form = ref({
   email: '',
   phone: '',
   address: '',
+
+  uses_transport: false,
+  transport_route: null,
+  transport_trip_type: 'ROUND_TRIP',
+
   parent1: { first_name:'', last_name:'', email:'', phone:'', relationship:'', password:'', address:'' },
   parent2: { first_name:'', last_name:'', email:'', phone:'', relationship:'', password:'None', address:'' },
 })
@@ -302,56 +391,97 @@ async function refreshAdmissionNumber() {
     loadingAdmission.value = false
   }
 }
-
 async function createStudent() {
   loading.value = true
+
   try {
     const payload = {
       ...form.value,
-      parent1: form.value.parent1.first_name ? form.value.parent1 : undefined,
-      parent2: showParent2.value && form.value.parent2.first_name ? form.value.parent2 : undefined,
+
+      parent1: form.value.parent1.first_name
+        ? form.value.parent1
+        : undefined,
+
+      parent2:
+        showParent2.value &&
+        form.value.parent2.first_name
+          ? form.value.parent2
+          : undefined,
+
+      uses_transport: form.value.uses_transport,
+
+      transport_route: form.value.uses_transport
+        ? form.value.transport_route
+        : null,
+
+      transport_trip_type: form.value.uses_transport
+        ? form.value.transport_trip_type
+        : 'ROUND_TRIP',
     }
 
     await studentsApi.create(payload)
 
     toast.success('Student created successfully!')
-    router.push({ name: 'PrincipalStudents' })
 
-    } catch (error) {
-      console.error(error)
-      if (error.response && error.response.data) {
+    router.push({
+      name: 'PrincipalStudents'
+    })
+
+  } catch (error) {
+    console.error(error)
+
+    if (error.response?.data) {
       const errors = error.response.data
-      formErrors.value = error.response?.data || {}
 
-      // Extract and show all messages
+      formErrors.value = errors
+
       const messages = Object.values(errors).flat()
 
       messages.forEach(msg => {
         toast.error(msg)
       })
-
     } else {
-      toast.error('Something went wrong. Please try again.')
+      toast.error(
+        'Something went wrong. Please try again.'
+      )
     }
   } finally {
     loading.value = false
   }
 }
 
+
+
 onMounted(async () => {
-  const res = await fetchClassLevels()
-  classLevels.value = res.data
+  try {
+    const res = await fetchClassLevels()
+    classLevels.value = res.data
+  } catch (error) {
+    console.error("Failed to fetch class levels", error)
+    toast.error("Failed to load class levels")
+  }
+
+  try {
+    const res = await fetchTransportRoutes()
+    transportRoutes.value = res.data
+  } catch (error) {
+    console.error("Failed to fetch transport routes", error)
+    toast.error("Failed to load transport routes")
+  }
 
   try {
     loadingAdmission.value = true
 
     const res = await fetchNextAdmissionNumber()
 
-    form.value.admission_number = res.data.next_admission_number
+    form.value.admission_number =
+      res.data.next_admission_number
 
   } catch (error) {
-    console.error("Failed to fetch admission number", error)
-   
+    console.error(
+      "Failed to fetch admission number",
+      error
+    )
   } finally {
     loadingAdmission.value = false
   }

@@ -55,6 +55,8 @@ const navItems = [
   { label: 'Payments', route: { name: 'FinancePayments'}},
   { label: 'Invoices', route: { name: 'FinanceInvoices'}},
   { label: 'Expenditures', route: { name: 'FinanceExpenditures'}},
+  { label: 'Transport Billing', route: { name: 'TransportBilling'}},
+  { label: 'Transport Configurations', route: { name: 'TransportConfigurations'}},
   { label: 'Announcements', route: { name: 'FinanceAnnouncements' } },
   { label: 'Settings', route: { name: 'FinanceSettings' } },
  

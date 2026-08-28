@@ -62,6 +62,41 @@
 
             </div>
 
+                      <!-- TRANSPORT -->
+          <div class="border rounded-xl p-5 bg-gray-50">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+              Transport
+            </h3>
+
+            <div v-if="student.current_transport" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              <div class="info-card">
+                <span class="label">Route</span>
+                <span>{{ student.current_transport.route_name }}</span>
+              </div>
+
+              <div class="info-card">
+                <span class="label">Trip Type</span>
+                <span>{{ student.current_transport.trip_type_display }}</span>
+              </div>
+
+              <div class="info-card">
+                <span class="label">Academic Year</span>
+                <span>{{ student.current_transport.academic_year_name }}</span>
+              </div>
+
+              <div class="info-card">
+                <span class="label">Term</span>
+                <span>{{ student.current_transport.term_name }}</span>
+              </div>
+
+            </div>
+
+            <div v-else class="text-sm text-gray-500">
+              This student is not currently assigned to transport.
+            </div>
+          </div>
+
             <!-- ACTIONS -->
             <div class="flex gap-3 pt-4">
               <button
@@ -176,6 +211,97 @@
             <textarea v-model="form.address" rows="3" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
           </div>
 
+                  <!-- TRANSPORT -->
+        <div class="md:col-span-2 border rounded-xl p-5 bg-gray-50 mt-4">
+
+          <h4 class="text-lg font-semibold text-gray-800 mb-4">
+            Transport
+          </h4>
+
+          <!-- Uses Transport -->
+          <div class="flex items-center gap-3 mb-5">
+            <input
+              id="uses_transport"
+              type="checkbox"
+              v-model="form.uses_transport"
+              class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+
+            <label
+              for="uses_transport"
+              class="text-sm font-medium text-gray-700"
+            >
+              Student uses school transport
+            </label>
+          </div>
+
+          <!-- Transport Details -->
+          <div
+            v-if="form.uses_transport"
+            class="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
+
+            <!-- Route -->
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">
+                Transport Route
+              </label>
+
+              <select
+                v-model="form.transport_route"
+                required
+                class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <option value="">
+                  Select Route
+                </option>
+
+                <option
+                  v-for="route in transportRoutes"
+                  :key="route.id"
+                  :value="route.id"
+                >
+                  {{ route.name }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Trip Type -->
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">
+                Trip Type
+              </label>
+
+              <select
+                v-model="form.transport_trip_type"
+                required
+                class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <option value="ROUND_TRIP">
+                  Round Trip
+                </option>
+
+                <option value="PICKUP_ONLY">
+                  Pickup Only
+                </option>
+
+                <option value="DROPOFF_ONLY">
+                  Drop-off Only
+                </option>
+              </select>
+            </div>
+
+          </div>
+
+          <p
+    v-else
+    class="text-sm text-gray-500"
+  >
+    This student is not using school transport.
+  </p>
+
+</div>
+
           <h4 class="text-lg font-medium mt-6 mb-4 md:col-span-2">Parent 1 Details</h4>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
             <div>
@@ -273,11 +399,13 @@ import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import studentsApi from '../api/Students.js'
 import { fetchClassLevels } from "@/api/classes.js"
+import { fetchTransportRoutes } from "@/api/transport.js"
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
+const transportRoutes = ref([])
 const student = ref(null)
 const editMode = ref(false)
 const showParent2 = ref(false)
@@ -287,6 +415,8 @@ const showParent2 = ref(false)
  */
 const classLevels = ref([])
 const streams = ref([])
+
+
 
 /**
  * Main form (single source of truth)
@@ -303,6 +433,11 @@ const form = ref({
   email: '',
   phone: '',
   address: '',
+
+  uses_transport: false,
+  transport_route: '',
+  transport_trip_type: 'ROUND_TRIP',
+
   parent1: {
     first_name: '',
     last_name: '',
@@ -375,16 +510,25 @@ watch(
 onMounted(async () => {
   try {
     const res = await fetchClassLevels()
+
     const classLevelData = Array.isArray(res.data)
       ? res.data
       : res.data?.results || []
 
     classLevels.value = classLevelData
 
+    const transportRes = await fetchTransportRoutes()
+
+    transportRoutes.value = Array.isArray(transportRes.data)
+      ? transportRes.data
+      : transportRes.data?.results || []
+
+
     const id = route.params.id
     student.value = await studentsApi.get(id)
 
     const s = student.value
+    const transport = s.current_transport
 
     const classLevelId = resolveClassLevelId(s.current_class_level || s.class_level || s.class_level_name)
     const streamId = resolveStreamId(s.current_stream || s.stream || s.stream_name, classLevelId)
@@ -403,6 +547,10 @@ onMounted(async () => {
       email: s.email,
       phone: s.phone,
       address: s.address,
+
+      uses_transport: !!transport,
+      transport_route: transport?.route || '',
+      transport_trip_type: transport?.trip_type || 'ROUND_TRIP',
 
       parent1: s.parents?.[0] || {},
       parent2: s.parents?.[1] || {},
