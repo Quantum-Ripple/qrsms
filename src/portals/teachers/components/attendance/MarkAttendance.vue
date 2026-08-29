@@ -54,9 +54,15 @@
 
     
     <div class="mt-4">
-      <button @click="submitAttendance" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+      <LoadingButton
+        :loading="loading"
+        @click="submitAttendance"
+        loading-text="Submitting..."
+        class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+      > Submit Attendance </LoadingButton>
+      <!---<button @click="submitAttendance" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
         Submit Attendance
-      </button>
+      </button>-->
     </div>
   </div>
 </template>
@@ -77,12 +83,15 @@ import DocumentIcon from "../icons/UnavailableIcon.vue";
 import { markRaw } from "vue";
 
 import { useClassStore } from "@/stores/classStore"
-import { watch } from "vue"
+import { watch, ref } from "vue"
+
+import LoadingButton from '@/components/LoadingButton.vue'
 
 
 const router = useRouter()
 const toast = useToast()
 
+const loading = ref(false)
 
 export default {
   data() {
@@ -133,7 +142,7 @@ export default {
       () => classStore.activeClass,
       (cls) => {
         if (!cls) return
-        console.log("ACTIVE CLASS OBJECT:", cls)
+        //console.log("ACTIVE CLASS OBJECT:", cls)
 
         this.classInstance = cls.class_instance || null
 
@@ -164,14 +173,17 @@ export default {
               this.attendanceMap[s.id] = "PRESENT";
             });
 
-            console.log("Class instance:", this.classInstance);
+            //console.log("Class instance:", this.classInstance);
 
           } catch (err) {
             console.error("Failed to load students:", err);
           }
         },
 
-    async submitAttendance() {
+        
+   async submitAttendance() {
+    loading.value = true
+      
       const records_input = this.students.map(s => ({
         student: s.id,
         status: this.attendanceMap[s.id]
@@ -183,7 +195,7 @@ export default {
         records_input
       };
       
-
+      
       try {
         await attendanceApi.createAttendanceSession(payload);
       
@@ -198,13 +210,16 @@ export default {
 
         toast.error("Failed submitting attendance");
       }
+      finally {
+        loading.value = false
+      }
     }
   },
+
 
   mounted() {
     this.getStoredClassInfo()
   }
-
 };
 </script>
 

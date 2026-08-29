@@ -79,6 +79,7 @@ import { watch } from "vue"
 
 
 
+
 import PresentIcon from "../icons/PresentIcon.vue";
 import AbsentIcon from "../icons/AbsentIcon.vue";
 import LateIcon from "../icons/LateIcon.vue";
@@ -86,6 +87,7 @@ import DocumentIcon from "../icons/UnavailableIcon.vue";
 
 const router = useRouter()
 const toast = useToast()
+
 
 export default {
   data() {
@@ -157,6 +159,7 @@ export default {
     },
 
     async saveAttendance() {
+      
       try {
         this.saving = true;
 
@@ -169,15 +172,16 @@ export default {
           })),
         };
 
-        console.log("PATCH payload:", payload);
+        //console.log("PATCH payload:", payload);
         const res = await updateAttendanceSession(this.sessionId, payload);
-       console.log("PATCH response:", res);
+       //console.log("PATCH response:", res);
        this.$router.push({ name: "TeachersAttendancePage" })
         toast.success("Attendance saved successfully!");
       } catch (err) {
         console.error("Failed to save attendance:", err);
         toast.error("Failed to save attendance.");
       } finally {
+        
         this.saving = false;
       }
     },
