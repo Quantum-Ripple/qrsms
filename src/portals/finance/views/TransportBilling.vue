@@ -631,22 +631,113 @@
           </div>
 
 
-          <div class="mt-5 p-3 bg-gray-50 rounded-lg text-sm text-gray-500">
-            The payment action should use the existing shared payment
-            system rather than creating a separate transport payment system.
-          </div>
+          <form
+            @submit.prevent="submitPayment"
+            class="space-y-4 mt-5 border-t pt-5"
+          >
+
+            <!-- AMOUNT -->
+            <div>
+
+              <label class="label">
+                Amount (KES)
+              </label>
+
+              <input
+                v-model="paymentForm.amount"
+                type="number"
+                min="0.01"
+                step="0.01"
+                required
+                class="field"
+                placeholder="0.00"
+              />
+
+            </div>
 
 
-          <div class="flex justify-end mt-5">
+            <!-- METHOD -->
+            <div>
 
-            <button
-              @click="closePayment"
-              class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-            >
-              Close
-            </button>
+              <label class="label">
+                Payment Method
+              </label>
 
-          </div>
+              <!--
+                TODO: these values must match your backend's
+                PAYMENT_METHODS choices exactly (academics/constants.py).
+                Swap this hardcoded list for the real choice values.
+              -->
+              <select
+                v-model="paymentForm.method"
+                required
+                class="field"
+              >
+
+                <option value="">
+                  Select Method
+                </option>
+
+                <option value="cash">
+                  Cash
+                </option>
+
+                <option value="mpesa">
+                  M-Pesa (Manual)
+                </option>
+
+                <option value="bank">
+                  Bank Transfer
+                </option>
+
+                <option value="cheque">
+                  Cheque
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <!-- TRANSACTION CODE -->
+            <div>
+
+              <label class="label">
+                Transaction Code (optional)
+              </label>
+
+              <input
+                v-model="paymentForm.transaction_code"
+                type="text"
+                class="field"
+                placeholder="M-Pesa code, cheque no., etc."
+              />
+
+            </div>
+
+
+            <div class="flex justify-end gap-3 pt-2">
+
+              <button
+                type="button"
+                @click="closePayment"
+                :disabled="submittingPayment"
+                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                :disabled="submittingPayment"
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300"
+              >
+                {{ submittingPayment ? 'Recording...' : 'Record Payment' }}
+              </button>
+
+            </div>
+
+          </form>
 
         </div>
 
@@ -666,12 +757,15 @@ import { useToast } from 'vue-toastification'
 import {
   fetchTransportInvoices,
   generateTransportInvoices,
+  recordPayments,
 } from '@/api/transport.js'
 
 import {
   fetchAcademicYears,
   fetchTerms,
 } from '../api/term.js'
+
+
 
 
 const toast = useToast()
@@ -697,6 +791,14 @@ const showGenerateModal = ref(false)
 
 const showPaymentModal = ref(false)
 const selectedInvoice = ref(null)
+
+const submittingPayment = ref(false)
+
+const paymentForm = ref({
+  amount: '',
+  method: '',
+  transaction_code: '',
+})
 
 
 const generateForm = ref({
@@ -995,6 +1097,13 @@ async function generateInvoices() {
 function openPayment(invoice) {
 
   selectedInvoice.value = invoice
+
+  paymentForm.value = {
+    amount: invoice.balance ?? '',
+    method: '',
+    transaction_code: '',
+  }
+
   showPaymentModal.value = true
 
 }
@@ -1002,8 +1111,67 @@ function openPayment(invoice) {
 
 function closePayment() {
 
+  if (submittingPayment.value) {
+    return
+  }
+
   showPaymentModal.value = false
   selectedInvoice.value = null
+
+}
+
+
+async function submitPayment() {
+
+  if (!selectedInvoice.value) {
+    return
+  }
+
+  submittingPayment.value = true
+
+  try {
+
+    const payload = {
+      transport_invoice: selectedInvoice.value.id,
+      amount: Number(paymentForm.value.amount),
+      method: paymentForm.value.method,
+      transaction_code: paymentForm.value.transaction_code || undefined,
+    }
+
+
+    const response = await recordPayments(payload)
+
+
+    toast.success(
+      response?.data?.message ||
+      'Transport payment recorded successfully.'
+    )
+
+
+    showPaymentModal.value = false
+    selectedInvoice.value = null
+
+
+    await loadInvoices()
+
+
+  } catch (error) {
+
+    console.error(
+      'Failed recording transport payment:',
+      error
+    )
+
+    showApiErrors(
+      error,
+      'Failed to record transport payment.'
+    )
+
+  } finally {
+
+    submittingPayment.value = false
+
+  }
 
 }
 

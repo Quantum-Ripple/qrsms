@@ -50,3 +50,7 @@ export async function updateTransportInvoice(id, data) {
 export async function deleteTransportInvoice(id) {
   return api.delete(`/transport/invoices/${id}/`)
 }
+
+export function recordPayments(payload) {
+  return api.post('/payments/', payload)
+}
