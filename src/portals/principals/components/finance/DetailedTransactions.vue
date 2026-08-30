@@ -115,7 +115,7 @@
               Payment Method
             </th>
             <th class="border px-3 py-2 text-left">Amount</th>
-            <th class="border px-3 py-2 text-left">Actions</th>
+            <!--<th class="border px-3 py-2 text-left">Actions</th>-->
           </tr>
         </thead>
 
@@ -147,14 +147,14 @@
               {{ formatCurrency(txn.amount) }}
             </td>
 
-            <td class="border px-3 py-2">
+            <!--<td class="border px-3 py-2">
               <button
                 @click="goToInvoice(txn.id)"
                 class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 text-xs"
               >
                 Invoice
               </button>
-            </td>
+            </td>-->
           </tr>
         </tbody>
       </table>
@@ -234,20 +234,144 @@ function exportToExcel() {
   XLSX.writeFile(wb, "transactions.xlsx")
 }
 
-function exportToPDF() {
-  const doc = new jsPDF()
+/*
+|--------------------------------------------------------------------------
+| PDF REPORT — same visual language as the receipts (navy accent, muted
+| gray labels, light zebra striping) so everything the school prints
+| feels like one product.
+|--------------------------------------------------------------------------
+*/
 
-  doc.text("Detailed Transactions", 14, 10)
+const REPORT_COLORS = {
+  accent: [23, 52, 88],
+  ink: [30, 32, 36],
+  muted: [120, 122, 128],
+  panel: [246, 247, 249],
+  line: [223, 225, 229],
+}
+
+function activeFilterSummary() {
+  const parts = []
+  if (searchQuery.value) parts.push(`Name contains "${searchQuery.value}"`)
+  if (filter.value.method) parts.push(`Method: ${filter.value.method}`)
+  if (dateRange.value.start || dateRange.value.end) {
+    parts.push(
+      `Date: ${dateRange.value.start || "—"} to ${dateRange.value.end || "—"}`
+    )
+  }
+  return parts.join("   •   ")
+}
+
+function exportToPDF() {
+  const rows = filteredTransactions.value
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" })
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const pageHeight = doc.internal.pageSize.getHeight()
+  const margin = 14
+
+  doc.setProperties({ title: "Transaction Report", subject: "Detailed Transactions" })
+
+  // Title + generated timestamp
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(16)
+  doc.setTextColor(...REPORT_COLORS.accent)
+  doc.text("Transaction Report", margin, 16)
+
+  doc.setFont("helvetica", "normal")
+  doc.setFontSize(8.5)
+  doc.setTextColor(...REPORT_COLORS.muted)
+  doc.text(
+    `Generated ${new Date().toLocaleString("en-GB")}`,
+    pageWidth - margin,
+    16,
+    { align: "right" }
+  )
+
+  // Applied filters, only shown when something is actually active
+  let subY = 22
+  const filterSummary = activeFilterSummary()
+  if (filterSummary) {
+    doc.setFontSize(8.5)
+    doc.text(`Filters — ${filterSummary}`, margin, subY)
+    subY += 5
+  }
+
+  doc.setDrawColor(...REPORT_COLORS.accent)
+  doc.setLineWidth(0.6)
+  doc.line(margin, subY, pageWidth - margin, subY)
 
   autoTable(doc, {
-    head: [["Date", "Full Name",  "Method", "Amount"]],
-    body: filteredTransactions.value.map((txn) => [
+    startY: subY + 5,
+    margin: { left: margin, right: margin },
+    head: [["Date", "Full Name", "Class Level", "Payment Method", "Amount"]],
+    body: rows.map((txn) => [
       formatDate(txn.date),
       txn.full_name,
+      txn.class_level || "—",
       txn.payment_method,
       formatCurrency(txn.amount),
     ]),
+    styles: {
+      font: "helvetica",
+      fontSize: 9,
+      textColor: REPORT_COLORS.ink,
+      lineColor: REPORT_COLORS.line,
+      lineWidth: 0.2,
+      cellPadding: 3,
+    },
+    headStyles: {
+      fillColor: REPORT_COLORS.accent,
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+      fontSize: 8.5,
+    },
+    alternateRowStyles: {
+      fillColor: REPORT_COLORS.panel,
+    },
+    columnStyles: {
+      4: { halign: "right", fontStyle: "bold" },
+    },
   })
+
+  // Summary line — total + count, placed under the table
+  let summaryY = doc.lastAutoTable.finalY + 10
+  if (summaryY > pageHeight - 20) {
+    doc.addPage()
+    summaryY = margin + 6
+  }
+
+  const total = rows.reduce((sum, t) => sum + Number(t.amount || 0), 0)
+
+  doc.setFont("helvetica", "normal")
+  doc.setFontSize(9)
+  doc.setTextColor(...REPORT_COLORS.muted)
+  doc.text(
+    `${rows.length} transaction${rows.length === 1 ? "" : "s"}`,
+    margin,
+    summaryY
+  )
+
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(11)
+  doc.setTextColor(...REPORT_COLORS.ink)
+  doc.text(`Total: ${formatCurrency(total)}`, pageWidth - margin, summaryY, {
+    align: "right",
+  })
+
+  // Page numbers on every page, added last so the count is accurate
+  const totalPages = doc.internal.getNumberOfPages()
+  for (let i = 1; i <= totalPages; i += 1) {
+    doc.setPage(i)
+    doc.setFont("helvetica", "normal")
+    doc.setFontSize(7.5)
+    doc.setTextColor(...REPORT_COLORS.muted)
+    doc.text(
+      `Page ${i} of ${totalPages}`,
+      pageWidth - margin,
+      pageHeight - 8,
+      { align: "right" }
+    )
+  }
 
   doc.save("transactions.pdf")
 }

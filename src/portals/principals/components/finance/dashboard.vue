@@ -1,9 +1,6 @@
 <template>
   <div class="w-full p-4 sm:p-6 lg:p-8">
 
-    
-
-
     <div v-if="loading" class="text-center text-gray-500">Loading...</div>
     <div v-else-if="error" class="text-center text-red-500">{{ error }}</div>
 
@@ -38,22 +35,41 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue"
+import { ref, computed, onMounted, watch } from "vue"
 import { getFinanceSummary } from "../../api/finance"
+
+const props = defineProps({
+  termId: {
+    type: [String, Number],
+    default: '',
+  },
+})
 
 const financeData = ref(null)
 const loading = ref(true)
 const error = ref(null)
 
-onMounted(async () => {
+const fetchSummary = async () => {
+  loading.value = true
   try {
-    const data = await getFinanceSummary()
+    const data = await getFinanceSummary(props.termId || undefined)
     financeData.value = data
+    error.value = null
   } catch (err) {
     error.value = err.message || "Failed to load finance data."
   } finally {
     loading.value = false
   }
+}
+
+watch(() => props.termId, (newVal) => {
+  if (newVal) {
+    fetchSummary()
+  }
+})
+
+onMounted(() => {
+  fetchSummary()
 })
 
 const cards = computed(() => {

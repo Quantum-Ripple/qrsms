@@ -10,9 +10,11 @@ export async function fetchSchoolStatistics(schoolId) {
   }
 }
 
-export const getFinanceSummary = async () => {
+export const getFinanceSummary = async (termId) => {
   try {
-    const response = await api.get('/overview/')
+    const response = await api.get('/overview/', {
+      params: termId ? { term: termId } : {},
+    })
     return response.data
   } catch (error) {
     console.error('Error fetching finance summary:', error)
@@ -21,9 +23,11 @@ export const getFinanceSummary = async () => {
 }
 
 
-export const getMonthlyFinanceSummary = async () => {
+export const getMonthlyFinanceSummary = async (termId) => {
   try {
-    const response = await api.get('/fees-by-month/')
+    const response = await api.get('/fees-by-month/', {
+      params: termId ? { term: termId } : {},
+    })
     return response.data
   } catch (error) {
     console.error('Error fetching monthly finance summary:', error)

@@ -48,7 +48,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref, onMounted, watch } from "vue"
 import { Bar, Pie } from "vue-chartjs"
 import {
   Chart as ChartJS,
@@ -65,6 +65,12 @@ ChartJS.register(Title, Tooltip, Legend, BarElement, ArcElement, CategoryScale, 
 
 import { getMonthlyFinanceSummary, getClasswiseFinanceSummary ,getFinanceSummary} from "../../api/finance"
 
+const props = defineProps({
+  termId: {
+    type: [String, Number],
+    default: '',
+  },
+})
 
 const classChartData = ref(null)
 const monthChartData = ref(null)
@@ -105,12 +111,13 @@ const pieOptions = {
 }
 
 
-onMounted(async () => {
+const fetchAll = async () => {
+  loading.value = true
   try {
     const [classData, monthData, financeData] = await Promise.all([
-      getClasswiseFinanceSummary(),
-      getMonthlyFinanceSummary(),
-      getFinanceSummary()
+      getClasswiseFinanceSummary(props.termId || undefined),
+      getMonthlyFinanceSummary(props.termId || undefined),
+      getFinanceSummary(props.termId || undefined),
     ])
 
 
@@ -153,12 +160,24 @@ onMounted(async () => {
         },
       ],
     }
+
+    error.value = null
   } catch (err) {
     console.error("Error fetching fee data:", err)
     error.value = "Failed to load fee data. Please try again later."
   } finally {
     loading.value = false
   }
+}
+
+watch(() => props.termId, (newVal) => {
+  if (newVal) {
+    fetchAll()
+  }
+})
+
+onMounted(() => {
+  fetchAll()
 })
 </script>
 

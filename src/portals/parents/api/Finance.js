@@ -1,8 +1,10 @@
 
 import api from '../../../api/axios'
 
-export function getStudentFinanceDetails(studentId) {
-  return api.get(`/student/${studentId}/`)
+export function getStudentFinanceDetails(studentId, termId) {
+  return api.get(`/student/${studentId}/`, {
+    params: termId ? { term: termId } : {},
+  })
 }
 
 export function getFeeStructures(feeStructureId) {

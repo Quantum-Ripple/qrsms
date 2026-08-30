@@ -1,10 +1,11 @@
-
 import api from '../../../api/axios'
 
 
-export const getFinanceSummary = async () => {
+export const getFinanceSummary = async (termId) => {
   try {
-    const response = await api.get('/overview/')
+    const response = await api.get('/overview/', {
+      params: termId ? { term: termId } : {},
+    })
     return response.data
   } catch (error) {
     console.error('Error fetching finance summary:', error)
@@ -12,18 +13,22 @@ export const getFinanceSummary = async () => {
   }
 }
 
-export const getMonthlyFinanceSummary = async () => {
+export const getMonthlyFinanceSummary = async (termId) => {
   try {
-    const response = await api.get('/fees-by-month/')
+    const response = await api.get('/fees-by-month/', {
+      params: termId ? { term: termId } : {},
+    })
     return response.data
   } catch (error) {
     console.error('Error fetching monthly finance summary:', error)
     throw error
   }}
 
-export const getClasswiseFinanceSummary = async () => {
+export const getClasswiseFinanceSummary = async (termId) => {
   try {
-    const response = await api.get('/fees-by-class/')
+    const response = await api.get('/fees-by-class/', {
+      params: termId ? { term: termId } : {},
+    })
     return response.data
   }catch (err){
     console.error('Error fetching classwise finance summary:', err )
