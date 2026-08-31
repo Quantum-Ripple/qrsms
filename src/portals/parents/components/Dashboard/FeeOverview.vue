@@ -86,7 +86,7 @@
 
         <div class="card-actions">
           <button class="pay-now-btn" @click="goToOnlinePayment">
-            Pay Now
+            Pay With Mpesa Now
           </button>
         </div>
 
@@ -315,18 +315,17 @@
   }
 
   .card-actions {
-    display: flex;
-    justify-content: flex-end;
     margin-top: 1rem;
   }
 
   .pay-now-btn {
+    width: 100%;
     background: linear-gradient(135deg, #1db954, #14a44d);
     color: #fff;
     border: none;
     border-radius: 10px;
-    padding: 0.75rem 1.25rem;
-    font-size: 0.95rem;
+    padding: 0.85rem 1rem;
+    font-size: 0.98rem;
     font-weight: 700;
     cursor: pointer;
     box-shadow: 0 6px 16px rgba(29, 185, 84, 0.25);
