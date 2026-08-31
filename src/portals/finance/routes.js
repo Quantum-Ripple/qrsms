@@ -6,6 +6,7 @@ import Payments from './views/Payments.vue'
 import FeeStructures from './views/FeeStructures.vue'
 import Expenditures from './views/Expenditures.vue'
 import Invoices from './views/Invoices.vue'
+import TransportConfiguration from './views/TransportConfiguration.vue'
 import FeeDetails from './components/FeeStructure/FeeDetails.vue'
 import FeeCreate from './components/FeeStructure/FeeCreate.vue'
 import FeePrint from './components/FeeStructure/FeePrint.vue'
@@ -14,6 +15,7 @@ import InvoiceDetail from './components/Invoices/InvoiceDetail.vue'
 import PaymentDetails from './components/payments/PaymentDetails.vue'
 import ExpenseDetails from './components/Expenses/ExpenseDetails.vue'
 import EventDetail from './components/events/EventDetail.vue'
+import TransportBilling from './views/TransportBilling.vue'
 
 export default [
   // Base dashboard
@@ -40,6 +42,10 @@ export default [
   // Expenditures
   { path: 'expenditures', name: 'FinanceExpenditures', component: Expenditures },
   { path: 'expense-details/:id', name: 'ExpenseDetails', component: ExpenseDetails, props: true },
+
+  // Transport
+  { path: 'transport-billing', name: 'TransportBilling', component: TransportBilling },
+  { path: 'transport-configurations', name: 'TransportConfigurations', component: TransportConfiguration },
 
   // Events
   { path: 'event-details/:id', name: 'FinanceEventDetail', component: EventDetail, props: true },

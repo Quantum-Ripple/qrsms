@@ -1,10 +1,14 @@
+
 <template>
   <div class="p-6 max-w-3xl mx-auto space-y-6">
     <h1 class="text-3xl font-bold text-gray-800">
       Pay School Fees
     </h1>
 
-    <!-- Student Selection -->
+    <!-- ========================= -->
+    <!-- STUDENT SELECTION -->
+    <!-- ========================= -->
+
     <div class="bg-white rounded-xl shadow border p-6 space-y-4">
       <h2 class="text-xl font-semibold text-gray-700">
         Select Student
@@ -39,7 +43,11 @@
       </select>
     </div>
 
-    <!-- Invoice Selection -->
+
+    <!-- ========================= -->
+    <!-- PAYMENT DETAILS -->
+    <!-- ========================= -->
+
     <div
       v-if="selectedStudentId"
       class="bg-white rounded-xl shadow border p-6 space-y-4"
@@ -48,64 +56,179 @@
         Payment Details
       </h2>
 
+      <!-- FINANCE LOADING -->
       <div v-if="financeLoading" class="text-gray-500">
         Loading outstanding invoices...
       </div>
 
-      <div v-else-if="invoices.length === 0" class="text-yellow-600">
-        This student has no outstanding invoices.
-      </div>
-
       <template v-else>
 
-        <!-- Invoice -->
+        <!-- ========================= -->
+        <!-- PAYMENT TYPE -->
+        <!-- ========================= -->
+
         <div>
           <label class="block font-medium text-gray-700 mb-2">
-            Invoice
+            Payment Type
           </label>
 
           <select
-            v-model="selectedInvoiceId"
+            v-model="paymentType"
             :disabled="paymentInProgress"
             class="w-full border rounded-lg px-4 py-3 disabled:bg-gray-100"
           >
-            <option value="" disabled>
-              Select invoice
+            <option value="school_fees">
+              School Fees
             </option>
 
-            <option
-              v-for="invoice in invoices"
-              :key="invoice.id"
-              :value="invoice.id"
-            >
-              Invoice #{{ invoice.id }}
-              — Balance: KES {{ formatAmount(invoice.balance) }}
+            <option value="transport">
+              Transport
             </option>
           </select>
         </div>
 
-        <!-- Invoice Summary -->
-        <div
-          v-if="selectedInvoice"
-          class="bg-gray-50 rounded-lg p-4 space-y-2"
-        >
-          <p>
-            <span class="font-medium">Amount Due:</span>
-            KES {{ formatAmount(selectedInvoice.amount_due) }}
-          </p>
 
-          <p>
-            <span class="font-medium">Amount Paid:</span>
-            KES {{ formatAmount(selectedInvoice.amount_paid) }}
-          </p>
+        <!-- ========================= -->
+        <!-- SCHOOL FEE INVOICE -->
+        <!-- ========================= -->
 
-          <p>
-            <span class="font-medium">Outstanding Balance:</span>
-            KES {{ formatAmount(invoiceBalance) }}
-          </p>
-        </div>
+        <template v-if="paymentType === 'school_fees'">
 
-        <!-- Phone Number -->
+          <div v-if="invoices.length === 0" class="text-yellow-600">
+            This student has no outstanding school fee invoices.
+          </div>
+
+          <template v-else>
+
+            <!-- Invoice -->
+            <div>
+              <label class="block font-medium text-gray-700 mb-2">
+                Invoice
+              </label>
+
+              <select
+                v-model="selectedInvoiceId"
+                :disabled="paymentInProgress"
+                class="w-full border rounded-lg px-4 py-3 disabled:bg-gray-100"
+              >
+                <option value="" disabled>
+                  Select invoice
+                </option>
+
+                <option
+                  v-for="invoice in invoices"
+                  :key="invoice.id"
+                  :value="invoice.id"
+                >
+                  Invoice #{{ invoice.id }}
+                  — Balance: KES {{ formatAmount(invoice.balance) }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Invoice Summary -->
+            <div
+              v-if="selectedInvoice"
+              class="bg-gray-50 rounded-lg p-4 space-y-2"
+            >
+              <p>
+                <span class="font-medium">Amount Due:</span>
+                KES {{ formatAmount(selectedInvoice.amount_due) }}
+              </p>
+
+              <p>
+                <span class="font-medium">Amount Paid:</span>
+                KES {{ formatAmount(selectedInvoice.amount_paid) }}
+              </p>
+
+              <p>
+                <span class="font-medium">Outstanding Balance:</span>
+                KES {{ formatAmount(invoiceBalance) }}
+              </p>
+            </div>
+
+          </template>
+        </template>
+
+
+        <!-- ========================= -->
+        <!-- TRANSPORT INVOICE -->
+        <!-- ========================= -->
+
+        <template v-if="paymentType === 'transport'">
+
+          <div v-if="transportInvoices.length === 0" class="text-yellow-600">
+            This student has no outstanding transport invoices.
+          </div>
+
+          <template v-else>
+
+            <!-- Transport Invoice -->
+            <div>
+              <label class="block font-medium text-gray-700 mb-2">
+                Transport Invoice
+              </label>
+
+              <select
+                v-model="selectedTransportInvoiceId"
+                :disabled="paymentInProgress"
+                class="w-full border rounded-lg px-4 py-3 disabled:bg-gray-100"
+              >
+                <option value="" disabled>
+                  Select transport invoice
+                </option>
+
+                <option
+                  v-for="invoice in transportInvoices"
+                  :key="invoice.id"
+                  :value="invoice.id"
+                >
+                  {{ invoice.route_name_snapshot }}
+                  ({{ formatTripType(invoice.trip_type_snapshot) }})
+                  — Balance: KES {{ formatAmount(invoice.balance) }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Transport Invoice Summary -->
+            <div
+              v-if="selectedTransportInvoice"
+              class="bg-gray-50 rounded-lg p-4 space-y-2"
+            >
+              <p>
+                <span class="font-medium">Route:</span>
+                {{ selectedTransportInvoice.route_name_snapshot }}
+              </p>
+
+              <p>
+                <span class="font-medium">Trip Type:</span>
+                {{ formatTripType(selectedTransportInvoice.trip_type_snapshot) }}
+              </p>
+
+              <p>
+                <span class="font-medium">Amount Due:</span>
+                KES {{ formatAmount(selectedTransportInvoice.amount_due) }}
+              </p>
+
+              <p>
+                <span class="font-medium">Amount Paid:</span>
+                KES {{ formatAmount(selectedTransportInvoice.amount_paid) }}
+              </p>
+
+              <p>
+                <span class="font-medium">Outstanding Balance:</span>
+                KES {{ formatAmount(transportInvoiceBalance) }}
+              </p>
+            </div>
+
+          </template>
+        </template>
+
+
+        <!-- ========================= -->
+        <!-- PHONE NUMBER -->
+        <!-- ========================= -->
+
         <div>
           <label class="block font-medium text-gray-700 mb-2">
             M-Pesa Phone Number
@@ -125,7 +248,11 @@
           </p>
         </div>
 
-        <!-- Amount -->
+
+        <!-- ========================= -->
+        <!-- AMOUNT -->
+        <!-- ========================= -->
+
         <div>
           <label class="block font-medium text-gray-700 mb-2">
             Amount to Pay
@@ -136,20 +263,21 @@
             type="number"
             min="1"
             step="0.01"
-            :max="invoiceBalance"
+            :max="currentInvoiceBalance"
             placeholder="Enter amount"
             :disabled="paymentInProgress"
             class="w-full border rounded-lg px-4 py-3 disabled:bg-gray-100"
           />
 
           <p
-            v-if="selectedInvoice"
+            v-if="currentInvoiceBalance > 0"
             class="text-sm text-gray-500 mt-1"
           >
             Maximum payment:
-            KES {{ formatAmount(invoiceBalance) }}
+            KES {{ formatAmount(currentInvoiceBalance) }}
           </p>
         </div>
+
 
         <!-- ========================= -->
         <!-- PAYMENT PROCESSING STATUS -->
@@ -183,6 +311,7 @@
 
           </div>
         </div>
+
 
         <!-- ========================= -->
         <!-- SUCCESS -->
@@ -219,6 +348,7 @@
           </p>
         </div>
 
+
         <!-- ========================= -->
         <!-- FAILED -->
         <!-- ========================= -->
@@ -248,6 +378,7 @@
           </p>
         </div>
 
+
         <!-- ========================= -->
         <!-- GENERAL ERROR -->
         <!-- ========================= -->
@@ -258,6 +389,7 @@
         >
           {{ error }}
         </div>
+
 
         <!-- ========================= -->
         <!-- SUBMIT -->
@@ -320,7 +452,18 @@ const students = ref([]);
 const studentsLoading = ref(true);
 
 const selectedStudentId = ref("");
+
 const selectedInvoiceId = ref("");
+const selectedTransportInvoiceId = ref("");
+
+
+/*
+|--------------------------------------------------------------------------
+| Payment Type
+|--------------------------------------------------------------------------
+*/
+
+const paymentType = ref("school_fees");
 
 
 /*
@@ -330,6 +473,8 @@ const selectedInvoiceId = ref("");
 */
 
 const invoices = ref([]);
+const transportInvoices = ref([]);
+
 const financeLoading = ref(false);
 
 
@@ -396,9 +541,17 @@ const formatAmount = (amount) => {
 };
 
 
+const formatTripType = (type) => {
+  if (type === "ROUND_TRIP") return "Round Trip";
+  if (type === "ONE_WAY") return "One Way";
+
+  return type || "—";
+};
+
+
 /*
 |--------------------------------------------------------------------------
-| Selected invoice
+| Selected school invoice
 |--------------------------------------------------------------------------
 */
 
@@ -412,7 +565,21 @@ const selectedInvoice = computed(() => {
 
 /*
 |--------------------------------------------------------------------------
-| Invoice balance
+| Selected transport invoice
+|--------------------------------------------------------------------------
+*/
+
+const selectedTransportInvoice = computed(() => {
+  return transportInvoices.value.find(
+    (invoice) =>
+      String(invoice.id) === String(selectedTransportInvoiceId.value)
+  );
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| School invoice balance
 |--------------------------------------------------------------------------
 */
 
@@ -434,6 +601,43 @@ const invoiceBalance = computed(() => {
 
 /*
 |--------------------------------------------------------------------------
+| Transport invoice balance
+|--------------------------------------------------------------------------
+*/
+
+const transportInvoiceBalance = computed(() => {
+  if (!selectedTransportInvoice.value) {
+    return 0;
+  }
+
+  if (selectedTransportInvoice.value.balance !== undefined) {
+    return Number(selectedTransportInvoice.value.balance);
+  }
+
+  return (
+    Number(selectedTransportInvoice.value.amount_due || 0) -
+    Number(selectedTransportInvoice.value.amount_paid || 0)
+  );
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| Current invoice balance
+|--------------------------------------------------------------------------
+*/
+
+const currentInvoiceBalance = computed(() => {
+  if (paymentType.value === "transport") {
+    return transportInvoiceBalance.value;
+  }
+
+  return invoiceBalance.value;
+});
+
+
+/*
+|--------------------------------------------------------------------------
 | Can submit
 |--------------------------------------------------------------------------
 */
@@ -441,12 +645,17 @@ const invoiceBalance = computed(() => {
 const canSubmit = computed(() => {
   const paymentAmount = Number(amount.value);
 
+  const invoiceSelected =
+    paymentType.value === "transport"
+      ? selectedTransportInvoiceId.value
+      : selectedInvoiceId.value;
+
   return (
     selectedStudentId.value &&
-    selectedInvoiceId.value &&
+    invoiceSelected &&
     phoneNumber.value &&
     paymentAmount > 0 &&
-    paymentAmount <= invoiceBalance.value
+    paymentAmount <= currentInvoiceBalance.value
   );
 });
 
@@ -489,11 +698,17 @@ const loadStudentFinance = async (studentId) => {
 
   selectedInvoiceId.value = "";
 
+  selectedTransportInvoiceId.value = "";
+
   amount.value = "";
 
   try {
     const response =
       await getStudentFinanceDetails(studentId);
+
+    /*
+     * School fee invoices
+     */
 
     const studentInvoices =
       response.data.invoices || [];
@@ -511,10 +726,37 @@ const loadStudentFinance = async (studentId) => {
       );
     });
 
+
+    /*
+     * Transport invoices
+     *
+     * The finance endpoint is expected to return
+     * transport_invoices alongside invoices.
+     */
+
+    const studentTransportInvoices =
+      response.data.transport_invoices || [];
+
+    transportInvoices.value =
+      studentTransportInvoices.filter((invoice) => {
+        const balance =
+          invoice.balance !== undefined
+            ? Number(invoice.balance)
+            : Number(invoice.amount_due || 0) -
+              Number(invoice.amount_paid || 0);
+
+        return (
+          balance > 0 &&
+          !invoice.is_fully_paid
+        );
+      });
+
   } catch (err) {
     console.error(err);
 
     invoices.value = [];
+
+    transportInvoices.value = [];
 
     error.value =
       "Failed to load student finance details.";
@@ -586,17 +828,21 @@ const handlePaymentSuccess = async (transaction) => {
   successMessage.value =
     "Payment completed successfully.";
 
+
   /*
    * Refresh invoice data so the parent immediately
    * sees the updated balance.
    */
+
   await loadStudentFinance(
     selectedStudentId.value
   );
 
+
   /*
    * Clear payment amount after successful payment.
    */
+
   amount.value = "";
 };
 
@@ -624,7 +870,6 @@ const handlePaymentFailure = (transaction) => {
   paymentErrorMessage.value =
     transaction.result_description ||
     "The M-Pesa payment was not completed.";
-
 };
 
 
@@ -647,6 +892,7 @@ const pollTransactionStatus = async () => {
    * 40 attempts × 3 seconds = approximately
    * 2 minutes of polling.
    */
+
   if (pollAttempts > MAX_POLL_ATTEMPTS) {
     stopPolling();
 
@@ -680,6 +926,7 @@ const pollTransactionStatus = async () => {
       String(transaction.status || "")
         .toLowerCase();
 
+
     /*
      * SUCCESS
      */
@@ -691,6 +938,7 @@ const pollTransactionStatus = async () => {
 
       return;
     }
+
 
     /*
      * FAILED
@@ -706,6 +954,7 @@ const pollTransactionStatus = async () => {
 
       return;
     }
+
 
     /*
      * Still waiting.
@@ -728,6 +977,7 @@ const pollTransactionStatus = async () => {
      * A temporary network/API problem is not the same
      * thing as an M-Pesa failure.
      */
+
     pollingTimer = setTimeout(
       pollTransactionStatus,
       POLL_INTERVAL
@@ -761,6 +1011,7 @@ const startPolling = () => {
 */
 
 const submitPayment = async () => {
+
   /*
    * Reset previous result state.
    */
@@ -783,12 +1034,24 @@ const submitPayment = async () => {
 
 
   /*
+   * Determine which invoice is being paid.
+   */
+
+  const selectedPaymentInvoice =
+    paymentType.value === "transport"
+      ? selectedTransportInvoice.value
+      : selectedInvoice.value;
+
+
+  /*
    * Validate invoice.
    */
 
-  if (!selectedInvoice.value) {
+  if (!selectedPaymentInvoice) {
     error.value =
-      "Please select an invoice.";
+      paymentType.value === "transport"
+        ? "Please select a transport invoice."
+        : "Please select an invoice.";
 
     return;
   }
@@ -818,7 +1081,7 @@ const submitPayment = async () => {
 
   if (
     paymentAmount >
-    invoiceBalance.value
+    currentInvoiceBalance.value
   ) {
     error.value =
       "Payment amount cannot exceed the outstanding invoice balance.";
@@ -854,18 +1117,49 @@ const submitPayment = async () => {
       "STK PAYMENT REQUEST:",
       {
         student: selectedStudentId.value,
-        invoice: selectedInvoiceId.value,
+
+        invoice:
+          paymentType.value === "school_fees"
+            ? selectedInvoiceId.value
+            : null,
+
+        transport_invoice:
+          paymentType.value === "transport"
+            ? selectedTransportInvoiceId.value
+            : null,
+
         amount: paymentAmount,
+
         phone_number: phoneNumber.value,
       }
     );
 
 
+    /*
+     * IMPORTANT:
+     *
+     * Send either the school invoice OR the
+     * transport invoice.
+     *
+     * The other one is explicitly null.
+     */
+
     const response =
       await initiateMpesaSTKPush({
         student: selectedStudentId.value,
-        invoice: selectedInvoiceId.value,
+
+        invoice:
+          paymentType.value === "school_fees"
+            ? selectedInvoiceId.value
+            : null,
+
+        transport_invoice:
+          paymentType.value === "transport"
+            ? selectedTransportInvoiceId.value
+            : null,
+
         amount: paymentAmount,
+
         phone_number: phoneNumber.value,
       });
 

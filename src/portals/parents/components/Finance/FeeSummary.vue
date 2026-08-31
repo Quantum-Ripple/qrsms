@@ -1,11 +1,10 @@
-
 <template>
   <div class="p-6 space-y-6">
     
     <h1 class="text-2xl font-bold text-gray-800">Student Fee Overview</h1>
 
     
-    <div class="mb-4">
+    <div class="mb-4 flex flex-wrap items-center gap-4">
       
       <div v-if="studentsLoading" class="text-gray-500">Loading students...</div>
 
@@ -29,6 +28,19 @@
       <div v-else class="text-gray-700">
         <span class="font-medium">Student:</span>
         <span class="ml-2">{{ students[0].full_name }}</span>
+      </div>
+
+      <div v-if="terms.length" class="flex items-center gap-3">
+        <label class="font-medium">Term:</label>
+        <select v-model="selectedTerm" class="border px-3 py-1 rounded">
+          <option
+            v-for="term in terms"
+            :key="term.id"
+            :value="String(term.id)"
+          >
+            {{ term.name }}, {{ term.academic_year_name }}
+          </option>
+        </select>
       </div>
     </div>
 
@@ -54,7 +66,7 @@
         </div>
       </div>
 
-      
+      <!-- TOTALS (unchanged position/meaning from before) -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="bg-blue-100 p-4 rounded-xl shadow text-center">
           <p class="text-gray-600">Total Billed</p>
@@ -73,14 +85,54 @@
           <p class="text-xl font-bold">{{ formatAmount(overpayment) }}</p>
         </div>
       </div>
+
+      <!-- BREAKDOWN (secondary — the "why" behind the totals above) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-white p-4 rounded-xl shadow border">
+          <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">School Fees</h3>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div>
+              <p class="text-xs text-gray-500">Billed</p>
+              <p class="font-semibold text-gray-800">{{ formatAmount(data.school_fees_billed) }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Paid</p>
+              <p class="font-semibold text-gray-800">{{ formatAmount(data.school_fees_paid) }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Balance</p>
+              <p class="font-semibold text-gray-800">{{ formatAmount(data.school_fees_balance) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl shadow border">
+          <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Transport</h3>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div>
+              <p class="text-xs text-gray-500">Billed</p>
+              <p class="font-semibold text-gray-800">{{ formatAmount(data.transport_billed) }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Paid</p>
+              <p class="font-semibold text-gray-800">{{ formatAmount(data.transport_paid) }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Balance</p>
+              <p class="font-semibold text-gray-800">{{ formatAmount(data.transport_balance) }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { getStudent } from "../../api/Students";  
 import { getStudentFinanceDetails } from "../../api/Finance";
+import { fetchTerms } from "../../api/terms.js";
 
 
 const students = ref([]);
@@ -90,15 +142,37 @@ const data = ref(null);
 const loading = ref(false);
 const error = ref(null);
 
+const terms = ref([]);
+const selectedTerm = ref('');
+// Distinguishes "we set selectedTerm ourselves after learning the
+// backend's current term" from "the parent picked a term" — avoids a
+// redundant extra fetch right after the first one.
+let syncingTerm = false;
+
+
+const loadTerms = async () => {
+  try {
+    const response = await fetchTerms();
+    terms.value = Array.isArray(response) ? response : response?.results || [];
+  } catch (err) {
+    console.error('Failed loading terms:', err);
+  }
+};
+
 
 const fetchFinance = async (studentId) => {
   if (!studentId) return;
   loading.value = true;
   error.value = null;
   try {
-    const res = await getStudentFinanceDetails(studentId);
+    const res = await getStudentFinanceDetails(studentId, selectedTerm.value || undefined);
    
     data.value = res.data;
+
+    if (!selectedTerm.value && data.value?.term?.id) {
+      syncingTerm = true;
+      selectedTerm.value = String(data.value.term.id);
+    }
   } catch (err) {
     console.error(err);
     error.value = "Failed to load finance details.";
@@ -112,6 +186,16 @@ const onStudentChange = async () => {
   if (!selectedStudentId.value) return;
   await fetchFinance(selectedStudentId.value);
 };
+
+watch(selectedTerm, (newVal, oldVal) => {
+  if (syncingTerm) {
+    syncingTerm = false;
+    return;
+  }
+  if (newVal && newVal !== oldVal) {
+    fetchFinance(selectedStudentId.value);
+  }
+});
 
 
 const overpayment = computed(() => {
@@ -139,9 +223,8 @@ onMounted(async () => {
       return;
     }
 
-    
     selectedStudentId.value = students.value[0].id;
-    await fetchFinance(selectedStudentId.value);
+    await Promise.all([loadTerms(), fetchFinance(selectedStudentId.value)]);
 
   } catch (err) {
     console.error(err);

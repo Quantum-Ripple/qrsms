@@ -1,53 +1,23 @@
-<!--
-/**
- * @file FeeOverview.vue
- * @description This component provides a high-level overview of a student's financial status,
- *              including total fees billed, total paid, outstanding balance, and any overpayment.
- *
- * @overview
- * As a stateless child component, it receives a `studentId` as a prop and fetches the
- * corresponding financial data. It then displays this information in a clear, summarized
- * format within a dashboard card. The component is designed to be reactive, updating its
- * display whenever the `studentId` prop changes.
- *
- * @props
- * - `studentId`: A required `String` prop representing the unique identifier for the student.
- *   This ID is used to fetch the relevant financial data.
- *
- * @dataDisplayed
- * - Total Fees Billed
- * - Total Paid
- * - Outstanding Balance
- * - Overpayment (only displayed if the balance is negative)
- *
- * @dataFetching
- * - `getStudentFinanceDetails(studentId)` from `../../api/Finance.js`: Fetches the financial
- *   details for the student specified by the `studentId` prop.
- *
- * @dependencies
- * - Vue Composition API: `ref`, `computed`, `watch`, `toRefs`.
- * - API Service: `../../api/Finance.js`.
- *
- * @interactions
- * - **Data Reactivity:** A `watch` effect with `{ immediate: true }` on the `studentId` prop
- *   triggers the `fetchFinance` function both when the component is first mounted and whenever
- *   the `studentId` prop changes.
- * - **Overpayment Calculation:** The `overpayment` computed property calculates and returns any
- *   overpayment amount based on a negative balance.
- * - **Amount Formatting:** The `formatAmount` function formats the financial figures into a
- *   localized currency string (e.g., "Ksh 1,234.56").
- *
- * @uiUx
- * - Presents the financial overview in a clean, card-based layout (`dashboard-card`).
- * - Uses distinct colors for different financial items (e.g., blue for billed, green for paid,
- *   red for balance) to improve readability and quick comprehension.
- * - Provides clear user feedback with distinct states for loading, error, and "no data" scenarios.
- */
--->
 <template>
     <div class="dashboard-card">
-      <h3 class="card-title">Fee Overview</h3>
-  
+      <div class="card-header">
+        <h3 class="card-title">Fee Overview</h3>
+
+        <select
+          v-if="terms.length"
+          v-model="selectedTerm"
+          class="term-select"
+        >
+          <option
+            v-for="term in terms"
+            :key="term.id"
+            :value="String(term.id)"
+          >
+            {{ term.name }}, {{ term.academic_year_name }}
+          </option>
+        </select>
+      </div>
+
       
       <div v-if="loading" class="loading-placeholder">
         <p>Loading financial data...</p>
@@ -60,6 +30,8 @@
   
       
       <div v-if="data" class="card-content">
+
+        <!-- TOTALS (unchanged from before — same numbers a parent already knows) -->
         <div class="info-item">
           <p class="label">Total Fees Billed</p>
           <p class="value text-blue">{{ formatAmount(data.total_billed) }}</p>
@@ -76,6 +48,48 @@
           <p class="label">Overpayment</p>
           <p class="value text-yellow">{{ formatAmount(overpayment) }}</p>
         </div>
+
+        <!-- BREAKDOWN (secondary, smaller, clearly labeled — the "why" behind the totals above) -->
+        <div class="breakdown">
+          <div class="breakdown-group">
+            <p class="breakdown-title">School Fees</p>
+            <div class="breakdown-row">
+              <span>Billed</span>
+              <span>{{ formatAmount(data.school_fees_billed) }}</span>
+            </div>
+            <div class="breakdown-row">
+              <span>Paid</span>
+              <span>{{ formatAmount(data.school_fees_paid) }}</span>
+            </div>
+            <div class="breakdown-row">
+              <span>Balance</span>
+              <span>{{ formatAmount(data.school_fees_balance) }}</span>
+            </div>
+          </div>
+
+          <div class="breakdown-group">
+            <p class="breakdown-title">Transport</p>
+            <div class="breakdown-row">
+              <span>Billed</span>
+              <span>{{ formatAmount(data.transport_billed) }}</span>
+            </div>
+            <div class="breakdown-row">
+              <span>Paid</span>
+              <span>{{ formatAmount(data.transport_paid) }}</span>
+            </div>
+            <div class="breakdown-row">
+              <span>Balance</span>
+              <span>{{ formatAmount(data.transport_balance) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="pay-now-btn" @click="goToOnlinePayment">
+            Pay With Mpesa Now
+          </button>
+        </div>
+
       </div>
        <div v-else-if="!loading && !error" class="no-data">
         <p>No financial data available for this student.</p>
@@ -84,9 +98,12 @@
   </template>
   
   <script setup>
-  import { ref, computed, watch, toRefs } from "vue";
+  import { ref, computed, watch, toRefs, onMounted } from "vue";
+  import { useRouter } from "vue-router";
   import { getStudentFinanceDetails } from "../../api/Finance";
+  import { fetchTerms } from "../../api/terms.js";
   
+  const router = useRouter();
   
   const props = defineProps({
     studentId: {
@@ -101,6 +118,22 @@
   const data = ref(null);
   const loading = ref(false);
   const error = ref(null);
+
+  const terms = ref([]);
+  const selectedTerm = ref('');
+  // Distinguishes "we set selectedTerm ourselves after learning the
+  // backend's current term" from "the parent picked a term" — avoids a
+  // redundant extra fetch right after the first one.
+  let syncingTerm = false;
+
+  const loadTerms = async () => {
+    try {
+      const response = await fetchTerms();
+      terms.value = Array.isArray(response) ? response : response?.results || [];
+    } catch (err) {
+      console.error('Failed loading terms:', err);
+    }
+  };
   
   
   const fetchFinance = async (id) => {
@@ -111,8 +144,13 @@
     loading.value = true;
     error.value = null;
     try {
-      const res = await getStudentFinanceDetails(id);
+      const res = await getStudentFinanceDetails(id, selectedTerm.value || undefined);
       data.value = res.data;
+
+      if (!selectedTerm.value && data.value?.term?.id) {
+        syncingTerm = true;
+        selectedTerm.value = String(data.value.term.id);
+      }
     } catch (err) {
       console.error('Error fetching finance details:', err);
       error.value = "Failed to load financial data.";
@@ -129,6 +167,20 @@
     },
     { immediate: true } 
   );
+
+  watch(selectedTerm, (newVal, oldVal) => {
+    if (syncingTerm) {
+      syncingTerm = false;
+      return;
+    }
+    if (newVal && newVal !== oldVal) {
+      fetchFinance(studentId.value);
+    }
+  });
+
+  onMounted(() => {
+    loadTerms();
+  });
   
   
   const overpayment = computed(() => {
@@ -142,6 +194,10 @@
       if(amount === null || amount === undefined) return "Ksh 0.00";
       return `Ksh ${Number(amount).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
+
+  const goToOnlinePayment = () => {
+    router.push({ name: 'ParentOnlinePayment' });
+  };
   </script>
   
   <style scoped>
@@ -156,12 +212,30 @@
   .dashboard-card:hover {
     transform: translateY(-4px);
   }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
   
   .card-title {
     font-size: 1.25rem;
     font-weight: bold;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0;
     color: #333;
+  }
+
+  .term-select {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.85rem;
+    color: #374151;
+    background: #fff;
   }
   
   .card-content {
@@ -200,6 +274,67 @@
     text-align: center;
     padding: 2rem;
     color: #777;
+  }
+
+  .breakdown {
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px dashed #e5e7eb;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 420px) {
+    .breakdown {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .breakdown-group {
+    background: #fafafa;
+    border-radius: 8px;
+    padding: 0.75rem;
+  }
+
+  .breakdown-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.5rem;
+  }
+
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #4b5563;
+    padding: 0.2rem 0;
+  }
+
+  .card-actions {
+    margin-top: 1rem;
+  }
+
+  .pay-now-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #1db954, #14a44d);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    font-size: 0.98rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(29, 185, 84, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .pay-now-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(29, 185, 84, 0.35);
   }
   </style>
   

@@ -7,6 +7,11 @@ export const listTerms = async () => {
   return response.data
 }
 
+export const fetchTerms = async () => {
+    const response = await api.get('/terms/')
+    return response.data
+}
+
 
 export const createTerm = async (payload) => {
   const response = await api.post('/terms/', payload)

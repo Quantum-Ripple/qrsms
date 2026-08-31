@@ -9,6 +9,9 @@ import Payments from '../views/Payments.vue'
 import FeeStructures from '../views/FeeStructures.vue'
 import Expenditures from '../views/Expenditures.vue'
 import Invoices from '../views/Invoices.vue'
+import TransportConfigurations  from '../views/TransportConfiguration.vue'
+
+
 import FeeDetails from '../components/FeeStructure/FeeDetails.vue'
 import FeeCreate from '../components/FeeStructure/FeeCreate.vue'
 import FeePrint from '../components/FeeStructure/FeePrint.vue'
@@ -17,6 +20,7 @@ import InvoiceDetail from '../components/Invoices/InvoiceDetail.vue'
 import PaymentDetails from '../components/payments/PaymentDetails.vue'
 import ExpenseDetails from '../components/Expenses/ExpenseDetails.vue'
 import EventDetail from '../components/events/EventDetail.vue'
+
 
 
 
@@ -113,6 +117,12 @@ const routes = [
         name: 'Settings',
         component: Settings,
       },
+      {
+        path: 'transport-configurations',
+        name: 'TransportConfigurations',
+        component: TransportConfigurations,
+      },
+
 
     ],
   },

@@ -3,7 +3,25 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-2xl font-semibold text-gray-800">Analytics Overview</h2>
-      <p class="text-sm text-gray-500">Current Academic Year: {{ new Date().getFullYear() }}</p>
+
+      <div class="flex items-center gap-2">
+        <label class="text-sm text-gray-500" for="analytics-term-select">
+          Term
+        </label>
+        <select
+          id="analytics-term-select"
+          v-model="selectedTerm"
+          class="border rounded px-3 py-1.5 text-sm text-gray-700"
+        >
+          <option
+            v-for="term in terms"
+            :key="term.id"
+            :value="String(term.id)"
+          >
+            {{ term.name }}, {{ term.academic_year_name }}
+          </option>
+        </select>
+      </div>
     </div>
 
     <!-- Graph Grid -->
@@ -36,7 +54,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import {
   Chart,
   BarController,
@@ -59,6 +77,7 @@ import {
   getMonthlyFinanceSummary,
   getFinanceSummary
 } from '../../api/Dashboard'
+import { fetchTerms } from '../../api/term.js'
 
 // Register Chart.js components + Filler (required for `fill: true`)
 Chart.register(
@@ -85,18 +104,28 @@ let studentsByClassChart = null
 let amountCollectedChart = null
 let feeStatusChart = null
 
-// Fallback / default data (used if API doesn't provide it)
-const defaultClassLevels = [
-  'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5',
-  'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9'
-]
-const defaultStudentsPerClass = [40, 35, 50, 45, 55, 48, 52, 47, 43]
+
 
 const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+
+// Fallbacks used when the backend returns no per-class breakdown.
+// (Referenced below but never actually defined in the original file —
+// filled in here so an empty stats response shows an empty chart
+// instead of throwing.)
+const defaultClassLevels = []
+const defaultStudentsPerClass = []
 
 // Read user -> school id
 const user = JSON.parse(localStorage.getItem("user") || "{}")
 const school_id = user.school || ""
+
+// Term selector state
+const terms = ref([])
+const selectedTerm = ref('')
+// Distinguishes "we just set selectedTerm ourselves after learning the
+// backend's current term" from "the user picked something in the
+// dropdown" — avoids a redundant extra fetch right after the first one.
+let syncingTerm = false
 
 // Helper: safely destroy charts
 function destroyCharts() {
@@ -105,24 +134,32 @@ function destroyCharts() {
   if (feeStatusChart) { feeStatusChart.destroy(); feeStatusChart = null }
 }
 
-onUnmounted(() => {
-  destroyCharts()
-})
+async function loadTerms() {
+  try {
+    const response = await fetchTerms()
+    terms.value = Array.isArray(response) ? response : response?.results || []
+  } catch (err) {
+    console.error('Failed loading terms:', err)
+  }
+}
 
-onMounted(async () => {
-  // destroy any existing charts (hot-reload / remount safety)
+async function loadDashboard() {
+  // destroy any existing charts before rebuilding (hot-reload / remount /
+  // term-change safety)
   destroyCharts()
 
   try {
     // fetch required data in parallel
-
-   
     const [stats, financeSummary, monthly] = await Promise.all([
       fetchSchoolStatistics(school_id),
-      getFinanceSummary(),
-      getMonthlyFinanceSummary()
+      getFinanceSummary(selectedTerm.value || undefined),
+      getMonthlyFinanceSummary(selectedTerm.value || undefined)
     ])
-  
+
+    if (!selectedTerm.value && financeSummary?.term?.id) {
+      syncingTerm = true
+      selectedTerm.value = String(financeSummary.term.id)
+    }
 
     // -------- Students per class ----------
     let classLabels = []
@@ -253,6 +290,24 @@ onMounted(async () => {
     // Log and leave the fallback charts (or none) visible
     console.error('Error initializing charts:', err)
   }
+}
+
+watch(selectedTerm, (newVal, oldVal) => {
+  if (syncingTerm) {
+    syncingTerm = false
+    return
+  }
+  if (newVal && newVal !== oldVal) {
+    loadDashboard()
+  }
+})
+
+onUnmounted(() => {
+  destroyCharts()
+})
+
+onMounted(async () => {
+  await Promise.all([loadTerms(), loadDashboard()])
 })
 </script>
 

@@ -1,9 +1,15 @@
 import axios from "axios"
 
+
+
+
+//const BASE_URL ="https://smspreviewversion.onrender.com/api/v1/" //preview version
+//const BASE_URL = "http://127.0.0.1:8000/api/v1/" //local version
+const BASE_URL = "https://sms-zpq6.onrender.com/api/v1/" //production version
+
+
 const api = axios.create({
-  //baseURL: "http://127.0.0.1:8000/api/v1/",
- 
-  baseURL: "https://sms-zpq6.onrender.com/api/v1/",
+  baseURL: BASE_URL
 
 })
 
@@ -56,8 +62,7 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem("refresh_token")
 
         const response = await axios.post(
-          //"http://127.0.0.1:8000/api/v1/token/refresh/",
-          "https://sms-zpq6.onrender.com/api/v1/token/refresh/",
+          `${BASE_URL}token/refresh/`,
           { refresh: refreshToken }
         )
 
