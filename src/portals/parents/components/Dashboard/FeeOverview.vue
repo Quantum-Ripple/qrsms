@@ -84,6 +84,12 @@
           </div>
         </div>
 
+        <div class="card-actions">
+          <button class="pay-now-btn" @click="goToOnlinePayment">
+            Pay Now
+          </button>
+        </div>
+
       </div>
        <div v-else-if="!loading && !error" class="no-data">
         <p>No financial data available for this student.</p>
@@ -93,9 +99,11 @@
   
   <script setup>
   import { ref, computed, watch, toRefs, onMounted } from "vue";
+  import { useRouter } from "vue-router";
   import { getStudentFinanceDetails } from "../../api/Finance";
   import { fetchTerms } from "../../api/terms.js";
   
+  const router = useRouter();
   
   const props = defineProps({
     studentId: {
@@ -186,6 +194,10 @@
       if(amount === null || amount === undefined) return "Ksh 0.00";
       return `Ksh ${Number(amount).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
+
+  const goToOnlinePayment = () => {
+    router.push({ name: 'ParentOnlinePayment' });
+  };
   </script>
   
   <style scoped>
@@ -300,6 +312,30 @@
     font-size: 0.85rem;
     color: #4b5563;
     padding: 0.2rem 0;
+  }
+
+  .card-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+  }
+
+  .pay-now-btn {
+    background: linear-gradient(135deg, #1db954, #14a44d);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(29, 185, 84, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .pay-now-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(29, 185, 84, 0.35);
   }
   </style>
   
