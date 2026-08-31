@@ -3,9 +3,9 @@ import axios from "axios"
 
 
 
-const BASE_URL ="https://smspreviewversion.onrender.com/api/v1/" //preview version
+//const BASE_URL ="https://smspreviewversion.onrender.com/api/v1/" //preview version
 //const BASE_URL = "http://127.0.0.1:8000/api/v1/" //local version
-//const BASE_URL = "https://sms-zpq6.onrender.com/api/v1/" //production version
+const BASE_URL = "https://sms-zpq6.onrender.com/api/v1/" //production version
 
 
 const api = axios.create({
