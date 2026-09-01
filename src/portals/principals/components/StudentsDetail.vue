@@ -281,13 +281,11 @@
                   Round Trip
                 </option>
 
-                <option value="PICKUP_ONLY">
-                  Pickup Only
+                <option value="ONE_WAY">
+                  One Way
                 </option>
 
-                <option value="DROPOFF_ONLY">
-                  Drop-off Only
-                </option>
+                
               </select>
             </div>
 
