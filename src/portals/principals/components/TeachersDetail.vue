@@ -113,26 +113,15 @@
 
         <!-- TEACHING INFORMATION -->
         <section class="rounded-2xl bg-white p-6 shadow">
-
-          <h3 class="mb-5 text-lg font-semibold text-gray-800">
-            Teaching Information
-          </h3>
-
-          <div class="grid gap-5 md:grid-cols-2">
-
-            <InfoItem
-              label="Class Teacher"
-              :value="teacher.is_class_teacher ? 'Yes' : 'No'"
-            />
-
-            <InfoItem
-              label="Number of Assignments"
-              :value="teacher.assignments?.length || 0"
-            />
-
-          </div>
-
-        </section>
+            <h3 class="mb-5 text-lg font-semibold text-gray-800">Teaching Information</h3>
+            <div class="grid gap-5 md:grid-cols-2">
+              <InfoItem
+                label="Class Teacher Of"
+                :value="classTeacherOfSummary"
+              />
+              <InfoItem label="Number of Assignments" :value="teacher.assignments?.length || 0" />
+            </div>
+          </section>
 
 
         <!-- TEACHING ASSIGNMENTS -->
@@ -147,34 +136,35 @@
             class="space-y-3"
           >
 
-            <div
-              v-for="assignment in teacher.assignments"
-              :key="assignment.id"
-              class="rounded-xl border border-gray-200 bg-gray-50 p-4"
-            >
-
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-
-                <div>
-                  <p class="font-semibold text-gray-800">
-                    {{ assignment.class_level_name || assignment.class_level }}
-                  </p>
-
-                  <p class="text-sm text-gray-500">
-                    Stream:
-                    {{ assignment.stream_name || assignment.stream || 'N/A' }}
-                  </p>
-                </div>
-
+                    
+          <div
+            v-for="assignment in teacher.assignments"
+            :key="assignment.id"
+            class="rounded-xl border border-gray-200 bg-gray-50 p-4"
+          >
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div>
+                <p class="font-semibold text-gray-800">
+                  {{ assignment.class_level_name || assignment.class_level }}
+                </p>
+                <p class="text-sm text-gray-500">
+                  Stream: {{ assignment.stream_name || assignment.stream || 'N/A' }}
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <!-- NEW -->
                 <span
-                  class="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700"
+                  v-if="assignment.is_class_teacher"
+                  class="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700"
                 >
+                  Class Teacher
+                </span>
+                <span class="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
                   {{ assignment.subject || 'No subject' }}
                 </span>
-
               </div>
-
             </div>
+          </div>
 
           </div>
 
@@ -346,16 +336,7 @@
                 placeholder="Address"
               ></textarea>
 
-              <label class="flex items-center gap-2 md:col-span-2">
-                <input
-                  type="checkbox"
-                  v-model="form.is_class_teacher"
-                />
-
-                <span class="text-sm text-gray-700">
-                  Is Class Teacher
-                </span>
-              </label>
+              
 
             </div>
 
@@ -584,6 +565,15 @@ function closeResetPassword() {
   confirmPassword.value = ''
 }
 
+const classTeacherOfSummary = computed(() => {
+  const classTeacherRows = (teacher.value?.assignments || []).filter(a => a.is_class_teacher)
+  if (classTeacherRows.length === 0) return 'Not a class teacher'
+  return classTeacherRows
+    .map(a => `${a.class_level_name || a.class_level} ${a.stream_name || a.stream || ''}`.trim())
+    .join(', ')
+})
+ 
+
 
 /**
  * Normalize backend → form
@@ -730,42 +720,24 @@ function removeAssignment(index) {
 
 }
 
-
 function buildAssignmentPayload() {
-
   return form.value.assignments
-
-    .filter(
-      a =>
-        a.class_level &&
-        a.stream &&
-        a.subject
-    )
-
+    .filter(a => a.class_level && a.stream && a.subject)
     .map(assignment => ({
-
       id: assignment.id,
-
       class_level: assignment.class_level,
-
       stream: assignment.stream,
-
-      subject: assignment.subject
-
+      subject: assignment.subject,
+      is_class_teacher: !!assignment.is_class_teacher,  // FIX: was silently dropped, ticking the box did nothing
     }))
-
 }
-
 
 /**
  * Update teacher
  */
 async function updateTeacher() {
-
   try {
-
     const payload = {
-
       first_name: form.value.first_name,
       last_name: form.value.last_name,
       email: form.value.email,
@@ -775,41 +747,19 @@ async function updateTeacher() {
       address: form.value.address,
       is_active: teacher.value.is_active,
       school: teacher.value.school,
-      is_class_teacher: form.value.is_class_teacher,
       national_id: form.value.national_id,
       assignments: buildAssignmentPayload()
-
     }
-
-
-    await teachersApi.update(
-      teacher.value.id,
-      payload
-    )
-
-
+ 
+    await teachersApi.update(teacher.value.id, payload)
     toast.success("Teacher updated successfully")
-
     editMode.value = false
-
-
-    teacher.value =
-      await teachersApi.get(
-        teacher.value.id
-      )
-
+    teacher.value = await teachersApi.get(teacher.value.id)
     normalizeForm()
-
   } catch (error) {
-
-    console.error(
-      error.response?.data || error
-    )
-
+    console.error(error.response?.data || error)
     toast.error("Update failed")
-
   }
-
 }
 
 

@@ -162,16 +162,18 @@ export default {
       },
 
         isClassTeacherHere() {
-          if (this.classInstance && this.user.class_instance) {
-            return String(this.user.class_instance) === String(this.classInstance)
-          }
+            if (!this.user.teaching_assignments) return false
 
-          return (
-            this.user.is_class_teacher &&
-            this.user.class_level === this.classLevelName &&
-            this.user.stream === this.streamName
-          )
-        },
+            return this.user.teaching_assignments.some((a) => {
+              if (a.is_class_teacher !== true) return false
+
+              if (this.classInstance && a.class_instance) {
+                return String(a.class_instance) === String(this.classInstance)
+              }
+              return a.class_level_name === this.classLevelName && a.stream_name === this.streamName
+            })
+          },
+          
 
         canMarkAttendance() {
           return this.isClassTeacherHere

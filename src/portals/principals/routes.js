@@ -31,6 +31,7 @@ import ParentList from './views/ParentsList.vue'
 import ParentPage from './components/parents/ParentsPage.vue'
 import ParentEdit from './components/parents/ParentEdit.vue'
 import ExamManagement from './views/ExamManagement.vue'
+import AttendanceManagement from './views/AttendanceManagement.vue'
 
 
 export default [
@@ -68,6 +69,8 @@ export default [
   // Attendance
   { path: 'attendance', name: 'PrincipalAttendance', component: AttendancePage },
   { path: 'attendance/:id', name: 'PrincipalAttendanceSessionDetail', component: AttendanceSessionDetail, props: true },
+  { path: 'attendance-management', name: 'PrincipalAttendanceManagement', component: AttendanceManagement },
+  
 
   //EXAMS
   { path: 'exams', name: 'ExamManagement', component: ExamManagement },
