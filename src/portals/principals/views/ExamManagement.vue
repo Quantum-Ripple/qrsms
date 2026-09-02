@@ -64,10 +64,7 @@
         No assessments yet
       </h3>
 
-      <p class="text-sm text-gray-500 mt-1 mb-5">
-        Create an assessment to make it available to the selected grades.
-      </p>
-
+     
       <button
         type="button"
         @click="showCreateModal = true"
