@@ -1,9 +1,9 @@
 import api from '../../../api/axios'
 
 
-export const getStrands = async () => {
+export const getStrands = async (params = {}) => {
   try {
-    const res = await api.get('/strands/');
+    const res = await api.get('/strands/', { params });
     return Array.isArray(res.data) ? res.data : res.data.results ?? [];
   } catch (error) {
     console.error('Error fetching strands:', error);
@@ -80,11 +80,15 @@ export const getSubjectScores = async (examId, subject) => {
   }
 };
 
-export const getAllSubjectScores = async (examId) => {
+
+
+export const getAllSubjectScores = async (examId, studentIds = []) => {
   try {
-    const res = await api.get("/subject-exam-scores/", {
-      params: { exam: examId }
-    })
+    const params = { exam: examId }
+    if (studentIds.length) {
+      params.students = studentIds.join(",")
+    }
+    const res = await api.get("/subject-exam-scores/", { params })
     return Array.isArray(res.data) ? res.data : res.data.results ?? []
   } catch (error) {
     console.error("Error fetching all subject scores:", error)

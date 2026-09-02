@@ -70,9 +70,18 @@ const navItems = [
     ],
   },
 
-  { label: 'Attendance Management', route: { name: 'PrincipalAttendanceManagement' } },
+  { label: 'Attendance', route: { name: 'PrincipalAttendanceManagement' } },
 
-  { label: 'Exam Management', route: { name: 'ExamManagement' } },
+  {
+    label: 'Academics',
+    children: [
+      
+      { label: 'Create Assessments', route: { name: 'ExamManagement' } },
+      { label: 'Performance Reports', route: { name: 'Academics' } },
+    ],
+  },
+
+
 
   { label: 'Reports', route: { name: 'PrincipalReports' } },
   { label: 'Promotions', route: { name: 'Promotions' } },

@@ -23,47 +23,36 @@ export const createExam = async(payload)=>{
   }
 };
 
-
-export const getExamGrades = async (examId) => {
+export const getPrincipalDashboard = async (examId, params = {}) => {
   try {
-    const res = await api.get(`/exams/${examId}/grades/`);
+    const res = await api.get('/analytics/principal-dashboard/', {
+      params: { exam: examId, ...params },
+    });
     return res.data;
   } catch (error) {
-    console.error('Error fetching exam grades:', error);
+    console.error('Error fetching principal dashboard:', error);
     throw error;
   }
 };
 
-
-export const createGrade = async (data) => {
+export const getExamComparison = async (params = {}) => {
   try {
-    const res = await api.post('/grades/', data);
-    return res.data;
+    const res = await api.get('/analytics/exam-comparison/', { params });
+    return Array.isArray(res.data) ? res.data : res.data.results ?? [];
   } catch (error) {
-    console.error('Error creating grade:', error);
+    console.error('Error fetching exam comparison:', error);
     throw error;
   }
 };
 
-
-export const updateGrade = async (gradeId, data) => {
+export const getTeacherDashboard = async (examId, subject, params = {}) => {
   try {
-    const res = await api.patch(`/grades/${gradeId}/`, data);
+    const res = await api.get('/analytics/teacher-dashboard/', {
+      params: { exam: examId, subject, ...params },
+    });
     return res.data;
   } catch (error) {
-    console.error('Error updating grade:', error);
-    throw error;
-  }
-};
-
-
-export const bulkUploadGrades = async (examId, gradesArray) => {
-  try {
-    const payload = { grades: gradesArray };
-    const res = await api.post(`/exams/${examId}/grades/bulk/`, payload);
-    return res.data;
-  } catch (error) {
-    console.error('Error uploading bulk grades:', error);
+    console.error('Error fetching teacher dashboard:', error);
     throw error;
   }
 };

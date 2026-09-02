@@ -123,7 +123,7 @@ import * as XLSX from "xlsx"
 
 import { getExams } from "@/portals/teachers/api/Grades"
 import studentsApi from "../../api/Students"
-import { getAllSubjectScores } from "../../api/assessments"
+import { getAllSubjectScores, getStrands } from "../../api/assessments"
 
 import { SUBJECTS } from '../../../../constants/subjects'
 
@@ -134,38 +134,87 @@ const selectedExam = ref(null)
 
 const students = ref([])
 const subjectScores = ref([])
+const gradeSubjects = ref([])
 
 const loading = ref(false)
 const exporting = ref(false)
 const message = ref("")
 
-const grade=computed(() => classStore.activeClass?.class_level_name)
-const stream=computed(() => classStore.activeClass?.stream_name)
+const grade = computed(() => classStore.activeClass?.class_level_name)
+const stream = computed(() => classStore.activeClass?.stream_name)
+
+let requestId = 0
+
+/* =========================
+   LOAD EXAMS
+========================= */
 
 const loadExams = async () => {
   const cls = classStore.activeClass
+
   if (!cls) return
 
   try {
     const allExams = await getExams()
 
-            exams.value = allExams.filter(exam => {
-              if (cls.class_instance && exam.class_instance) {
-        return String(exam.class_instance) === String(cls.class_instance)
+    exams.value = allExams.filter(exam => {
+
+      
+      if (
+        Array.isArray(exam.target_class_levels) &&
+        exam.target_class_levels.length
+      ) {
+        return exam.target_class_levels.some(
+          levelId =>
+            String(levelId) ===
+            String(cls.class_level)
+        )
       }
 
-      return exam.class_level === cls.class_level &&
-        exam.stream === cls.stream
+      /*
+       * LEGACY EXAMS CREATED FOR A CLASS INSTANCE
+       */
+      if (
+        cls.class_instance &&
+        exam.class_instance
+      ) {
+        return (
+          String(exam.class_instance) ===
+          String(cls.class_instance)
+        )
+      }
+
+      /*
+       * LEGACY EXAMS CREATED FOR A CLASS LEVEL
+       */
+      if (exam.class_level) {
+        return (
+          String(exam.class_level) ===
+          String(cls.class_level)
+        )
+      }
+
+      return false
     })
 
     if (exams.value.length) {
       selectedExam.value = exams.value[0].id
+    } else {
+      selectedExam.value = null
     }
+
   } catch (error) {
     console.error("Failed to load exams:", error)
+
+    exams.value = []
+    selectedExam.value = null
     message.value = "Failed to load exams."
   }
 }
+
+/* =========================
+   LOAD STUDENTS
+========================= */
 
 const loadStudents = async () => {
   const cls = classStore.activeClass
@@ -180,27 +229,62 @@ const loadStudents = async () => {
   }
 }
 
-const loadResults = async () => {
-  if (!selectedExam.value) return
+/* =========================
+   LOAD GRADE SUBJECTS (curriculum, from Strand)
+========================= */
 
+const loadGradeSubjects = async () => {
+  const cls = classStore.activeClass
+  if (!cls) return
+
+  try {
+    const strands = await getStrands({ class_level: cls.class_level })
+    gradeSubjects.value = [...new Set(strands.map(s => s.subject))]
+  } catch (error) {
+    console.error("Failed to load grade subjects:", error)
+    gradeSubjects.value = []
+  }
+}
+
+/* =========================
+   LOAD RESULTS
+========================= */
+const loadResults = async () => {
+  if (!selectedExam.value || !students.value.length) {
+    subjectScores.value = []
+    return
+  }
+
+  const thisRequest = ++requestId
   loading.value = true
   message.value = ""
 
   try {
-    const data = await getAllSubjectScores(selectedExam.value)
+    const studentIds = students.value.map(s => s.id)
+    const data = await getAllSubjectScores(selectedExam.value, studentIds)
+
+    if (thisRequest !== requestId) return
     subjectScores.value = Array.isArray(data) ? data : []
   } catch (error) {
     console.error("Failed to load subject results:", error)
-    message.value = "Failed to load subject results."
-    subjectScores.value = []
+    if (thisRequest === requestId) {
+      message.value = "Failed to load subject results."
+      subjectScores.value = []
+    }
   } finally {
-    loading.value = false
+    if (thisRequest === requestId) loading.value = false
   }
 }
 
+/* =========================
+   DERIVED DATA
+========================= */
+
 const subjectColumns = computed(() => {
-  const subjects = new Set(subjectScores.value.map(item => item.subject))
-  return Array.from(subjects)
+  // Curriculum subjects for this grade, plus a safety-net union with
+  // anything actually recorded (covers subjects missing a Strand entry)
+  const recorded = new Set(subjectScores.value.map(item => item.subject))
+  return Array.from(new Set([...gradeSubjects.value, ...recorded]))
 })
 
 const scoreMap = computed(() => {
@@ -226,27 +310,6 @@ const levelFromScore = (score) => {
   if (value >= 11) return "BE1"
   return "BE2"
 }
-
-
-/*
-const subjectLabel = (code) => {
-  const labels = {
-    MAT: "Math",
-    ENG: "English",
-    KIS: "Kiswahili",
-    SCI: "Science",
-    SST: "Social Studies",
-    CRE: "CRE",
-    IRE: "IRE",
-    HRE: "HRE",
-    PRE: "PRE",
-    AGR: "Agriculture",
-    CA: "Creative Arts",
-    PE: "P.E."
-  }
-
-  return labels[code] || code
-}*/
 
 const subjectLabel = (code) => {
   const subject = SUBJECTS.find(
@@ -287,6 +350,10 @@ const tableRows = computed(() => {
   })
 })
 
+/* =========================
+   EXPORT
+========================= */
+
 const exportToExcel = async () => {
   if (!tableRows.value.length) return
 
@@ -325,25 +392,44 @@ const exportToExcel = async () => {
   }
 }
 
-watch(selectedExam, async () => {
+/* =========================
+   WATCHERS
+========================= */
+
+watch(selectedExam, async (newVal, oldVal) => {
+  if (newVal === oldVal) return
   await loadResults()
 })
 
 watch(
   () => classStore.activeClass,
   async (newCls) => {
-    if (newCls) {
-      await loadExams()
-      await loadStudents()
-    }
+    if (!newCls) return
+
+    // Clear stale data immediately so nothing from the previous class
+    // renders while the new class's data loads
+    students.value = []
+    subjectScores.value = []
+    gradeSubjects.value = []
+
+    await loadExams()
+    await loadStudents()
+    await loadGradeSubjects()
+    await loadResults()
   },
   { immediate: true }
 )
+
+/* =========================
+   INITIAL LOAD
+========================= */
 
 onMounted(async () => {
   if (classStore.activeClass) {
     await loadExams()
     await loadStudents()
+    await loadGradeSubjects()
+    await loadResults()
   }
 })
 </script>

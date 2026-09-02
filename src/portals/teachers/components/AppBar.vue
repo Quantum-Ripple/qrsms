@@ -43,7 +43,7 @@
               @click="selectClass(cls)"
               class="block w-full text-left px-4 py-2 hover:bg-gray-100"
             >
-              {{ cls.class_level_name }} {{ cls.stream_name }}
+              {{ cls.class_level_name }} {{ cls.stream_name }}, {{ cls.subject }}
             </button>
           </div>
 

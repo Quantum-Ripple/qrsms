@@ -305,57 +305,52 @@ const loadStudents = async () => {
    LOAD SCORES
 ========================= */
 
-const loadScores = async () => {
+let requestId = 0
 
-  if (
-    !selectedExam.value ||
-    !subject.value
-  ) {
+const loadScores = async () => {
+  if (!selectedExam.value || !subject.value) {
+    scores.value = {}
     return
   }
 
+  const thisRequest = ++requestId
 
   try {
+    const data = await getSubjectScores(selectedExam.value, subject.value)
 
-    const data = await getSubjectScores(
-      selectedExam.value,
-      subject.value
-    )
-
+    // A newer request has since been fired — discard this stale response
+    if (thisRequest !== requestId) return
 
     const map = {}
-
-
-    data.forEach(score => {
-
-      map[score.student] = score
-
-    })
-
-
+    data.forEach(score => { map[score.student] = score })
     scores.value = map
-
-    /*
-     * Loading fresh scores means we are
-     * starting from a clean state.
-     *
-     * No students are considered modified
-     * until the teacher edits something.
-     */
-
     modifiedStudents.value.clear()
-
   } catch (error) {
-
-    console.error(
-      "Failed to load scores:",
-      error
-    )
-
+    console.error("Failed to load scores:", error)
   }
-
 }
 
+watch(
+  () => classStore.activeClass,
+  async (newCls) => {
+    if (!newCls) return
+
+    // Clear immediately so nothing stale renders while the new data loads
+    students.value = []
+    scores.value = {}
+    modifiedStudents.value.clear()
+
+    await loadExams()
+    await loadStudents()
+    await loadScores()
+  },
+  { immediate: true }
+)
+
+watch(selectedExam, async (newVal, oldVal) => {
+  if (newVal === oldVal) return
+  await loadScores()
+})
 
 /* =========================
    GET SCORE
@@ -549,18 +544,6 @@ const saveScores = async () => {
 }
 
 
-/* =========================
-   WATCH EXAM
-========================= */
-
-watch(
-  selectedExam,
-  async () => {
-
-    await loadScores()
-
-  }
-)
 
 
 /* =========================
