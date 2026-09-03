@@ -79,6 +79,10 @@ import {
 } from '../../api/Dashboard'
 import { fetchTerms } from '../../api/term.js'
 
+import { useAuthStore } from '@/stores/authStore'
+
+const auth = useAuthStore()
+
 // Register Chart.js components + Filler (required for `fill: true`)
 Chart.register(
   BarController,
@@ -116,8 +120,7 @@ const defaultClassLevels = []
 const defaultStudentsPerClass = []
 
 // Read user -> school id
-const user = JSON.parse(localStorage.getItem("user") || "{}")
-const school_id = user.school || ""
+const school_id = auth.user?.school || ""
 
 // Term selector state
 const terms = ref([])

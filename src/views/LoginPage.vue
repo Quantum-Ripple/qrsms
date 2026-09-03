@@ -1,10 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import Auth from '../api/Auth'
+import { useAuthStore } from '@/stores/authStore'
 
 const router = useRouter()
 const route = useRoute()
+const auth = useAuthStore()
 
 const username = ref('')
 const password = ref('')
@@ -37,12 +38,10 @@ const handleLogin = async () => {
   loading.value = true
 
   try {
-    await Auth.login(username.value, password.value)
-
-    const user = Auth.getUser()
+    const user = await auth.login(username.value, password.value)
 
     if (!user || !user.role) {
-      Auth.logout()
+      await auth.logout()
       error.value = 'Login failed (no user info). Try again.'
       return
     }
@@ -61,7 +60,7 @@ const handleLogin = async () => {
     const portalPath = ROLE_TO_PORTAL_PATH[normalizedRole]
 
     if (!portalPath) {
-      Auth.logout()
+      await auth.logout()
       error.value = 'No portal configured for your role.'
       return
     }
@@ -69,7 +68,6 @@ const handleLogin = async () => {
     return router.push(portalPath)
 
   } catch (err) {
-
     if (err?.response?.status === 400) {
       error.value = 'Invalid credentials. Please try again.'
     } else if (err?.response?.status === 401) {
@@ -78,13 +76,11 @@ const handleLogin = async () => {
       error.value = 'Login failed. Please try again.'
       console.error('Login error:', err)
     }
-
   } finally {
     loading.value = false
   }
 }
 </script>
-
 <template>
   <div class="min-h-screen flex flex-col justify-center items-center bg-gray-100">
     <div class="bg-white shadow-md rounded-lg p-6 w-full max-w-sm">

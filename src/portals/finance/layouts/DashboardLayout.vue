@@ -46,8 +46,12 @@
 import { ref } from 'vue'
 import SimpleAppBar from '../components/AppBar.vue'
 import SimpleSideBar from '../components/SideBar.vue'
-import Auth from '../api/Auth'
+import Auth from '../../../api/Auth.js'
 import { useRouter } from 'vue-router'
+
+import { useAuthStore } from '@/stores/authStore'
+
+const auth = useAuthStore()
 
 const navItems = [
   { label: 'Dashboard', route: { name: 'FinanceDashboard' } },
@@ -74,7 +78,7 @@ function getGreeting() {
   if (hour < 17) return "Good afternoon"
   return "Good evening"
 }
-const userData = JSON.parse(localStorage.getItem("user") || "{}")
+const userData = auth.user
 
 const PageTitle = ref(`${getGreeting()}, ${userData.first_name || ""}`)
 
@@ -88,10 +92,9 @@ function toggleSidebar() {
   mobileSidebarOpen.value = !mobileSidebarOpen.value
 }
 
-function onLogout() {
-  if(confirm("Are you sure you want to logout?")){
-    Auth.logout()
-    router.push({ name: 'Login' })
+async function onLogout() {
+  if (confirm("Are you sure you want to logout?")) {
+    await Auth.logout()
   }
 }
 </script>

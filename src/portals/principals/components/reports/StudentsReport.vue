@@ -169,99 +169,6 @@
 </template>
 
 <script setup>
-/*import { ref, computed } from "vue"
-import { useQuery } from "@tanstack/vue-query"
-import studentsApi from "../../api/Students.js"
-import { fetchClassLevels } from "../../api/config.js"
-import jsPDF from "jspdf"
-import autoTable from "jspdf-autotable"
-import * as XLSX from "xlsx"
-
-
-
-const filters = ref({
-  class_level: "",
-  stream: "",
-  gender: ""
-})
-
-
-const user = JSON.parse(localStorage.getItem("user") || "{}")
-const school_id = user.school || ""
-
-
-const {
-  data: studentsData,
-  isFetching: studentsFetching,
-} = useQuery({
-  queryKey: ["students-report", school_id],
-
-  queryFn: async () => {
-    const response = await studentsApi.listAll()
-
-    return Array.isArray(response?.results)
-      ? response.results
-      : Array.isArray(response)
-        ? response
-        : []
-  },
-
-  staleTime: 0,
-
-  refetchOnMount: "always",
-})
-
-
-
-const students = computed(() => studentsData.value || [])
-
-const filteredStudents = computed(() =>
-  students.value.filter(s =>
-    (!filters.value.class_level || s.class_level === filters.value.class_level) &&
-    (!filters.value.stream || s.stream === filters.value.stream) &&
-    (!filters.value.gender || s.gender === filters.value.gender)
-  )
-)
-
-const totalGirls = computed(() =>
-  filteredStudents.value.filter(s => s.gender === "F").length
-)
-
-const totalBoys = computed(() =>
-  filteredStudents.value.filter(s => s.gender === "M").length
-)
-
-
-function exportPDF() {
-  const doc = new jsPDF()
-  autoTable(doc, {
-    head: [["Full Name", "Admission No", "Class", "Stream", "Gender"]],
-    body: filteredStudents.value.map(s => [
-      s.full_name,
-      s.admission_number,
-      s.class_level,
-      s.stream,
-      s.gender
-    ])
-  })
-  doc.save("student_report.pdf")
-}
-
-function exportExcel() {
-  const ws = XLSX.utils.json_to_sheet(filteredStudents.value)
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, "Students")
-  XLSX.writeFile(wb, "student_report.xlsx")
-}
-
-function printReport() {
-  const printContent = document.getElementById("studentsTable").outerHTML
-  const win = window.open("", "", "width=900,height=600")
-  win.document.write(`<html><body>${printContent}</body></html>`)
-  win.document.close()
-  win.print()
-}*/
-
 
 import { ref, computed } from "vue"
 import { useQuery } from "@tanstack/vue-query"
@@ -271,13 +178,17 @@ import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 import * as XLSX from "xlsx"
 
+import { useAuthStore } from "@/stores/authStore.js"
+
+const auth = useAuthStore()
+
 
 // --------------------------------------------------
 // SCHOOL
 // --------------------------------------------------
 
-const user = JSON.parse(localStorage.getItem("user") || "{}")
-const school_id = user.school || ""
+const user = auth.user || {}
+const school_id = user.school?.id || user.school_id
 
 
 // --------------------------------------------------

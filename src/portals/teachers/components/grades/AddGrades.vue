@@ -142,9 +142,13 @@ import { ref, onMounted } from "vue";
 import { getExams, getExamGrades, bulkUploadGrades } from "../../api/Grades";
 import StudentsApi from "../../api/Students";
 import { SUBJECTS } from "../../../../constants/subjects";
+import { useAuthStore } from "@/stores/authStore";
+import { useClassStore } from "@/stores/classStore";
 
 export default {
   setup() {
+    const auth = useAuthStore();
+    const classStore = useClassStore();
     const exams = ref([]);
     const students = ref([]);
     const subjects = ref(["ENG", "KISW", "MATH"]);
@@ -157,9 +161,7 @@ export default {
     const availableSubjects = SUBJECTS;
 
     const loadStudents = async () => {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const activeClass = JSON.parse(localStorage.getItem("activeClass") || "null");
-      const classInstance = activeClass?.class_instance || user?.class_instance;
+      const classInstance = classStore.activeClass?.class_instance || auth.user?.class_instance;
       const res = classInstance
         ? await StudentsApi.filter(classInstance)
         : [];

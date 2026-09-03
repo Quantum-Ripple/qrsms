@@ -1,24 +1,20 @@
 import axios from "axios"
-
-
-
+import { useAuthStore } from "@/stores/authStore"
 
 //const BASE_URL ="https://smspreviewversion.onrender.com/api/v1/" //preview version
-//const BASE_URL = "http://127.0.0.1:8000/api/v1/" //local version
-const BASE_URL = "https://sms-zpq6.onrender.com/api/v1/" //production version
-
+const BASE_URL = "http://localhost:8000/api/v1/"//local version
+//const BASE_URL = "https://sms-zpq6.onrender.com/api/v1/" //production version
 
 const api = axios.create({
-  baseURL: BASE_URL
-
+  baseURL: BASE_URL,
+  withCredentials: true, // sends the httpOnly refresh_token cookie
 })
-
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("access_token")
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+    const auth = useAuthStore()
+    if (auth.accessToken) {
+      config.headers.Authorization = `Bearer ${auth.accessToken}`
     }
     return config
   },
@@ -41,10 +37,13 @@ api.interceptors.response.use(
   async error => {
     const originalRequest = error.config
 
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry
-    ) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      // the refresh call itself failing shouldn't try to refresh again
+      if (originalRequest.url?.includes("token/refresh")) {
+        useAuthStore().forceLogout()
+        return Promise.reject(error)
+      }
+
       originalRequest._retry = true
 
       if (isRefreshing) {
@@ -57,26 +56,16 @@ api.interceptors.response.use(
       }
 
       isRefreshing = true
+      const auth = useAuthStore()
 
       try {
-        const refreshToken = localStorage.getItem("refresh_token")
-
-        const response = await axios.post(
-          `${BASE_URL}token/refresh/`,
-          { refresh: refreshToken }
-        )
-
-        const newAccessToken = response.data.access
-        localStorage.setItem("access_token", newAccessToken)
-
-        api.defaults.headers.Authorization = `Bearer ${newAccessToken}`
+        const newAccessToken = await auth.refreshAccessToken()
         processQueue(null, newAccessToken)
-
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
         return api(originalRequest)
       } catch (err) {
         processQueue(err, null)
-        localStorage.clear()
-        window.location.href = "/login"
+        auth.forceLogout()
         return Promise.reject(err)
       } finally {
         isRefreshing = false

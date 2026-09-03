@@ -3,11 +3,12 @@ import { ref, computed, onMounted } from "vue";
 import { listNotes, deleteNote, createNote } from "../../api/lms";
 import { SUBJECTS } from "../../../../constants/subjects";
 import { useClassStore } from "@/stores/classStore";
+import { useAuthStore } from "@/stores/authStore";
 
 const classStore = useClassStore();
+const auth = useAuthStore();
 
-const user = JSON.parse(localStorage.getItem("user"));
-const teacherId = user?.id;
+const teacherId = auth.user?.id;
 
 const notes = ref([]);
 const loading = ref(false);

@@ -102,6 +102,7 @@ import AbsentIcon from "../icons/AbsentIcon.vue";
 import DocumentIcon from "../icons/UnavailableIcon.vue";
 import LateIcon from "../icons/LateIcon.vue";
 import { useClassStore } from "@/stores/classStore"
+import { useAuthStore } from "@/stores/authStore"
 import { watch } from "vue"
 
 
@@ -145,8 +146,8 @@ export default {
 
 
     user() {
-        return JSON.parse(localStorage.getItem("user") || "{}")
-      },
+      return useAuthStore().user || {}
+    },
 
       teachesThisClass() {
         if (!this.user.teaching_assignments) return false

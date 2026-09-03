@@ -85,7 +85,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import Auth from '../../api/Auth';
+import Auth from '../../../../api/Auth';
 
 
 const oldPassword = ref('');

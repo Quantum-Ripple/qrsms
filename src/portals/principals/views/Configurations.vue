@@ -524,6 +524,9 @@ import {
   deleteTerm
 } from '../api/term'
 
+import { useAuthStore } from '@/stores/authStore.js'
+
+const auth = useAuthStore()
 
 // =========================================================
 // QUERY CLIENT
@@ -536,11 +539,9 @@ const queryClient = useQueryClient()
 // SCHOOL
 // =========================================================
 
-const user = JSON.parse(
-  localStorage.getItem('user') || '{}'
-)
+const user = auth.user || {}
 
-const school_id = user.school || ''
+const school_id = user.school?.id || user.school_id || ''
 
 
 // =========================================================

@@ -48,7 +48,7 @@
           <p><span class="font-medium text-gray-800">Admission No:</span> {{ student.admission_number }}</p>
           <p><span class="font-medium text-gray-800">Class:</span> {{ student.class_level }}</p>
           <p><span class="font-medium text-gray-800">Stream:</span> {{ student.stream }}</p>
-          <p><span class="font-medium text-gray-800">School:</span> {{ student.school_name }}</p>
+          
         </div>
       </div>
     </div>

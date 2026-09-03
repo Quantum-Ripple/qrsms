@@ -95,9 +95,6 @@ const className = ref("");
 const streamName= ref("");
 
 const getStoredClassInfo = () => {
-  /*const user = JSON.parse(localStorage.getItem("user") || "{}");
-  classLevel.value = user.class_level || "";
-  stream.value = user.stream || "";*/
   watch(
   () => classStore.activeClass,
   (cls) => {

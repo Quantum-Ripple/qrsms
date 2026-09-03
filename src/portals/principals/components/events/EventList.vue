@@ -49,6 +49,10 @@ import { useQuery } from '@tanstack/vue-query'
 import * as eventApi from '../../api/events.js'
 import { useRouter } from 'vue-router'
 
+import { useAuthStore } from '@/stores/authStore.js'
+
+const auth = useAuthStore()
+
 
 const router = useRouter()
 
@@ -60,9 +64,7 @@ const emit = defineEmits(['view'])
 // SCHOOL
 // =========================================================
 
-const user = JSON.parse(
-  localStorage.getItem('user') || '{}'
-)
+const user = auth.user || {}
 
 const school_id = user.school || ''
 

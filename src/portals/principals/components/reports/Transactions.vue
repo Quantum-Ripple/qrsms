@@ -1,66 +1,4 @@
 
-<!--
-
-Purpose:
-This page provides school principals with a detailed view of all financial
-transactions within the institution. It allows for efficient monitoring,
-filtering, analysis, and reporting of payments made by students or guardians.
-
-Key Features:
-1. Filtering:
-   - Users can filter transactions based on:
-     • Student Name (searchable)
-     • Payment Method (Cash, M-Pesa, Bank)
-     • Date Range (Start Date and End Date)
-   - Filters are reactive and update the displayed transactions instantly.
-
-2. Summary / Overview:
-   - Can be extended to include:
-     • Total Amount collected
-     • Breakdown by payment method or class
-   - Summary cards automatically reflect the filtered transaction data.
-
-3. Transaction Table / List:
-   - Displays transactions in a responsive table format.
-   - Columns include Date, Student Name, Class Level, Payment Method, Amount.
-   - Action column includes buttons to generate an invoice for individual
-     transactions.
-
-4. Export & Print Functionality:
-   - Buttons at the top allow the principal to:
-     • Export the currently filtered transactions to Excel
-     • Export the currently filtered transactions to PDF
-     • Reset filters (View All)
-   - Ensures the exported or printed report matches exactly what is displayed
-     on the screen.
-
-5. User Interaction:
-   - Users can quickly search for specific transactions or filter by
-     criteria without reloading the page.
-   - Clicking "Generate Invoice" navigates to the invoice page for that
-     transaction using Vue Router.
-
-Data Flow / Interaction with the Program:
-- The component fetches transactions from the `getTransactions()` API call on
-  mount.
-- Filtering is performed reactively on the frontend for speed and responsiveness.
-- Computed properties are used to calculate filtered transactions and any
-  aggregate totals.
-- Export functionality uses `XLSX` for Excel exports and `jsPDF` with
-  `autotable` for PDF exports.
-- Currency formatting is handled via `Intl.NumberFormat` for consistent KES
-  representation.
-
-Usage Context:
-- Intended for principals and financial administrators to monitor all
-  student-related transactions.
-- Designed to be intuitive and quick, allowing for easy export of reports for
-  audits, meetings, or further analysis.
-- Can serve as a template for other financial reporting modules, such as
-  expenditures or staff payments.
-
--->
-
 <template>
   <div class="min-h-screen w-full max-w-full overflow-x-hidden bg-gray-50 px-3 py-4 sm:px-6 sm:py-6">
  
@@ -259,6 +197,8 @@ import autoTable from "jspdf-autotable"
 import { getTransactions } from "../../api/finance"
 import { useRouter } from "vue-router"
 
+import { useAuthStore } from "@/stores/authStore.js"
+
 
 const router = useRouter()
 
@@ -267,8 +207,8 @@ const router = useRouter()
 // SCHOOL
 // --------------------------------------------------
 
-const user = JSON.parse(localStorage.getItem("user") || "{}")
-const school_id = user.school || ""
+const user = useAuthStore().user || {}
+const school_id = user.school?.id || user.school_id
 
 
 // --------------------------------------------------

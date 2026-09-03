@@ -48,7 +48,7 @@ import { ref } from 'vue'
 import SimpleAppBar from '../components/AppBar.vue'
 import SimpleSideBar from '../components/SideBar.vue'
 import Auth from '../api/Auth'
-import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
 import { useClassStore } from '@/stores/classStore'
 
 const navItems = [
@@ -74,7 +74,7 @@ const navItems = [
 
 
 const mobileSidebarOpen = ref(false)
-const router = useRouter()
+const auth = useAuthStore()
 const classStore = useClassStore()
 
 classStore.loadInitialClass()
@@ -87,7 +87,7 @@ function getGreeting() {
   if (hour < 17) return "Good afternoon"
   return "Good evening"
 }
-const userData = JSON.parse(localStorage.getItem("user") || "{}")
+const userData = auth.user || {}
 
 
 const getDisplayNameFromEmail = (email = "") => {
@@ -109,11 +109,10 @@ function toggleSidebar() {
   mobileSidebarOpen.value = !mobileSidebarOpen.value
 }
 
-function onLogout() {
+async function onLogout() {
   if(confirm("Are you sure you want to logout?")){
-    Auth.logout()
+    await Auth.logout()
     classStore.clearClass()
-    router.push({ name: 'Login' })
   }
 }
 </script>

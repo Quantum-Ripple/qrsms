@@ -60,10 +60,11 @@ import { createExam } from "../../api/Grades";
 import { listTerms } from "../../api/term";
 import { useToast } from "vue-toastification";
 import { useClassStore } from "@/stores/classStore";
+import { useAuthStore } from "@/stores/authStore";
 
 import { ref, onMounted } from "vue";
 
-const userData = JSON.parse(localStorage.getItem('user') || '{}')
+const userData = useAuthStore().user || {}
 const school = ref(`${userData.school || ""}`);
 const classStore = useClassStore();
 

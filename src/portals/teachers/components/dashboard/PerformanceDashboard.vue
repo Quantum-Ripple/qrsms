@@ -83,13 +83,6 @@ watch(
   { immediate: true }
 )
 
-/*const loadActiveClass = () => {
-  const active = JSON.parse(localStorage.getItem("activeClass") || "{}")
-  classLevel.value = active.class_level
-  stream.value = active.stream
-
-}*/
-
 const sortedRanges = computed(() => {
   const ranges = Object.keys(scoreDistribution.value).filter(k => k.includes("-"));
   return ranges.sort((a, b) => {

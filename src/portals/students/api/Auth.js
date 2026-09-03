@@ -1,58 +1,33 @@
 import api from '../../../api/axios'
+import { useAuthStore } from '@/stores/authStore'
 
 export default {
   async login(username, password) {
-
-    const response = await api.post('token/', { username, password })
-    const { access, refresh } = response.data
-
-  
-    localStorage.setItem('access_token', access)
-    localStorage.setItem('refresh_token', refresh)
-
-  
-    const userResponse = await api.get('users/me/')
-    const userData = userResponse.data
-
-
-    localStorage.setItem('user', JSON.stringify(userData))
-
-    return userData
+    return useAuthStore().login(username, password)
   },
 
-  logout() {
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
-    localStorage.removeItem('user')
+  async logout() {
+    return useAuthStore().logout()
   },
 
   isAuthenticated() {
-    const token = localStorage.getItem('access_token')
-    return !!token
+    return useAuthStore().isAuthenticated
   },
 
   getUser() {
-    return JSON.parse(localStorage.getItem('user'))
+    return useAuthStore().user
   },
-  
+
   async ChangePassword(oldPassword, newPassword) {
-  try {
-    const response = await api.put('password-change/', {
-      old_password: oldPassword,
-      new_password: newPassword
-    });
-
-    return response.data;
-
-  } catch (error) {
-    console.log("Caught Error:", error);
-
-    if (error.response) {
-      throw error.response.data;
+    try {
+      const response = await api.put('password-change/', {
+        old_password: oldPassword,
+        new_password: newPassword,
+      })
+      return response.data
+    } catch (error) {
+      if (error.response) throw error.response.data
+      throw error
     }
-
-    throw error;
-  }
-
-}
+  },
 }

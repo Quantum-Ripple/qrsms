@@ -180,13 +180,12 @@
 
 
         <button
-          v-else
-          @click="createAccount"
-          class="w-full sm:w-auto rounded-lg bg-blue-600 px-5 py-3 text-white transition hover:bg-blue-700"
-        >
-          Create Parent Account
-        </button>
-
+        v-else
+        @click="openCreateAccount"
+        class="w-full sm:w-auto rounded-lg bg-blue-600 px-5 py-3 text-white transition hover:bg-blue-700"
+      >
+        Create Parent Account
+      </button>
       </section>
 
 
@@ -462,6 +461,80 @@
 
       </div>
 
+        <!-- Create Parent Account Modal -->
+  <div
+    v-if="createAccountModalVisible"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4 overflow-y-auto"
+  >
+
+    <div
+      class="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-4 sm:p-6 shadow-xl"
+    >
+
+      <h3 class="text-lg sm:text-xl font-semibold text-gray-800">
+        Create Parent Account
+      </h3>
+
+      <p class="mt-2 text-sm text-gray-500 break-words">
+        Set login credentials for {{ parent.full_name }}.
+      </p>
+
+
+      <div class="mt-5">
+
+        <label class="mb-2 block text-sm font-medium text-gray-700">
+          Username / Email
+        </label>
+
+        <input
+          v-model="newUsername"
+          type="text"
+          placeholder="Enter username or email"
+          class="w-full min-w-0 rounded-lg border border-gray-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+
+      </div>
+
+
+      <div class="mt-4">
+
+        <label class="mb-2 block text-sm font-medium text-gray-700">
+          Password
+        </label>
+
+        <input
+          v-model="accountPassword"
+          type="password"
+          placeholder="Enter password"
+          class="w-full min-w-0 rounded-lg border border-gray-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+
+      </div>
+
+
+      <div class="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+
+        <button
+          @click="closeCreateAccount"
+          class="w-full sm:w-auto rounded-lg border border-gray-300 px-4 py-2.5 text-gray-700 transition hover:bg-gray-50"
+        >
+          Cancel
+        </button>
+
+        <button
+          @click="submitCreateAccount"
+          :disabled="!newUsername || !accountPassword || creatingAccount"
+          class="w-full sm:w-auto rounded-lg bg-blue-600 px-4 py-2.5 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {{ creatingAccount ? 'Creating...' : 'Create Account' }}
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
     </div>
 
 
@@ -500,6 +573,12 @@ const resetting = ref(false)
 
 const newPassword = ref('')
 const confirmPassword = ref('')
+
+
+const createAccountModalVisible = ref(false)
+const creatingAccount = ref(false)
+const newUsername = ref('')
+const accountPassword = ref('')
 
 
 const hasAccount = computed(() => {
@@ -584,13 +663,50 @@ async function resetPassword() {
 }
 
 
-function createAccount() {
-  /*
-   * We will connect this once the backend
-   * has a dedicated parent-account creation endpoint.
-   */
-  toast.info('Parent account creation will be added here.')
+function openCreateAccount() {
+  newUsername.value = parent.value.email || ''
+  accountPassword.value = ''
+  createAccountModalVisible.value = true
 }
+
+function closeCreateAccount() {
+  createAccountModalVisible.value = false
+  newUsername.value = ''
+  accountPassword.value = ''
+}
+
+async function submitCreateAccount() {
+  if (accountPassword.value.length < 8) {
+    toast.error('Password must be at least 8 characters.')
+    return
+  }
+
+  try {
+    creatingAccount.value = true
+
+    console.log('Creating account for parent', parent.value.id, {
+      username: newUsername.value
+    }) // temporary — remove once confirmed working
+
+    parent.value = await parentsApi.createAccount(parent.value.id, {
+      username: newUsername.value,
+      password: accountPassword.value
+    })
+
+    toast.success('Parent account created successfully.')
+    createAccountModalVisible.value = false
+
+  } catch (error) {
+    console.error('createAccount failed:', error) // temporary — shows the real cause in devtools
+
+    const data = error.response?.data
+    toast.error(data?.email?.[0] || data?.username?.[0] || data?.detail || 'Failed to create parent account.')
+
+  } finally {
+    creatingAccount.value = false
+  }
+}
+
 
 
 onMounted(async () => {

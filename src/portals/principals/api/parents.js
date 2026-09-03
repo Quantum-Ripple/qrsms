@@ -37,5 +37,9 @@ export default {
   async resetPassword(id, data) {
     const res = await api.post(`/parents/${id}/reset-password/`, data)
     return res.data
+  },
+  async createAccount(id, data) {
+    const res = await api.post(`/parents/${id}/create-account/`, data)
+    return res.data
   }
 }

@@ -110,14 +110,14 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { getSimulations } from "../../api/simulations";
+import { useAuthStore } from "@/stores/authStore";
 
 const simulations = ref([]);
 const loading = ref(false);
 const activeSimulation = ref(null);
 
-// Student class level
-const user = JSON.parse(localStorage.getItem("user") || "{}");
-const classLevel = user.class_level;
+const auth = useAuthStore();
+const classLevel = auth.user?.class_level;
 
 const openSimulation = (sim) => {
   activeSimulation.value = sim;

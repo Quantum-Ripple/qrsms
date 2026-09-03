@@ -57,23 +57,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
 import DashboardSummary from '../components/DashboardSummary.vue'
 
 const router = useRouter()
-const student = ref(null)
+const auth = useAuthStore()
+const student = computed(() => auth.user)
 const hasAnnouncements = ref(false)
 
-onMounted(() => {
-  const userData = localStorage.getItem('user')
-  console.log(userData)
-  if (userData) {
-    student.value = JSON.parse(userData)
-  }
+hasAnnouncements.value = true
 
-  hasAnnouncements.value = true
-})
 
 const goToAnnouncements = () => {
   router.push({name: 'StudentsAnnouncement'})

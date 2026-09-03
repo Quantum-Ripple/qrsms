@@ -119,6 +119,10 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import * as eventApi from '../../api/events.js'
 
+import { useAuthStore } from '@/stores/authStore.js'
+
+const auth = useAuthStore()
+
 const router = useRouter()
 
 // form data
@@ -134,8 +138,8 @@ const successMessage = ref('')
 const errorMessage = ref('')
 
 // assume user info is stored in localStorage after login
-const user = JSON.parse(localStorage.getItem('user')) || {}
-const school_id = user.school?.id || user.school_id || 1 // fallback for testing
+const user = auth.user || {}
+const school_id = user.school?.id || user.school_id
 
 
 // handle submit

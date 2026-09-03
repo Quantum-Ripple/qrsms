@@ -93,9 +93,7 @@
         <h2 class="text-lg font-semibold text-slate-800">
           Select a student to view performance
         </h2>
-        <p class="mt-2 text-sm text-slate-500">
-          Choose a student from the dropdown above to see exam results, subject scores, and performance trends.
-        </p>
+
       </div>
 
       <div

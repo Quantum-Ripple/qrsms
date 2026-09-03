@@ -160,14 +160,15 @@ import { fetchClassLevels } from '../../api/config.js'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import * as XLSX from 'xlsx'
+import { useAuthStore } from '@/stores/authStore.js'
 
 
 // --------------------------------------------------
 // SCHOOL
 // --------------------------------------------------
 
-const user = JSON.parse(localStorage.getItem('user') || '{}')
-const school_id = user.school || ''
+const user = useAuthStore().user || {}
+const school_id = user.school?.id || user.school_id
 
 
 // --------------------------------------------------

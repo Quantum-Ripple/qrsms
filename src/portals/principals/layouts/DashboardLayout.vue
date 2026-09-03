@@ -41,11 +41,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import SimpleAppBar from '../components/AppBar.vue'
 import SimpleSideBar from '../components/SideBar.vue'
 import Auth from '../api/Auth'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
+
+
+
 
 const navItems = [
   { label: 'Dashboard', route: { name: 'PrincipalDashboard' } },
@@ -110,11 +114,10 @@ function getGreeting() {
 }
 
 
-const userData = JSON.parse(localStorage.getItem("user") || "{}")
+const auth = useAuthStore()
 
-const PageTitle = ref(`${getGreeting()}, ${userData.first_name || ""}`)
-
-const sidebarTitle = ref(`${userData.school_name || ""}`)
+const PageTitle = computed(() => `${getGreeting()}, ${auth.user?.first_name || ''}`)
+const sidebarTitle = computed(() => `${auth.user?.school_name || ''}`)
 
 
 
@@ -124,10 +127,9 @@ function toggleSidebar() {
   mobileSidebarOpen.value = !mobileSidebarOpen.value
 }
 
-function onLogout() {
-  if(confirm("Are you sure you want to logout?")){
-    Auth.logout()
-    router.push({ name: 'Login' })
+async function onLogout() {
+  if (confirm("Are you sure you want to logout?")) {
+    await Auth.logout()
   }
 }
 </script>

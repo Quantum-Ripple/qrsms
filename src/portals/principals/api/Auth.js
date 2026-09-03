@@ -1,46 +1,21 @@
 import api from '../../../api/axios'
+import { useAuthStore } from '@/stores/authStore'
 
 export default {
   async login(username, password) {
-    const payload = {
-    username: username?.trim(),
-    password: password,
-  }
-
-  console.log("Payload:", payload)
-    
-    const response = await api.post('/token/', payload)
-    const { access, refresh } = response.data
-
-    
-    localStorage.setItem('access_token', access)
-    localStorage.setItem('refresh_token', refresh)
-
-    
-    const userResponse = await api.get('/users/me/')
-    const userData = userResponse.data
-
-    
-    localStorage.setItem('user', JSON.stringify(userData))
-
-    console.log(userData)
-
-    return userData
+    return useAuthStore().login(username?.trim(), password)
   },
 
-  logout() {
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
-    localStorage.removeItem('user')
+  async logout() {
+    return useAuthStore().logout()
   },
 
   isAuthenticated() {
-    const token = localStorage.getItem('access_token')
-    return !!token
+    return useAuthStore().isAuthenticated
   },
 
   getUser() {
-    return JSON.parse(localStorage.getItem('user'))
+    return useAuthStore().user
   },
 
 

@@ -5,36 +5,48 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
 
       <!-- Students -->
-      <div class="bg-white p-5 shadow rounded-lg text-center">
+      <router-link
+        :to="{ name: 'PrincipalStudents' }"
+        class="block bg-white p-5 shadow rounded-lg text-center transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      >
         <h3 class="text-gray-600 text-sm">Students</h3>
         <p class="text-2xl font-bold text-blue-600">
           {{ totalStudents }}
         </p>
-      </div>
+      </router-link>
 
       <!-- Teachers -->
-      <div class="bg-white p-5 shadow rounded-lg text-center">
+      <router-link
+        :to="{ name: 'PrincipalTeachers' }"
+        class="block bg-white p-5 shadow rounded-lg text-center transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+      >
         <h3 class="text-gray-600 text-sm">Teachers</h3>
         <p class="text-2xl font-bold text-green-600">
           {{ totalTeachers }}
         </p>
-      </div>
+      </router-link>
 
       <!-- Parents -->
-      <div class="bg-white p-5 shadow rounded-lg text-center">
+      <router-link
+        :to="{ name: 'ParentsList' }"
+        class="block bg-white p-5 shadow rounded-lg text-center transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+      >
         <h3 class="text-gray-600 text-sm">Parents</h3>
         <p class="text-2xl font-bold text-purple-600">
           {{ totalParents }}
         </p>
-      </div>
+      </router-link>
 
       <!-- Other Staff -->
-      <div class="bg-white p-5 shadow rounded-lg text-center">
+      <router-link
+        :to="{ name: 'PrincipalOtherStaff' }"
+        class="block bg-white p-5 shadow rounded-lg text-center transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
+      >
         <h3 class="text-gray-600 text-sm">Other Staff</h3>
         <p class="text-2xl font-bold text-yellow-600">
           {{ totalStaffs }}
         </p>
-      </div>
+      </router-link>
 
     </div>
 
@@ -77,6 +89,8 @@ import { ref, computed, watch, nextTick, onMounted } from 'vue'
 
 import { useQuery } from '@tanstack/vue-query'
 
+import { useAuthStore } from '@/stores/authStore'
+
 import {
   Chart,
   PieController,
@@ -105,11 +119,8 @@ let roleChart = null
 
 
 // School
-const user = JSON.parse(
-  localStorage.getItem("user") || "{}"
-)
-
-const school_id = user.school || ""
+const auth = useAuthStore()
+const school_id = auth.user?.school || ""
 
 
 // Dashboard statistics

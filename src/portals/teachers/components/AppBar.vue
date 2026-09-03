@@ -98,9 +98,11 @@
 import { ref, onMounted } from "vue"
 import { computed } from "vue"
 import { useClassStore } from "@/stores/classStore"
+import { useAuthStore } from "@/stores/authStore"
 import { watch } from "vue"
 
 const classStore = useClassStore()
+const auth = useAuthStore()
 const classes = ref([])
 const activeClass = ref(null)
 const showClassMenu = ref(false)
@@ -121,10 +123,9 @@ const selectClass = (cls) => {
 
 
 const loadClasses = () => {
-  const user = JSON.parse(localStorage.getItem("user") || "{}")
-  classes.value = user.teaching_assignments || []
+  classes.value = auth.user?.teaching_assignments || []
 
-  const saved = JSON.parse(localStorage.getItem("activeClass"))
+  const saved = classStore.activeClass
 
   // Verify if the saved class belongs to current teacher
   const isValid = saved && classes.value.some(cls => {
