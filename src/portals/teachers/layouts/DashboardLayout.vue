@@ -60,10 +60,10 @@ const navItems = [
   { label: 'Assessments' ,
      children: [
       //{ label: 'Create Assessment', route: { name: 'CreateExam' } },
-      { label: 'Rubric', route: { name: 'TeachersRubrics' } },
+      //{ label: 'Rubric', route: { name: 'TeachersRubrics' } },
       { label: 'Subject Score', route: { name: 'TeachersSubjectScore' } },
       { label: 'Term Scores', route: { name: 'TeachersResults' } },
-      {label: 'Final Results', route: {name: 'TeachersFinalResults'}}
+      //{label: 'Final Results', route: {name: 'TeachersFinalResults'}}
     ], 
   },
   { label: 'Assignments', route: { name: 'TeachersAssignmentsPage' } },
