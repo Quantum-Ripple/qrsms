@@ -108,6 +108,29 @@
               </td>
             </tr>
           </tbody>
+          <tfoot v-if="tableRows.length" class="border-t-2 border-slate-300 bg-slate-50 font-semibold">
+  <tr>
+    <td class="sticky left-0 bg-slate-50 px-4 py-3 text-slate-800">
+      Class Average
+    </td>
+
+    <td
+      v-for="subject in subjectColumns"
+      :key="subject"
+      class="px-4 py-3 text-center text-slate-700"
+    >
+      {{ subjectAverages[subject] !== null ? subjectAverages[subject].toFixed(2) : "-" }}
+    </td>
+
+    <td class="px-4 py-3 text-center text-blue-800">
+      {{ classSummary.average }}
+    </td>
+
+    <td class="px-4 py-3 text-center text-emerald-800">
+      {{ classSummary.level }}
+    </td>
+  </tr>
+</tfoot>
         </table>
       </div>
     </div>
@@ -350,10 +373,41 @@ const tableRows = computed(() => {
   })
 })
 
+
+const subjectAverages = computed(() => {
+  const sums = {}
+  const counts = {}
+
+  subjectScores.value.forEach(item => {
+    const score = Number(item.score)
+    if (Number.isNaN(score)) return
+
+    sums[item.subject] = (sums[item.subject] || 0) + score
+    counts[item.subject] = (counts[item.subject] || 0) + 1
+  })
+
+  const result = {}
+  subjectColumns.value.forEach(subject => {
+    result[subject] = counts[subject] ? sums[subject] / counts[subject] : null
+  })
+  return result
+})
+
+const classSummary = computed(() => {
+  const validTotals = tableRows.value
+    .map(row => row.total)
+    .filter(t => t !== "-")
+    .map(Number)
+
+  if (!validTotals.length) return { average: "-", level: "-" }
+
+  const average = validTotals.reduce((a, b) => a + b, 0) / validTotals.length
+  return { average: average.toFixed(2), level: levelFromScore(average) }
+})
+
 /* =========================
    EXPORT
 ========================= */
-
 const exportToExcel = async () => {
   if (!tableRows.value.length) return
 
@@ -361,9 +415,7 @@ const exportToExcel = async () => {
 
   try {
     const rows = tableRows.value.map(row => {
-      const exportRow = {
-        Student: row.studentName
-      }
+      const exportRow = { Student: row.studentName }
 
       subjectColumns.value.forEach(subject => {
         exportRow[subjectLabel(subject)] = row.subjects[subject] ?? ""
@@ -375,7 +427,23 @@ const exportToExcel = async () => {
       return exportRow
     })
 
-    const worksheet = XLSX.utils.json_to_sheet(rows)
+    // Blank row so the summary doesn't read as just another student
+    const spacerRow = { Student: "" }
+    subjectColumns.value.forEach(subject => {
+      spacerRow[subjectLabel(subject)] = ""
+    })
+    spacerRow["Total"] = ""
+    spacerRow["Level"] = ""
+
+    const summaryRow = { Student: "CLASS AVERAGE" }
+    subjectColumns.value.forEach(subject => {
+      const avg = subjectAverages.value[subject]
+      summaryRow[subjectLabel(subject)] = avg !== null ? avg.toFixed(2) : ""
+    })
+    summaryRow["Total"] = classSummary.value.average
+    summaryRow["Level"] = classSummary.value.level
+
+    const worksheet = XLSX.utils.json_to_sheet([...rows, spacerRow, summaryRow])
     const workbook = XLSX.utils.book_new()
 
     XLSX.utils.book_append_sheet(workbook, worksheet, "Results")
