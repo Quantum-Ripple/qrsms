@@ -51,7 +51,7 @@
             :key="term.id"
             :value="term.name"
           >
-            {{ term.name }}
+            {{ term.name }}, {{ term.academic_year_name }}
           </option>
 
 
@@ -159,40 +159,20 @@
 
 
             <td class="p-3 font-medium">
-
-              {{
-                Math.max(
-                  Number(invoice.amount_due) -
-                  Number(invoice.amount_paid),
-                  0
-                ).toFixed(2)
-              }}
-
-            </td>
+                <span v-if="invoice.is_overpaid" class="text-blue-700">
+                  +{{ Number(invoice.overpaid_amount).toFixed(2) }} over
+                </span>
+                <span v-else>
+                  {{ Number(invoice.balance_due).toFixed(2) }}
+                </span>
+              </td>
 
 
 
             <td class="p-3">
-
-
-              <span
-                class="px-2 py-1 rounded text-sm"
-                :class="
-                  invoice.is_fully_paid
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-yellow-100 text-yellow-700'
-                "
-              >
-
-                {{
-                  invoice.is_fully_paid
-                  ? 'Paid'
-                  : 'Pending'
-                }}
-
+              <span class="px-2 py-1 rounded text-sm" :class="statusClass(invoice)">
+                {{ statusLabel(invoice) }}
               </span>
-
-
             </td>
 
 
@@ -261,21 +241,8 @@
           </span>
 
 
-          <span
-            class="px-2 py-1 rounded text-xs"
-            :class="
-              invoice.is_fully_paid
-              ? 'bg-green-100 text-green-700'
-              : 'bg-yellow-100 text-yellow-700'
-            "
-          >
-
-            {{
-              invoice.is_fully_paid
-              ? 'Paid'
-              : 'Pending'
-            }}
-
+           <span class="px-2 py-1 rounded text-sm" :class="statusClass(invoice)">
+            {{ statusLabel(invoice) }}
           </span>
 
 
@@ -427,6 +394,17 @@ const showRecordPaymentModal = ref(false)
 const selectedInvoiceId = ref(null)
 
 
+const statusLabel = (invoice) => {
+  if (invoice.is_overpaid) return `Overpaid +${Number(invoice.overpaid_amount).toFixed(2)}`
+  return invoice.is_fully_paid ? 'Paid' : 'Pending'
+}
+
+const statusClass = (invoice) => {
+  if (invoice.is_overpaid) return 'bg-blue-100 text-blue-700'
+  return invoice.is_fully_paid
+    ? 'bg-green-100 text-green-700'
+    : 'bg-yellow-100 text-yellow-700'
+}
 // -------------------------
 // LOAD FILTER OPTIONS
 // -------------------------

@@ -60,7 +60,7 @@
                 :key="term.id"
                 :value="String(term.id)"
               >
-                {{ term.name }}
+                {{ term.name }}, {{  term.academic_year_name }}
               </option>
             </select>
           </div>
@@ -147,21 +147,19 @@
                 </td>
 
                 <td class="px-4 py-4 font-medium">
-                  KES {{ formatAmount(invoice.balance) }}
-                </td>
+                    <span v-if="invoice.is_overpaid" class="text-blue-700">
+                      +KES {{ formatAmount(invoice.overpaid_amount) }} over
+                    </span>
+                    <span v-else>
+                      KES {{ formatAmount(invoice.balance_due) }}
+                    </span>
+                  </td>
 
                 <td class="px-4 py-4">
-                  <span
-                    class="px-2.5 py-1 rounded-full text-xs font-medium"
-                    :class="
-                      invoice.is_fully_paid
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-yellow-100 text-yellow-700'
-                    "
-                  >
-                    {{ invoice.is_fully_paid ? 'Paid' : 'Pending' }}
-                  </span>
-                </td>
+                      <span class="px-2.5 py-1 rounded-full text-xs font-medium" :class="statusClass(invoice)">
+                        {{ statusLabel(invoice) }}
+                      </span>
+                    </td>
 
                 <td class="px-4 py-4 text-right">
                   <button
@@ -171,7 +169,9 @@
                   >
                     Record Payment
                   </button>
-                  <span v-else class="text-sm text-gray-400">Paid</span>
+                  <span v-else class="text-sm text-gray-400">
+                      {{ invoice.is_overpaid ? 'Overpaid' : 'Paid' }}
+                    </span>
                 </td>
               </tr>
 
@@ -206,11 +206,7 @@
 
             <span
               class="shrink-0 px-2 py-1 rounded-full text-xs font-medium"
-              :class="
-                invoice.is_fully_paid
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-yellow-100 text-yellow-700'
-              "
+              :class="statusClass(invoice)"
             >
               {{ invoice.is_fully_paid ? 'Paid' : 'Pending' }}
             </span>
@@ -239,11 +235,12 @@
             </div>
 
             <div>
-              <div class="text-gray-400 text-xs">Balance</div>
-              <div class="font-semibold text-gray-800">
-                KES {{ formatAmount(invoice.balance) }}
+                <div class="text-gray-400 text-xs">Balance</div>
+                <div class="font-semibold" :class="invoice.is_overpaid ? 'text-blue-700' : 'text-gray-800'">
+                  <template v-if="invoice.is_overpaid">+KES {{ formatAmount(invoice.overpaid_amount) }} over</template>
+                  <template v-else>KES {{ formatAmount(invoice.balance_due) }}</template>
+                </div>
               </div>
-            </div>
           </div>
 
           <button
@@ -346,7 +343,7 @@
 
             <div class="bg-blue-50 border border-blue-100 rounded-lg p-3">
               <p class="text-sm text-blue-700">
-                Invoices will be generated from each student's
+                Please know,Invoices will be generated from each student's
                 transport assignment and the configured route price.
               </p>
             </div>
@@ -436,10 +433,7 @@
 
             <div>
               <label class="label">Payment Method</label>
-              <!--
-                TODO: these values must match your backend's
-                PAYMENT_METHODS choices exactly (academics/constants.py).
-              -->
+            
               <select v-model="paymentForm.method" required class="field">
                 <option value="">Select Method</option>
                 <option value="cash">Cash</option>
@@ -552,6 +546,17 @@ const generateForm = ref({
   term: '',
 })
 
+function statusLabel(invoice) {
+  if (invoice.is_overpaid) return `+KES ${formatAmount(invoice.overpaid_amount)}`
+  return invoice.is_fully_paid ? 'Paid' : 'Pending'
+}
+
+function statusClass(invoice) {
+  if (invoice.is_overpaid) return 'bg-blue-100 text-blue-700'
+  return invoice.is_fully_paid
+    ? 'bg-green-100 text-green-700'
+    : 'bg-yellow-100 text-yellow-700'
+}
 
 // --------------------------------------------------
 // TERMS
@@ -721,7 +726,7 @@ async function generateInvoices() {
 function openPayment(invoice) {
   selectedInvoice.value = invoice
   paymentForm.value = {
-    amount: invoice.balance ?? '',
+    amount: invoice.balance_due ?? '',
     method: '',
     transaction_code: '',
   }
