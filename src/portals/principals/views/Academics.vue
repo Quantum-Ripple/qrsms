@@ -41,10 +41,11 @@
 
         <div class="grid md:grid-cols-2 gap-10 mb-12">
           <PerformanceBreakdown
-            title="Grades, ranked"
-            :rows="dashboard.grade_performance"
-            name-key="class_level_name"
-          />
+              title="Grades, ranked"
+              :rows="dashboard.grade_performance"
+              name-key="class_level_name"
+              @select-grade="goToClassResults"
+            />
           <PerformanceBreakdown
             title="Subjects, ranked"
             :rows="dashboard.subject_performance"
@@ -64,6 +65,16 @@ import { ref, computed, onMounted } from 'vue';
 import { listExams, getPrincipalDashboard } from '../api/Grades.js';
 import PerformanceBreakdown from '../components/assessments/PerformanceBreakdown.vue';
 import ExamComparisonChart from '../components/assessments/ExamComparisonChart.vue';
+import { useRouter } from 'vue-router';
+const router = useRouter();
+
+const goToClassResults = (classLevelId) => {
+  router.push({
+    name: 'ClassResults',
+    params: { classLevelId },
+    query: { exam: selectedExamId.value },
+  });
+};
 
 const exams = ref([]);
 const selectedExamId = ref(null);

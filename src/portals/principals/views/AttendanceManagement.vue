@@ -116,21 +116,15 @@
         </tbody>
       </table>
     </div>
-
-    <!--
-      TODO (next step): drill-down screen (roll-call grid + student
-      profile drawer). openClassDetail() below is a placeholder until
-      that component exists — confirm whether this project uses
-      vue-router (push to a named route) or a local modal/drawer
-      pattern before I build it, so it matches how other drill-downs
-      in the app already work.
-    -->
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { fetchComplianceDashboard } from '../api/attendance'
+
+const router = useRouter()
 
 const periodType = ref('today')
 const customStart = ref('')
@@ -143,6 +137,11 @@ const errorMessage = ref('')
 const attendanceRate = ref({ percentage: 0, present: 0, total: 0 })
 const submission = ref({ submitted: 0, total: 0 })
 const classes = ref([])
+
+// Last day of the currently-loaded period, used as the default date
+// when drilling into a single class's roll call (a range like "This
+// Week" has no single date of its own).
+const dateRangeEnd = ref('')
 
 const tabs = [
   { value: 'all', label: 'All Classes' },
@@ -230,6 +229,7 @@ async function loadDashboard() {
     attendanceRate.value = data.attendance_rate
     submission.value = data.submission
     classes.value = data.classes
+    dateRangeEnd.value = data.date_range.end
   } catch (err) {
     console.error('Failed loading compliance dashboard:', err)
     errorMessage.value = 'Could not load attendance data. Please try again.'
@@ -239,8 +239,18 @@ async function loadDashboard() {
 }
 
 function openClassDetail(row) {
-  // Placeholder until the drill-down component is built.
-  console.log('Open class detail for', row.class_instance_id)
+  const classInstanceId = row.class_instance_id ?? row.class_instance ?? row.id
+
+  if (!classInstanceId) {
+    errorMessage.value = 'This class could not be opened because its id was not returned by the server.'
+    return
+  }
+
+  router.push({
+    name: 'ClassRollCall',
+    params: { classInstanceId },
+    query: { date: dateRangeEnd.value || new Date().toISOString().slice(0, 10) },
+  })
 }
 
 watch([periodType, customStart, customEnd], ([type], [prevType]) => {

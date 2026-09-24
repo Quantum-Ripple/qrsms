@@ -4,32 +4,40 @@
 
     <div class="divide-y divide-line border-t border-b border-line">
       <div
-        v-for="(row, i) in sortedRows"
-        :key="row[nameKey]"
-        class="flex items-center gap-4 py-3"
-      >
-        <span
-          class="font-serif text-sm w-5 text-right"
-          :class="i === 0 ? 'text-gold' : 'text-ink/40'"
+          v-for="(row, i) in sortedRows"
+          :key="row[nameKey]"
+          class="flex items-center gap-4 py-3"
         >
-          {{ i + 1 }}
-        </span>
+          <span
+            class="font-serif text-sm w-5 text-right"
+            :class="i === 0 ? 'text-gold' : 'text-ink/40'"
+          >
+            {{ i + 1 }}
+          </span>
 
-        <div class="w-32 shrink-0">
-          <div class="text-sm font-medium">{{ row[nameKey] }}</div>
-          <div class="text-xs text-ink/50">{{ row.student_count }} students · {{ row.pass_rate }}% pass</div>
-        </div>
+          <div class="w-32 shrink-0">
+            <div class="text-sm font-medium">{{ row[nameKey] }}</div>
+            <div class="text-xs text-ink/50">{{ row.student_count }} students · {{ row.pass_rate }}% pass</div>
+          </div>
 
-        <div class="flex-1 h-[3px] bg-line/70 relative">
-          <div
-            class="absolute inset-y-0 left-0"
-            :class="barColor(row.average_score)"
-            :style="{ width: Math.min(row.average_score, 100) + '%' }"
-          ></div>
-        </div>
+          <div class="flex-1 h-[3px] bg-line/70 relative">
+            <div
+              class="absolute inset-y-0 left-0"
+              :class="barColor(row.average_score)"
+              :style="{ width: Math.min(row.average_score, 100) + '%' }"
+            ></div>
+          </div>
 
-        <span class="w-14 text-right font-serif text-sm tabular-nums">{{ row.average_score }}</span>
-      </div>
+          <span class="w-14 text-right font-serif text-sm tabular-nums">{{ row.average_score }}</span>
+
+          <button
+            v-if="nameKey === 'class_level_name'"
+            class="text-xs text-ink/50 hover:text-gold underline underline-offset-2 shrink-0"
+            @click="$emit('select-grade', row.class_level_id)"
+          >
+            View
+          </button>
+        </div>  
     </div>
   </section>
 </template>

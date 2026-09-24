@@ -32,6 +32,8 @@ import ParentPage from './components/parents/ParentsPage.vue'
 import ParentEdit from './components/parents/ParentEdit.vue'
 import ExamManagement from './views/ExamManagement.vue'
 import AttendanceManagement from './views/AttendanceManagement.vue'
+import ClassResults from './components/assessments/ClassResults.vue'
+import StudentResults from './components/assessments/StudentResults.vue'
 
 
 export default [
@@ -70,6 +72,18 @@ export default [
   { path: 'attendance', name: 'PrincipalAttendance', component: AttendancePage },
   { path: 'attendance/:id', name: 'PrincipalAttendanceSessionDetail', component: AttendanceSessionDetail, props: true },
   { path: 'attendance-management', name: 'PrincipalAttendanceManagement', component: AttendanceManagement },
+  {
+      path: '/principal/attendance/class/:classInstanceId',
+      name: 'ClassRollCall',
+      component: () => import('./components/attendance/ClassRoll.vue'),
+      props: true,
+    },
+    {
+      path: '/principal/attendance/student/:studentId',
+      name: 'StudentAttendanceProfile',
+      component: () => import('./components/attendance/StudentAttendanceProfile.vue'),
+      props: true,
+    },
   
 
   //EXAMS
@@ -111,6 +125,18 @@ export default [
   { path: 'pr/settings', name: 'PrincipalSettings', component: SettingsPage },
 
   { path: 'academics', name: 'Academics', component: Academics },
+  {
+    path: 'academics/class-results/:classLevelId',
+    name: 'ClassResults',
+    component: ClassResults,
+    props: true,
+  },
+  {
+  path: 'academics/student/:studentId',
+  name: 'StudentResults',
+  component: StudentResults,
+  props: true,
+},
   { path: 'configurations', name: 'Configurations', component: Configuration },
   { path: 'promotions', name: 'Promotions', component: Promotions },
   { path: 'principal/calendar', name: 'PrincipalCalendar', component: Calender },

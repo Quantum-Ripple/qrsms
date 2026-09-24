@@ -56,4 +56,9 @@ export async function sendAttendanceReminder(classInstanceId) {
   const response = await api.post(`/attendance-principal/${classInstanceId}/remind/`)
   return response.data
 }
- 
+
+
+export async function fetchStudentAttendanceCalendar(studentId) {
+  const response = await api.get(`/attendance/student/${studentId}/`)
+  return response.data
+}

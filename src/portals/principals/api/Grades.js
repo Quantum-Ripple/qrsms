@@ -56,3 +56,28 @@ export const getTeacherDashboard = async (examId, subject, params = {}) => {
     throw error;
   }
 };
+
+export const getClassResults = async (examId, classLevelId, params = {}) => {
+  try {
+    const res = await api.get('/analytics/class-results/', {
+      params: { exam: examId, class_level: classLevelId, ...params },
+    });
+    return res.data;
+  } catch (error) {
+    console.error('Error fetching class results:', error);
+    throw error;
+  }
+};
+
+export const getStudentPerformance = async (studentId) => {
+  try {
+    const res = await api.get('/analytics/student-performance/', {
+      params: { student: studentId },
+    });
+    return res.data;
+  } catch (error) {
+    console.error('Error fetching student performance:', error);
+    throw error;
+  }
+};
+
