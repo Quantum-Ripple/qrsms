@@ -19,7 +19,7 @@
         />
 
       <!-- Main Content -->
-      <main class="flex-1 overflow-y-auto p-4 md:p-6">
+      <main class="flex-1 overflow-y-auto p-4 md:p-6 pb-24 md:pb-6">
         <router-view />
       </main>
     </div>
@@ -40,6 +40,7 @@
         />
       </div>
     </transition>
+     <BottomBar />
   </div>
 </template>
 
@@ -47,6 +48,7 @@
 import { ref } from 'vue'
 import SimpleAppBar from '../components/AppBar.vue'
 import SimpleSideBar from '../components/SideBar.vue'
+import BottomBar from '../components/BottomBar.vue'
 import Auth from '../api/Auth'
 import { useAuthStore } from '@/stores/authStore'
 import { useClassStore } from '@/stores/classStore'
