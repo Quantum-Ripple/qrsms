@@ -83,7 +83,8 @@ const navItems = [
     children: [
       
       { label: 'Create Assessments', route: { name: 'ExamManagement' } },
-      { label: 'Performance Reports', route: { name: 'Academics' } },
+      { label: 'Results', route: { name: 'ClassResultsView' } },
+      //{ label: 'Performance Reports', route: { name: 'Academics' } },
       { label: 'Release Results', route: { name: 'ReleaseResults' } },
     ],
   },

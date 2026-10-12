@@ -56,7 +56,7 @@ export const getTeacherDashboard = async (examId, subject, params = {}) => {
     throw error;
   }
 };
-
+/*
 export const getClassResults = async (examId, classLevelId, params = {}) => {
   try {
     const res = await api.get('/analytics/class-results/', {
@@ -67,7 +67,7 @@ export const getClassResults = async (examId, classLevelId, params = {}) => {
     console.error('Error fetching class results:', error);
     throw error;
   }
-};
+};*/
 
 export const getStudentPerformance = async (studentId) => {
   try {
@@ -172,3 +172,39 @@ export const withdrawResults = async (examId) => {
     throw error;
   }
 };
+
+
+// ---------- Principal results pages ----------
+
+const getJson = async (url, params, label) => {
+  try {
+    const res = await api.get(url, { params });
+    return res.data;
+  } catch (error) {
+    console.error(`Error fetching ${label}:`, error);
+    throw error;
+  }
+};
+
+// exams always; grades when `exam` is given; streams when `grade` is given
+export const getResultsFilters = ({ exam, grade } = {}) =>
+  getJson('/results/filters/', { exam: exam || undefined, grade: grade || undefined }, 'results filters');
+
+// Replaces the old '/analytics/class-results/' version (same name, new route)
+export const getClassResults = (examId, classLevelId, params = {}) =>
+  getJson('/results/class/', { exam: examId, class_level: classLevelId, ...params }, 'class results');
+
+export const getStudentResult = ({ exam, student }) =>
+  getJson('/results/student/', { exam, student }, 'student result');
+
+export const getSubjectResults = ({ exam, classLevel, stream, subject }) =>
+  getJson('/results/subjects/', {
+    exam, class_level: classLevel,
+    stream: stream || undefined, subject: subject || undefined,
+  }, 'subject results');
+
+export const getRanking = ({ exam, classLevel, search, page, pageSize }) =>
+  getJson('/results/ranking/', {
+    exam, class_level: classLevel,
+    search: search || undefined, page: page || undefined, page_size: pageSize || undefined,
+  }, 'ranking');

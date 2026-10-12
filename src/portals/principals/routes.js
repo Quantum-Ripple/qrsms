@@ -34,6 +34,7 @@ import ExamManagement from './views/ExamManagement.vue'
 import AttendanceManagement from './views/AttendanceManagement.vue'
 import ClassResults from './components/assessments/ClassResults.vue'
 import StudentResults from './components/assessments/StudentResults.vue'
+import ClassResultsView from './views/ClassResultsView.vue'
 
 
 export default [
@@ -156,5 +157,11 @@ export default [
   path: '/results/release/missing-students',
   name: 'results-missing-students',
   component: () => import('./components/assessments/release/StudentMissingMarks.vue'),
+},
+
+{
+  path: '/results',
+  name: 'ClassResultsView',
+  component: ClassResultsView,
 },
 ]
