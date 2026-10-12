@@ -84,6 +84,7 @@ const navItems = [
       
       { label: 'Create Assessments', route: { name: 'ExamManagement' } },
       { label: 'Performance Reports', route: { name: 'Academics' } },
+      { label: 'Release Results', route: { name: 'ReleaseResults' } },
     ],
   },
 

@@ -1,673 +1,668 @@
-
 <template>
-  <div class="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+  <div class="min-h-screen bg-gray-50 p-3 pb-24 sm:p-5 md:pb-6">
 
     <!-- Header -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h1 class="text-xl sm:text-2xl font-bold text-gray-800">
-          Exam Management
-        </h1>
+    <header class="mb-5 flex items-center justify-between gap-3">
+      <h1 class="text-xl font-semibold text-gray-900">
+        Exams
+      </h1>
+
+      <div class="flex shrink-0 items-center gap-2">
+      <!--  <button
+          type="button"
+          :disabled="loading"
+          @click="fetchDashboard"
+          aria-label="Refresh exams"
+          class="flex h-10 w-10 items-center justify-center rounded-lg
+                 border border-gray-300 bg-white text-gray-700
+                 hover:bg-gray-100 disabled:opacity-50"
+        >
+          <svg
+            class="h-5 w-5"
+            :class="{ 'animate-spin': loading }"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <path
+              d="M20 7v5h-5M4 17v-5h5M5.6 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.4-3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>-->
+
+        <button
+          type="button"
+          @click="showCreateModal = true"
+          class="rounded-lg bg-blue-600 px-3 py-2.5 text-sm
+                 font-medium text-white hover:bg-blue-700"
+        >
+          Create Exam
+        </button>
+      </div>
+    </header>
+
+    <!-- Summary -->
+    <section
+      class="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4"
+      aria-label="Exam summary"
+    >
+      <div class="rounded-lg border border-gray-200 bg-white p-3">
+        <p class="text-sm text-gray-500">Exams</p>
+        <p class="mt-1 text-2xl font-semibold text-gray-900">
+          {{ formatNumber(summary.exams_count) }}
+        </p>
       </div>
 
-      <button
-        type="button"
-        @click="showCreateModal = true"
-        class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium transition w-full sm:w-auto"
-      >
-        <span class="text-lg leading-none">+</span>
-        Create Assessment
-      </button>
-    </div>
+      <div class="rounded-lg border border-gray-200 bg-white p-3">
+        <p class="text-sm text-gray-500">Missing marks</p>
+        <p class="mt-1 text-2xl font-semibold text-gray-900">
+          {{ formatNumber(summary.missing_marks) }}
+        </p>
+      </div>
 
+      <div class="rounded-lg border border-gray-200 bg-white p-3">
+        <p class="text-sm text-gray-500">Ready to release</p>
+        <p class="mt-1 text-2xl font-semibold text-gray-900">
+          {{ formatNumber(summary.ready_to_release) }}
+        </p>
+      </div>
+
+      <div class="rounded-lg border border-gray-200 bg-white p-3">
+        <p class="text-sm text-gray-500">Scheduled</p>
+        <p class="mt-1 text-2xl font-semibold text-gray-900">
+          {{ formatNumber(summary.scheduled) }}
+        </p>
+      </div>
+    </section>
 
     <!-- Loading -->
     <div
-      v-if="loading"
-      class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 sm:p-10 text-center"
+      v-if="loading && !hasLoaded"
+      class="border-y border-gray-200 bg-white px-4 py-10 text-center"
     >
-      <div class="text-sm text-gray-500">
-        Loading assessments...
-      </div>
+      <div
+        class="mx-auto h-6 w-6 animate-spin rounded-full
+               border-2 border-gray-200 border-t-blue-600"
+      ></div>
+      <p class="mt-3 text-sm text-gray-500">Loading exams...</p>
     </div>
-
 
     <!-- Error -->
     <div
       v-else-if="error"
-      class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4"
+      class="border-y border-gray-200 bg-white px-4 py-5"
     >
-      <p class="font-medium">
-        Unable to load assessments
-      </p>
-
-      <p class="text-sm mt-1 break-words">
-        {{ error }}
-      </p>
+      <p class="text-sm text-red-600">{{ error }}</p>
 
       <button
         type="button"
-        @click="fetchExams"
-        class="mt-3 text-sm font-medium text-red-700 underline hover:no-underline"
+        @click="fetchDashboard"
+        class="mt-3 text-sm font-medium text-blue-600 hover:text-blue-800"
       >
         Try again
       </button>
     </div>
 
+    <!-- Assessments -->
+    <section v-else class="overflow-hidden rounded-lg border border-gray-200 bg-white">
 
-    <!-- Empty -->
-    <div
-      v-else-if="exams.length === 0"
-      class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 sm:p-12 text-center"
-    >
-      <h3 class="text-lg font-semibold text-gray-800">
-        No assessments yet
-      </h3>
+      <!-- Search and filter -->
+      <div class="flex flex-col gap-3 border-b border-gray-200 p-3 sm:flex-row">
+        <input
+          v-model="searchQuery"
+          type="search"
+          placeholder="Search exams..."
+          aria-label="Search exams"
+          class="min-w-0 flex-1 rounded-lg border border-gray-300
+                 bg-white px-3 py-2.5 text-sm text-gray-800
+                 outline-none focus:border-blue-500"
+        />
 
-     
-      <button
-        type="button"
-        @click="showCreateModal = true"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium w-full sm:w-auto"
-      >
-        Create First Assessment
-      </button>
-    </div>
+        <div class="flex gap-2">
+          <select
+            v-model="statusFilter"
+            aria-label="Filter by status"
+            class="min-w-0 flex-1 rounded-lg border border-gray-300
+                   bg-white px-3 py-2.5 text-sm text-gray-700
+                   outline-none focus:border-blue-500 sm:w-44"
+          >
+            <option value="All">All statuses</option>
+            <option value="Marking">Marking</option>
+            <option value="Completed">Completed</option>
+            <option value="Released">Released</option>
+            <option value="Scheduled">Scheduled</option>
+          </select>
 
-
-    <!-- Exams -->
-    <div
-      v-else
-      class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
-    >
-
-      <!-- Table Header -->
-      <div class="px-4 sm:px-6 py-4 border-b border-gray-100">
-        <div>
-          <h2 class="font-semibold text-gray-800">
-            Assessments
-          </h2>
-
-          <p class="text-xs text-gray-500 mt-1">
-            {{ exams.length }}
-            assessment{{ exams.length === 1 ? "" : "s" }}
-          </p>
+          <button
+            v-if="searchQuery || statusFilter !== 'All'"
+            type="button"
+            @click="clearFilters"
+            class="rounded-lg border border-gray-300 px-3 py-2
+                   text-sm text-gray-600 hover:bg-gray-50"
+          >
+            Clear
+          </button>
         </div>
       </div>
 
+      <!-- Empty state -->
+      <div
+        v-if="filteredExams.length === 0"
+        class="px-4 py-10 text-center"
+      >
+        <p class="text-sm text-gray-500">
+          {{ exams.length ? "No matching exams." : "No exams yet." }}
+        </p>
 
-      <!-- ========================= -->
-      <!-- DESKTOP TABLE -->
-      <!-- ========================= -->
-      <div class="hidden md:block overflow-x-auto">
-        <table class="min-w-full">
+        <button
+          v-if="!exams.length"
+          type="button"
+          @click="showCreateModal = true"
+          class="mt-3 text-sm font-medium text-blue-600 hover:text-blue-800"
+        >
+          Create an exam
+        </button>
 
-          <thead class="bg-gray-50 border-b border-gray-100">
-            <tr>
-
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
-              >
-                Assessment
-              </th>
-
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
-              >
-                Period
-              </th>
-
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
-              >
-                Term
-              </th>
-
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
-              >
-                Grades
-              </th>
-
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
-              >
-                Created By
-              </th>
-
-              <th
-                class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider"
-              >
-                Actions
-              </th>
-
-            </tr>
-          </thead>
-
-
-          <tbody class="divide-y divide-gray-100">
-
-            <tr
-              v-for="exam in exams"
-              :key="exam.id"
-              class="hover:bg-gray-50 transition"
-            >
-
-              <!-- Assessment -->
-              <td class="px-6 py-4">
-
-                <div class="font-semibold text-gray-900">
-                  {{ exam.name }}
-                </div>
-
-                
-
-              </td>
-
-
-              <!-- Period -->
-              <td class="px-6 py-4">
-
-                <div class="text-sm text-gray-700">
-                  {{ formatDate(exam.start_date) }}
-                </div>
-
-                <div class="text-xs text-gray-400 my-0.5">
-                  to
-                </div>
-
-                <div class="text-sm text-gray-700">
-                  {{ formatDate(exam.end_date) }}
-                </div>
-
-              </td>
-
-
-              <!-- Term -->
-              <td class="px-6 py-4">
-
-                <div class="text-sm text-gray-700">
-                  {{ exam.term_name || "—" }}
-                </div>
-
-                <div
-                  v-if="exam.academic_year"
-                  class="text-xs text-gray-400 mt-1"
-                >
-                  {{ exam.academic_year }}
-                </div>
-
-              </td>
-
-
-              <!-- Grades -->
-              <td class="px-6 py-4">
-
-                <div
-                  v-if="exam.target_class_levels?.length"
-                  class="flex flex-wrap gap-1.5"
-                >
-
-                  <span
-                    v-for="level in exam.target_class_levels"
-                    :key="level"
-                    class="inline-flex items-center px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-medium"
-                  >
-                    {{ getClassLevelName(level, exam) }}
-                  </span>
-
-                </div>
-
-
-                <!-- Legacy exam -->
-                <span
-                  v-else-if="exam.class_level"
-                  class="inline-flex items-center px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium"
-                >
-                  {{ getLegacyClassLevelName(exam) }}
-                </span>
-
-
-                <span
-                  v-else
-                  class="text-sm text-gray-400"
-                >
-                  —
-                </span>
-
-              </td>
-
-
-              <!-- Created By -->
-              <td class="px-6 py-4">
-
-                <div class="text-sm text-gray-700">
-                  {{ exam.created_by_name || "—" }}
-                </div>
-
-              </td>
-
-
-              <!-- Actions -->
-              <td class="px-6 py-4 text-right">
-
-                <button
-                  type="button"
-                  class="text-sm font-medium text-blue-600 hover:text-blue-800"
-                  @click="viewExam(exam)"
-                >
-                  View
-                </button>
-
-              </td>
-
-            </tr>
-
-          </tbody>
-
-        </table>
+        <button
+          v-else
+          type="button"
+          @click="clearFilters"
+          class="mt-3 text-sm font-medium text-blue-600 hover:text-blue-800"
+        >
+          Clear filters
+        </button>
       </div>
 
+      <template v-else>
 
-      <!-- ========================= -->
-      <!-- MOBILE CARDS -->
-      <!-- ========================= -->
-      <div class="md:hidden divide-y divide-gray-100">
+        <!-- Desktop table -->
+        <div class="hidden overflow-x-auto md:block">
+          <table class="w-full text-left">
+            <thead class="border-b border-gray-200 bg-gray-50">
+              <tr>
+                <th class="px-4 py-3 text-sm font-medium text-gray-600">
+                  Assessment
+                </th>
+                <th class="px-4 py-3 text-sm font-medium text-gray-600">
+                  Dates
+                </th>
+                <th class="px-4 py-3 text-sm font-medium text-gray-600">
+                  Grades
+                </th>
+                <th class="px-4 py-3 text-sm font-medium text-gray-600">
+                  Missing marks
+                </th>
+                <th class="px-4 py-3 text-sm font-medium text-gray-600">
+                  Status
+                </th>
+                <th class="px-4 py-3 text-right text-sm font-medium text-gray-600">
+                  Action
+                </th>
+              </tr>
+            </thead>
 
-        <div
-          v-for="exam in exams"
-          :key="exam.id"
-          class="p-4 space-y-4"
-        >
+            <tbody class="divide-y divide-gray-200">
+              <tr
+                v-for="exam in filteredExams"
+                :key="exam.id"
+                class="hover:bg-gray-50"
+              >
+                <td class="max-w-64 px-4 py-4">
+                  <p class="break-words text-sm font-medium text-gray-900">
+                    {{ exam.name }}
+                  </p>
+                  <p class="mt-1 text-xs text-gray-500">
+                    {{ exam.term}} {{ exam.academic_year }}
+                    
+                  </p>
+                </td>
 
-          <!-- Assessment -->
-          <div>
+                <td class="whitespace-nowrap px-4 py-4 text-sm text-gray-600">
+                  {{ formatDate(exam.start_date) }}
+                  <span class="text-gray-400">–</span>
+                  {{ formatDate(exam.end_date) }}
+                </td>
+
+                <td class="max-w-52 px-4 py-4">
+                  <span v-if="exam.target_class_levels?.length"
+                        class="text-sm text-gray-700">
+                    {{ exam.target_class_levels.join(", ") }}
+                  </span>
+                  <span v-else class="text-sm text-gray-400">—</span>
+                </td>
+
+                <td class="px-4 py-4 text-sm">
+                  <span
+                    :class="Number(exam.missing_marks) > 0
+                      ? 'font-medium text-amber-700'
+                      : 'text-gray-600'"
+                  >
+                    {{ formatNumber(exam.missing_marks) }}
+                  </span>
+                </td>
+
+                <td class="px-4 py-4">
+                  <StatusBadge :status="exam.status" />
+                </td>
+
+                <td class="px-4 py-4 text-right">
+                  <button
+                    type="button"
+                    @click="viewExam(exam)"
+                    class="text-sm font-medium text-blue-600 hover:text-blue-800"
+                  >
+                    View →
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile list -->
+        <div class="divide-y divide-gray-200 md:hidden">
+          <article
+            v-for="exam in filteredExams"
+            :key="exam.id"
+            class="p-4"
+          >
+            <!-- Name and status -->
             <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <div class="font-semibold text-gray-900 break-words">
+              <div class="min-w-0 flex-1">
+                <h2 class="break-words text-sm font-semibold text-gray-900">
                   {{ exam.name }}
-                </div>
+                </h2>
 
-                <div class="text-xs text-gray-400 mt-1">
-                  Exam #{{ exam.id }}
-                </div>
+                <p class="mt-1 text-xs text-gray-500">
+                  {{ exam.term || "—" }}
+                  <span v-if="exam.academic_year">
+                    · {{ exam.academic_year }}
+                  </span>
+                </p>
               </div>
+
+              <StatusBadge :status="exam.status" />
+            </div>
+
+            <!-- Dates and grades -->
+            <div class="mt-3 space-y-1 text-sm text-gray-600">
+              <p>
+                {{ formatDate(exam.start_date) }}
+                <span class="text-gray-400">–</span>
+                {{ formatDate(exam.end_date) }}
+              </p>
+
+              <p v-if="exam.target_class_levels?.length" class="text-gray-500">
+                {{ exam.target_class_levels.join(", ") }}
+              </p>
+            </div>
+
+            <!-- Missing marks and action -->
+            <div class="mt-3 flex items-center justify-between border-t border-gray-100 pt-3">
+              <p class="text-sm text-gray-600">
+                Missing marks:
+                <span
+                  class="font-medium"
+                  :class="Number(exam.missing_marks) > 0
+                    ? 'text-amber-700'
+                    : 'text-gray-900'"
+                >
+                  {{ formatNumber(exam.missing_marks) }}
+                </span>
+              </p>
 
               <button
                 type="button"
-                class="shrink-0 text-sm font-medium text-blue-600 hover:text-blue-800"
                 @click="viewExam(exam)"
+                class="text-sm font-medium text-blue-600 hover:text-blue-800"
               >
-                View
+                View →
               </button>
             </div>
-          </div>
-
-
-          <!-- Period -->
-          <div>
-            <p class="text-xs font-medium text-gray-500 mb-1">
-              Period
-            </p>
-
-            <div class="text-sm text-gray-700">
-              {{ formatDate(exam.start_date) }}
-              <span class="text-gray-400 mx-1">to</span>
-              {{ formatDate(exam.end_date) }}
-            </div>
-          </div>
-
-
-          <!-- Term -->
-          <div class="grid grid-cols-2 gap-4">
-
-            <div>
-              <p class="text-xs font-medium text-gray-500 mb-1">
-                Term
-              </p>
-
-              <div class="text-sm text-gray-700">
-                {{ exam.term_name || "—" }}
-              </div>
-            </div>
-
-            <div>
-              <p class="text-xs font-medium text-gray-500 mb-1">
-                Academic Year
-              </p>
-
-              <div class="text-sm text-gray-700">
-                {{ exam.academic_year || "—" }}
-              </div>
-            </div>
-
-          </div>
-
-
-          <!-- Grades -->
-          <div>
-            <p class="text-xs font-medium text-gray-500 mb-2">
-              Grades
-            </p>
-
-            <div
-              v-if="exam.target_class_levels?.length"
-              class="flex flex-wrap gap-1.5"
-            >
-
-              <span
-                v-for="level in exam.target_class_levels"
-                :key="level"
-                class="inline-flex items-center px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-medium"
-              >
-                {{ getClassLevelName(level, exam) }}
-              </span>
-
-            </div>
-
-
-            <!-- Legacy exam -->
-            <span
-              v-else-if="exam.class_level"
-              class="inline-flex items-center px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium"
-            >
-              {{ getLegacyClassLevelName(exam) }}
-            </span>
-
-
-            <span
-              v-else
-              class="text-sm text-gray-400"
-            >
-              —
-            </span>
-          </div>
-
-
-          <!-- Created By -->
-          <div>
-            <p class="text-xs font-medium text-gray-500 mb-1">
-              Created By
-            </p>
-
-            <div class="text-sm text-gray-700">
-              {{ exam.created_by_name || "—" }}
-            </div>
-          </div>
-
+          </article>
         </div>
+      </template>
 
+      <!-- Count -->
+      <div
+        v-if="filteredExams.length"
+        class="border-t border-gray-200 px-4 py-3"
+      >
+        <p class="text-xs text-gray-500">
+          {{ filteredExams.length }}
+          {{ filteredExams.length === 1 ? "exam" : "exams" }}
+        </p>
       </div>
+    </section>
 
-    </div>
-
-
-    <!-- Create Modal -->
+    <!-- Create assessment -->
     <CreateNewAssessment
       v-if="showCreateModal"
       @close="showCreateModal = false"
       @created="handleExamCreated"
     />
 
-
-    <!-- View Modal -->
+    <!-- Assessment details -->
     <div
       v-if="selectedExam"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4"
+      class="fixed inset-0 z-50 flex items-center justify-center
+             bg-black/40 p-3 sm:p-5"
       @click.self="selectedExam = null"
+      @keydown.esc="selectedExam = null"
     >
-
-      <div
-        class="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-xl"
+      <section
+        class="max-h-[90vh] w-full max-w-lg overflow-y-auto
+               rounded-xl bg-white shadow-xl"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="`Details for ${selectedExam.name}`"
       >
-
-        <!-- Header -->
-        <div
-          class="px-4 sm:px-6 py-4 border-b flex items-start justify-between gap-4"
-        >
-
+        <header class="flex items-start justify-between gap-3 border-b border-gray-200 p-4">
           <div class="min-w-0">
-            <h2 class="text-lg font-bold text-gray-800 break-words">
+            <h2 class="break-words font-semibold text-gray-900">
               {{ selectedExam.name }}
             </h2>
 
-            <p class="text-xs text-gray-500 mt-1">
-              Exam #{{ selectedExam.id }}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            @click="selectedExam = null"
-            class="shrink-0 text-gray-400 hover:text-gray-600 text-2xl leading-none"
-          >
-            &times;
-          </button>
-
-        </div>
-
-
-        <!-- Details -->
-        <div class="p-4 sm:p-6 space-y-5">
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-            <div>
-              <p class="text-xs text-gray-500">
-                Start Date
-              </p>
-
-              <p class="mt-1 font-medium text-gray-800">
-                {{ formatDate(selectedExam.start_date) }}
-              </p>
-            </div>
-
-
-            <div>
-              <p class="text-xs text-gray-500">
-                End Date
-              </p>
-
-              <p class="mt-1 font-medium text-gray-800">
-                {{ formatDate(selectedExam.end_date) }}
-              </p>
-            </div>
-
-
-            <div>
-              <p class="text-xs text-gray-500">
-                Term
-              </p>
-
-              <p class="mt-1 font-medium text-gray-800">
-                {{ selectedExam.term_name || "—" }}
-              </p>
-            </div>
-
-
-            <div>
-              <p class="text-xs text-gray-500">
-                Academic Year
-              </p>
-
-              <p class="mt-1 font-medium text-gray-800">
-                {{ selectedExam.academic_year || "—" }}
-              </p>
-            </div>
-
-          </div>
-
-
-          <div>
-            <p class="text-xs text-gray-500 mb-2">
-              Grades Taking the Exam
-            </p>
-
-            <div
-              v-if="selectedExam.target_class_levels?.length"
-              class="flex flex-wrap gap-2"
-            >
-
-              <span
-                v-for="level in selectedExam.target_class_levels"
-                :key="level"
-                class="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-medium"
-              >
-                {{ getClassLevelName(level, selectedExam) }}
+            <p class="mt-1 text-sm text-gray-500">
+              {{ selectedExam.term || "—" }}
+              <span v-if="selectedExam.academic_year">
+                · {{ selectedExam.academic_year }}
               </span>
-
-            </div>
-
-
-            <span
-              v-else-if="selectedExam.class_level"
-              class="inline-flex px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm font-medium"
-            >
-              {{ getLegacyClassLevelName(selectedExam) }}
-            </span>
-
-
-            <span
-              v-else
-              class="text-sm text-gray-400"
-            >
-              —
-            </span>
-
-          </div>
-
-
-          <div>
-            <p class="text-xs text-gray-500">
-              Created By
-            </p>
-
-            <p class="mt-1 font-medium text-gray-800 break-words">
-              {{ selectedExam.created_by_name || "—" }}
             </p>
           </div>
-
-        </div>
-
-
-        <!-- Footer -->
-        <div class="px-4 sm:px-6 py-4 border-t flex justify-stretch sm:justify-end">
 
           <button
             type="button"
             @click="selectedExam = null"
-            class="w-full sm:w-auto px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+            aria-label="Close"
+            class="flex h-8 w-8 shrink-0 items-center justify-center
+                   rounded-lg text-gray-500 hover:bg-gray-100"
+          >
+            <svg
+              class="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="m18 6-12 12M6 6l12 12" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </header>
+
+        <div class="divide-y divide-gray-200 px-4">
+          <div class="flex items-center justify-between gap-3 py-4">
+            <span class="text-sm text-gray-500">Status</span>
+            <StatusBadge :status="selectedExam.status" />
+          </div>
+
+          <div class="flex items-center justify-between gap-3 py-4">
+            <span class="text-sm text-gray-500">Missing marks</span>
+            <span
+              class="font-semibold"
+              :class="Number(selectedExam.missing_marks) > 0
+                ? 'text-amber-700'
+                : 'text-gray-900'"
+            >
+              {{ formatNumber(selectedExam.missing_marks) }}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between gap-3 py-4">
+            <span class="text-sm text-gray-500">Start date</span>
+            <span class="text-right text-sm text-gray-900">
+              {{ formatDate(selectedExam.start_date) }}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between gap-3 py-4">
+            <span class="text-sm text-gray-500">End date</span>
+            <span class="text-right text-sm text-gray-900">
+              {{ formatDate(selectedExam.end_date) }}
+            </span>
+          </div>
+
+          <div class="flex items-start justify-between gap-3 py-4">
+            <span class="text-sm text-gray-500">Grades</span>
+            <span class="max-w-[65%] text-right text-sm text-gray-900">
+              {{
+                selectedExam.target_class_levels?.length
+                  ? selectedExam.target_class_levels.join(", ")
+                  : "—"
+              }}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between gap-3 py-4">
+            <span class="text-sm text-gray-500">Created by</span>
+            <span class="break-words text-right text-sm text-gray-900">
+              {{ selectedExam.created_by || "—" }}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between gap-3 py-4">
+            <span class="text-sm text-gray-500">Exam ID</span>
+            <span class="text-sm text-gray-900">
+              #{{ selectedExam.id }}
+            </span>
+          </div>
+
+          <div class="py-4">
+            <p class="text-sm text-gray-500">Results</p>
+            <p class="mt-1 text-sm font-medium text-gray-900">
+              {{ selectedExam.results_released ? "Released" : "Not released" }}
+            </p>
+
+            <p
+              v-if="selectedExam.results_released_at"
+              class="mt-1 text-xs text-gray-500"
+            >
+              {{ formatDateTime(selectedExam.results_released_at) }}
+            </p>
+          </div>
+        </div>
+
+        <footer class="border-t border-gray-200 p-4">
+          <button
+            type="button"
+            @click="selectedExam = null"
+            class="w-full rounded-lg border border-gray-300 px-4 py-2.5
+                   text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             Close
           </button>
-
-        </div>
-
-      </div>
-
+        </footer>
+      </section>
     </div>
-
   </div>
 </template>
 
-
 <script setup>
-import { ref, onMounted } from "vue";
-import { listExams } from "../api/Grades";
-import CreateNewAssessment from "../components/assessments/CreateNewAssessment.vue";
+import { computed, defineComponent, h, onMounted, ref } from "vue";
 import { useToast } from "vue-toastification";
-import { fetchClassLevels } from "../../../api/classes";
+import { getExamDashboard } from "../api/Grades";
+import CreateNewAssessment from "../components/assessments/CreateNewAssessment.vue";
+
+// Simple status label
+const StatusBadge = defineComponent({
+  name: "StatusBadge",
+
+  props: {
+    status: {
+      type: String,
+      default: "Marking",
+    },
+  },
+
+  setup(props) {
+    const styles = computed(() => {
+      const map = {
+        Released: "text-blue-700",
+        Completed: "text-emerald-700",
+        Marking: "text-amber-700",
+        Scheduled: "text-gray-600",
+      };
+
+      return map[props.status] || "text-gray-600";
+    });
+
+    return () =>
+      h(
+        "span",
+        {
+          class: [
+            "text-xs font-medium whitespace-nowrap",
+            styles.value,
+          ],
+        },
+        props.status || "Unknown",
+      );
+  },
+});
 
 const toast = useToast();
-const classLevels = ref([]);
+
 const exams = ref([]);
+
+const summary = ref({
+  exams_count: 0,
+  missing_marks: 0,
+  ready_to_release: 0,
+  scheduled: 0,
+});
+
 const loading = ref(false);
+const hasLoaded = ref(false);
 const error = ref("");
+const searchQuery = ref("");
+const statusFilter = ref("All");
 const showCreateModal = ref(false);
 const selectedExam = ref(null);
 
+const filteredExams = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase();
 
-const fetchExams = async () => {
+  return exams.value.filter((exam) => {
+    const matchesStatus =
+      statusFilter.value === "All" ||
+      exam.status === statusFilter.value;
+
+    const gradeText = Array.isArray(exam.target_class_levels)
+      ? exam.target_class_levels.join(" ")
+      : "";
+
+    const searchableText = [
+      exam.name,
+      exam.term,
+      exam.academic_year,
+      exam.created_by,
+      gradeText,
+      exam.status,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    const matchesSearch =
+      !query || searchableText.includes(query);
+
+    return matchesStatus && matchesSearch;
+  });
+});
+
+const fetchDashboard = async () => {
   loading.value = true;
   error.value = "";
 
   try {
-    exams.value = await listExams();
+    const data = await getExamDashboard();
+
+    summary.value = {
+      exams_count: Number(data.summary?.exams_count ?? 0),
+      missing_marks: Number(data.summary?.missing_marks ?? 0),
+      ready_to_release: Number(data.summary?.ready_to_release ?? 0),
+      scheduled: Number(data.summary?.scheduled ?? 0),
+    };
+
+    exams.value = Array.isArray(data.exams) ? data.exams : [];
+    hasLoaded.value = true;
   } catch (err) {
-    console.error("Failed to load exams:", err);
+    console.error("Failed to load exam dashboard:", err);
 
     error.value =
       err.response?.data?.detail ||
-      "Failed to load assessments.";
+      err.response?.data?.message ||
+      "Could not load exams. Check your connection and try again.";
   } finally {
     loading.value = false;
   }
 };
 
-
 const handleExamCreated = async () => {
   showCreateModal.value = false;
-
   toast.success("Assessment created successfully");
-
-  await fetchExams();
+  await fetchDashboard();
 };
-
 
 const viewExam = (exam) => {
   selectedExam.value = exam;
 };
 
+const clearFilters = () => {
+  searchQuery.value = "";
+  statusFilter.value = "All";
+};
 
-const formatDate = (date) => {
-  if (!date) return "—";
+const formatNumber = (value) => {
+  const number = Number(value ?? 0);
 
-  return new Date(date).toLocaleDateString("en-GB", {
+  return Number.isFinite(number)
+    ? new Intl.NumberFormat("en-KE").format(number)
+    : "0";
+};
+
+const formatDate = (value) => {
+  if (!value) return "—";
+
+  const parts = String(value).slice(0, 10).split("-");
+
+  if (parts.length !== 3) return "—";
+
+  const [year, month, day] = parts.map(Number);
+
+  if (!year || !month || !day) return "—";
+
+  const date = new Date(year, month - 1, day);
+
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return date.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
   });
 };
 
+const formatDateTime = (value) => {
+  if (!value) return "—";
 
-const fetchClassLevelsData = async () => {
-  try {
-    const response = await fetchClassLevels();
+  const date = new Date(value);
 
-    classLevels.value = Array.isArray(response.data)
-      ? response.data
-      : response.data?.results || [];
-  } catch (err) {
-    console.error("Failed to load class levels:", err);
-  }
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return date.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
-
-const getClassLevelName = (levelId) => {
-  const level = classLevels.value.find(
-    (item) => String(item.id) === String(levelId)
-  );
-
-  return level?.name || "Unknown Grade";
-};
-
-
-const getLegacyClassLevelName = (exam) => {
-  if (
-    typeof exam.class_level === "object" &&
-    exam.class_level !== null
-  ) {
-    return exam.class_level.name || "—";
-  }
-
-  return `Grade ${exam.class_level}`;
-};
-
-
-onMounted(async () => {
-  await Promise.all([
-    fetchExams(),
-    fetchClassLevelsData(),
-  ]);
-});
+onMounted(fetchDashboard);
 </script>

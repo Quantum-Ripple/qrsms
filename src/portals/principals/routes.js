@@ -140,4 +140,21 @@ export default [
   { path: 'configurations', name: 'Configurations', component: Configuration },
   { path: 'promotions', name: 'Promotions', component: Promotions },
   { path: 'principal/calendar', name: 'PrincipalCalendar', component: Calender },
+
+
+  {
+  path: '/results/release',
+  name: 'ReleaseResults',
+  component: () => import('./views/ReleaseResults.vue'),
+},
+{
+  path: '/results/release/missing-marks',
+  name: 'results-missing-marks',
+  component: () => import('./components/assessments/release/MissingMarks.vue'),
+},
+{
+  path: '/results/release/missing-students',
+  name: 'results-missing-students',
+  component: () => import('./components/assessments/release/StudentMissingMarks.vue'),
+},
 ]
