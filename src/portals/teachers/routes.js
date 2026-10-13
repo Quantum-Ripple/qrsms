@@ -154,5 +154,14 @@ export default [
         name: 'StudentAssignmentResponse',
         component: StudentAssignmentResponse
       },
+      {
+        path: 'results/student/:studentId',
+        name: 'TeacherStudentResult',
+        component: () => import('./components/assessments/StudentResultsDetail.vue'),
+        props: (route) => ({
+          studentId: Number(route.params.studentId),
+          examId: Number(route.query.exam),
+        }),
+      },
 
 ]

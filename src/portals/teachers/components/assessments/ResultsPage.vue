@@ -1,503 +1,174 @@
+<script setup>
+import { ref, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { useClassStore } from '@/stores/classStore'
+import * as XLSX from 'xlsx'
+import { getTeacherClassResults } from '../../api/assessments'
+import { levelClass } from '../../utils/levelStyle'
+
+const router = useRouter()
+const classStore = useClassStore()
+
+const data = ref(null)
+const selectedExam = ref(null)
+const loading = ref(false)
+const message = ref('')
+let requestId = 0
+
+const cls = computed(() => classStore.activeClass)
+const exams = computed(() => data.value?.exams ?? [])
+const rows = computed(() => data.value?.results ?? [])
+const subjects = computed(() => data.value?.subjects ?? [])
+const stats = computed(() => data.value?.stats ?? null)
+const fmt = (n) => (n == null ? '-' : Number(n).toFixed(2))
+
+async function load(examId = null) {
+  const c = cls.value
+  if (!c) return
+  const id = ++requestId
+  loading.value = true
+  message.value = ''
+  try {
+    const d = await getTeacherClassResults({ classLevel: c.class_level, stream: c.stream, exam: examId })
+    if (id !== requestId) return
+    data.value = d
+    selectedExam.value = d.exam_id ?? null
+  } catch (e) {
+    if (id !== requestId) return
+    data.value = null
+    selectedExam.value = null
+    message.value = e.response?.data?.detail || 'Failed to load results.'
+  } finally {
+    if (id === requestId) loading.value = false
+  }
+}
+
+// fires on mount and whenever the teacher switches class
+watch(cls, () => { data.value = null; load() }, { immediate: true })
+
+function viewStudent(row) {
+  router.push({
+    name: 'TeacherStudentResult',
+    params: { studentId: row.student_id },
+    query: { exam: selectedExam.value },
+  })
+}
+
+function exportToExcel() {
+  if (!rows.value.length) return
+  const sheet = rows.value.map((r) => {
+    const o = { Rank: r.rank, 'Adm No': r.admission_number, Student: `${r.first_name} ${r.last_name}` }
+    subjects.value.forEach((s) => { o[s.subject_display] = r.scores[s.subject] ?? '' })
+    o.Average = r.average_score
+    o.Level = r.level
+    return o
+  })
+  const summary = { Rank: '', 'Adm No': '', Student: 'CLASS AVERAGE' }
+  subjects.value.forEach((s) => { summary[s.subject_display] = data.value.subject_averages[s.subject] ?? '' })
+  summary.Average = stats.value.class_average
+  summary.Level = stats.value.class_level
+
+  const ws = XLSX.utils.json_to_sheet([...sheet, {}, summary])
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Results')
+  XLSX.writeFile(wb, `Results_${data.value.exam_name || 'Exam'}.xlsx`)
+}
+</script>
+
 <template>
   <div class="space-y-6">
     <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div>
-        <h2 class="text-2xl font-bold text-slate-800">{{ grade }} {{ stream }} Results</h2>
-      
-      </div>
-
+      <h2 class="text-2xl font-bold text-slate-800">
+        {{ cls?.class_level_name }} {{ cls?.stream_name }} Results
+      </h2>
       <button
-        @click="exportToExcel"
-        :disabled="!tableRows.length || exporting"
+        @click="exportToExcel" :disabled="!rows.length"
         class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {{ exporting ? "Exporting..." : "Export to Excel" }}
-      </button>
+      >Export to Excel</button>
     </div>
 
-    <div class="rounded-xl border bg-white p-4 shadow-sm">
-      <label class="mb-2 block text-sm font-semibold text-slate-700">
-        Select Assessment
-      </label>
+<div class="rounded-xl border bg-white p-4 shadow-sm">
+  <label class="mb-2 block text-sm font-semibold text-slate-700">Select Assessment</label>
+  <select
+    v-model="selectedExam" @change="load(selectedExam)" :disabled="!exams.length"
+    class="w-full sm:w-72 rounded-lg border border-slate-300 px-4 py-2 text-sm text-gray-900 shadow-sm transition-all focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400"
+  >
+    <option :value="null" disabled>Select exam</option>
+    <option v-for="e in exams" :key="e.id" :value="e.id">{{ e.name }} - {{ e.term }}</option>
+  </select>
+</div>
 
-      <select
-        v-model="selectedExam"
-        class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
-      >
-        <option :value="null" disabled>Select exam</option>
-        <option v-for="exam in exams" :key="exam.id" :value="exam.id">
-          {{ exam.name }}
-        </option>
-      </select>
+
+    <div v-if="message" class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">{{ message }}</div>
+
+    <!-- statistics -->
+    <div v-if="stats" class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div class="rounded-xl border bg-white p-4 shadow-sm">
+        <p class="text-xs font-medium uppercase text-slate-500">Class average</p>
+        <p class="mt-1 text-2xl font-bold text-slate-800">{{ fmt(stats.class_average) }}</p>
+        <p class="text-xs text-slate-500">{{ stats.student_count }} students</p>
+      </div>
+      <div class="rounded-xl border bg-white p-4 shadow-sm">
+        <p class="text-xs font-medium uppercase text-slate-500">Highest average</p>
+        <p class="mt-1 text-2xl font-bold text-slate-800">{{ fmt(stats.highest_average) }}</p>
+      </div>
+      <div class="rounded-xl border bg-white p-4 shadow-sm">
+        <p class="text-xs font-medium uppercase text-slate-500">Lowest average</p>
+        <p class="mt-1 text-2xl font-bold text-slate-800">{{ fmt(stats.lowest_average) }}</p>
+      </div>
+      <div class="rounded-xl border bg-white p-4 shadow-sm">
+        <p class="text-xs font-medium uppercase text-slate-500">Pass rate</p>
+        <p class="mt-1 text-2xl font-bold text-slate-800">{{ stats.pass_rate }}%</p>
+        <p class="text-xs text-slate-500">average ≥ 50</p>
+      </div>
     </div>
 
-    <div
-      v-if="message"
-      class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-    >
-      {{ message }}
-    </div>
-
-    <div class="rounded-xl border bg-white shadow-sm">
-      <div v-if="loading" class="p-8 text-center text-sm text-slate-500">
-        Loading results...
-      </div>
-
-      <div v-else-if="!selectedExam" class="p-8 text-center text-sm text-slate-500">
-        Select an exam to view results.
-      </div>
-
-      <div v-else-if="!students.length" class="p-8 text-center text-sm text-slate-500">
-        No students found for this class.
-      </div>
-
-      <div v-else-if="!subjectColumns.length" class="p-8 text-center text-sm text-slate-500">
-        No submitted subject scores found for this exam.
-      </div>
+    <div class="rounded-xl border bg-white shadow-sm" :class="{ 'opacity-60': loading && data }">
+      <div v-if="loading && !data" class="p-8 text-center text-sm text-slate-500">Loading results...</div>
+      <div v-else-if="!exams.length" class="p-8 text-center text-sm text-slate-500">No exams with marks for this class yet.</div>
+      <div v-else-if="!rows.length" class="p-8 text-center text-sm text-slate-500">No students found for this class.</div>
 
       <div v-else class="overflow-x-auto">
         <table class="min-w-full text-sm">
           <thead class="bg-slate-100">
             <tr>
-              <th class="sticky left-0 bg-slate-100 px-4 py-3 text-left font-semibold text-slate-700">
-                Student
-              </th>
-
-              <th
-                v-for="subject in subjectColumns"
-                :key="subject"
-                class="px-4 py-3 text-center font-semibold text-slate-700"
-              >
-                {{ subjectLabel(subject) }}
-              </th>
-
-              <th class="px-4 py-3 text-center font-semibold text-slate-700">
-                Total
-              </th>
-
-              <th class="px-4 py-3 text-center font-semibold text-slate-700">
-                Level
-              </th>
+              <th class="px-3 py-3 text-center font-semibold text-slate-700">Rank</th>
+              <th class="sticky left-0 bg-slate-100 px-4 py-3 text-left font-semibold text-slate-700">Student</th>
+              <th v-for="s in subjects" :key="s.subject" class="px-4 py-3 text-center font-semibold text-slate-700">{{ s.subject_display }}</th>
+              <th class="px-4 py-3 text-center font-semibold text-slate-700">Average</th>
+              <th class="px-4 py-3 text-center font-semibold text-slate-700">Level</th>
+              <th class="px-4 py-3"></th>
             </tr>
           </thead>
-
           <tbody>
-            <tr
-              v-for="row in tableRows"
-              :key="row.studentId"
-              class="border-t hover:bg-slate-50"
-            >
+            <tr v-for="r in rows" :key="r.student_id" class="border-t hover:bg-slate-50">
+              <td class="px-3 py-3 text-center font-semibold text-slate-700">{{ r.rank }}</td>
               <td class="sticky left-0 bg-white px-4 py-3 font-medium text-slate-800">
-                {{ row.studentName }}
+                {{ r.first_name }} {{ r.last_name }}
+                <span class="block text-xs font-normal text-slate-400">{{ r.admission_number }}</span>
               </td>
-
-              <td
-                v-for="subject in subjectColumns"
-                :key="subject"
-                class="px-4 py-3 text-center"
-              >
-                {{ row.subjects[subject] ?? "-" }}
+              <td v-for="s in subjects" :key="s.subject" class="px-4 py-3 text-center">{{ r.scores[s.subject] ?? '-' }}</td>
+              <td class="px-4 py-3 text-center font-semibold text-blue-700">{{ fmt(r.average_score) }}</td>
+              <td class="px-4 py-3 text-center">
+                <span class="rounded-full px-2 py-0.5 text-xs font-semibold" :class="levelClass(r.level)">{{ r.level }}</span>
               </td>
-
-              <td class="px-4 py-3 text-center font-semibold text-blue-700">
-                {{ row.total }}
-              </td>
-
-              <td class="px-4 py-3 text-center font-semibold text-emerald-700">
-                {{ row.level }}
+              <td class="px-4 py-3 text-right">
+                <button class="text-sm font-medium text-blue-600 hover:underline" @click="viewStudent(r)">View</button>
               </td>
             </tr>
           </tbody>
-          <tfoot v-if="tableRows.length" class="border-t-2 border-slate-300 bg-slate-50 font-semibold">
-  <tr>
-    <td class="sticky left-0 bg-slate-50 px-4 py-3 text-slate-800">
-      Class Average
-    </td>
-
-    <td
-      v-for="subject in subjectColumns"
-      :key="subject"
-      class="px-4 py-3 text-center text-slate-700"
-    >
-      {{ subjectAverages[subject] !== null ? subjectAverages[subject].toFixed(2) : "-" }}
-    </td>
-
-    <td class="px-4 py-3 text-center text-blue-800">
-      {{ classSummary.average }}
-    </td>
-
-    <td class="px-4 py-3 text-center text-emerald-800">
-      {{ classSummary.level }}
-    </td>
-  </tr>
-</tfoot>
+          <tfoot class="border-t-2 border-slate-300 bg-slate-50 font-semibold">
+            <tr>
+              <td></td>
+              <td class="sticky left-0 bg-slate-50 px-4 py-3 text-slate-800">Class Average</td>
+              <td v-for="s in subjects" :key="s.subject" class="px-4 py-3 text-center text-slate-700">{{ fmt(data.subject_averages[s.subject]) }}</td>
+              <td class="px-4 py-3 text-center text-blue-800">{{ fmt(stats.class_average) }}</td>
+              <td class="px-4 py-3 text-center text-emerald-800">{{ stats.class_level }}</td>
+              <td></td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
   </div>
 </template>
-
-
-
-<script setup>
-import { ref, computed, watch, onMounted } from "vue"
-import { useClassStore } from "@/stores/classStore"
-import * as XLSX from "xlsx"
-
-import { getExams } from "@/portals/teachers/api/Grades"
-import studentsApi from "../../api/Students"
-import { getAllSubjectScores, getStrands } from "../../api/assessments"
-
-import { SUBJECTS } from '../../../../constants/subjects'
-
-const classStore = useClassStore()
-
-const exams = ref([])
-const selectedExam = ref(null)
-
-const students = ref([])
-const subjectScores = ref([])
-const gradeSubjects = ref([])
-
-const loading = ref(false)
-const exporting = ref(false)
-const message = ref("")
-
-const grade = computed(() => classStore.activeClass?.class_level_name)
-const stream = computed(() => classStore.activeClass?.stream_name)
-
-let requestId = 0
-
-/* =========================
-   LOAD EXAMS
-========================= */
-
-const loadExams = async () => {
-  const cls = classStore.activeClass
-
-  if (!cls) return
-
-  try {
-    const allExams = await getExams()
-
-    exams.value = allExams.filter(exam => {
-
-      
-      if (
-        Array.isArray(exam.target_class_levels) &&
-        exam.target_class_levels.length
-      ) {
-        return exam.target_class_levels.some(
-          levelId =>
-            String(levelId) ===
-            String(cls.class_level)
-        )
-      }
-
-      /*
-       * LEGACY EXAMS CREATED FOR A CLASS INSTANCE
-       */
-      if (
-        cls.class_instance &&
-        exam.class_instance
-      ) {
-        return (
-          String(exam.class_instance) ===
-          String(cls.class_instance)
-        )
-      }
-
-      /*
-       * LEGACY EXAMS CREATED FOR A CLASS LEVEL
-       */
-      if (exam.class_level) {
-        return (
-          String(exam.class_level) ===
-          String(cls.class_level)
-        )
-      }
-
-      return false
-    })
-
-    if (exams.value.length) {
-      selectedExam.value = exams.value[0].id
-    } else {
-      selectedExam.value = null
-    }
-
-  } catch (error) {
-    console.error("Failed to load exams:", error)
-
-    exams.value = []
-    selectedExam.value = null
-    message.value = "Failed to load exams."
-  }
-}
-
-/* =========================
-   LOAD STUDENTS
-========================= */
-
-const loadStudents = async () => {
-  const cls = classStore.activeClass
-  if (!cls) return
-
-  try {
-    const res = await studentsApi.filter(cls.class_level, cls.stream)
-    students.value = Array.isArray(res) ? res : res.results ?? []
-  } catch (error) {
-    console.error("Failed to load students:", error)
-    message.value = "Failed to load students."
-  }
-}
-
-/* =========================
-   LOAD GRADE SUBJECTS (curriculum, from Strand)
-========================= */
-
-const loadGradeSubjects = async () => {
-  const cls = classStore.activeClass
-  if (!cls) return
-
-  try {
-    const strands = await getStrands({ class_level: cls.class_level })
-    gradeSubjects.value = [...new Set(strands.map(s => s.subject))]
-  } catch (error) {
-    console.error("Failed to load grade subjects:", error)
-    gradeSubjects.value = []
-  }
-}
-
-/* =========================
-   LOAD RESULTS
-========================= */
-const loadResults = async () => {
-  if (!selectedExam.value || !students.value.length) {
-    subjectScores.value = []
-    return
-  }
-
-  const thisRequest = ++requestId
-  loading.value = true
-  message.value = ""
-
-  try {
-    const studentIds = students.value.map(s => s.id)
-    const data = await getAllSubjectScores(selectedExam.value, studentIds)
-
-    if (thisRequest !== requestId) return
-    subjectScores.value = Array.isArray(data) ? data : []
-  } catch (error) {
-    console.error("Failed to load subject results:", error)
-    if (thisRequest === requestId) {
-      message.value = "Failed to load subject results."
-      subjectScores.value = []
-    }
-  } finally {
-    if (thisRequest === requestId) loading.value = false
-  }
-}
-
-/* =========================
-   DERIVED DATA
-========================= */
-
-const subjectColumns = computed(() => {
-  // Curriculum subjects for this grade, plus a safety-net union with
-  // anything actually recorded (covers subjects missing a Strand entry)
-  const recorded = new Set(subjectScores.value.map(item => item.subject))
-  return Array.from(new Set([...gradeSubjects.value, ...recorded]))
-})
-
-const scoreMap = computed(() => {
-  const map = {}
-
-  subjectScores.value.forEach(item => {
-    const key = `${item.student}_${item.subject}`
-    map[key] = Number(item.score)
-  })
-
-  return map
-})
-
-const levelFromScore = (score) => {
-  const value = Number(score)
-
-  if (value >= 90) return "EE1"
-  if (value >= 75) return "EE2"
-  if (value >= 58) return "ME1"
-  if (value >= 41) return "ME2"
-  if (value >= 31) return "AE1"
-  if (value >= 21) return "AE2"
-  if (value >= 11) return "BE1"
-  return "BE2"
-}
-
-const subjectLabel = (code) => {
-  const subject = SUBJECTS.find(
-    subject => subject.value === code
-  )
-
-  return subject?.label || code
-}
-
-const tableRows = computed(() => {
-  return students.value.map(student => {
-    const subjects = {}
-    let total = 0
-    let count = 0
-
-    subjectColumns.value.forEach(subject => {
-      const key = `${student.id}_${subject}`
-      const score = scoreMap.value[key]
-
-      if (score !== undefined && score !== null) {
-        subjects[subject] = score
-        total += score
-        count++
-      } else {
-        subjects[subject] = null
-      }
-    })
-
-    const average = count ? (total / count) : 0
-
-    return {
-      studentId: student.id,
-      studentName: `${student.full_name}`,
-      subjects,
-      total: count ? average.toFixed(2) : "-",
-      level: count ? levelFromScore(average) : "-"
-    }
-  })
-})
-
-
-const subjectAverages = computed(() => {
-  const sums = {}
-  const counts = {}
-
-  subjectScores.value.forEach(item => {
-    const score = Number(item.score)
-    if (Number.isNaN(score)) return
-
-    sums[item.subject] = (sums[item.subject] || 0) + score
-    counts[item.subject] = (counts[item.subject] || 0) + 1
-  })
-
-  const result = {}
-  subjectColumns.value.forEach(subject => {
-    result[subject] = counts[subject] ? sums[subject] / counts[subject] : null
-  })
-  return result
-})
-
-const classSummary = computed(() => {
-  const validTotals = tableRows.value
-    .map(row => row.total)
-    .filter(t => t !== "-")
-    .map(Number)
-
-  if (!validTotals.length) return { average: "-", level: "-" }
-
-  const average = validTotals.reduce((a, b) => a + b, 0) / validTotals.length
-  return { average: average.toFixed(2), level: levelFromScore(average) }
-})
-
-/* =========================
-   EXPORT
-========================= */
-const exportToExcel = async () => {
-  if (!tableRows.value.length) return
-
-  exporting.value = true
-
-  try {
-    const rows = tableRows.value.map(row => {
-      const exportRow = { Student: row.studentName }
-
-      subjectColumns.value.forEach(subject => {
-        exportRow[subjectLabel(subject)] = row.subjects[subject] ?? ""
-      })
-
-      exportRow["Total"] = row.total
-      exportRow["Level"] = row.level
-
-      return exportRow
-    })
-
-    // Blank row so the summary doesn't read as just another student
-    const spacerRow = { Student: "" }
-    subjectColumns.value.forEach(subject => {
-      spacerRow[subjectLabel(subject)] = ""
-    })
-    spacerRow["Total"] = ""
-    spacerRow["Level"] = ""
-
-    const summaryRow = { Student: "CLASS AVERAGE" }
-    subjectColumns.value.forEach(subject => {
-      const avg = subjectAverages.value[subject]
-      summaryRow[subjectLabel(subject)] = avg !== null ? avg.toFixed(2) : ""
-    })
-    summaryRow["Total"] = classSummary.value.average
-    summaryRow["Level"] = classSummary.value.level
-
-    const worksheet = XLSX.utils.json_to_sheet([...rows, spacerRow, summaryRow])
-    const workbook = XLSX.utils.book_new()
-
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Results")
-
-    const examName =
-      exams.value.find(e => e.id === selectedExam.value)?.name || "Exam"
-
-    XLSX.writeFile(workbook, `Results_${examName}.xlsx`)
-  } catch (error) {
-    console.error("Failed to export results:", error)
-    message.value = "Failed to export Excel file."
-  } finally {
-    exporting.value = false
-  }
-}
-
-/* =========================
-   WATCHERS
-========================= */
-
-watch(selectedExam, async (newVal, oldVal) => {
-  if (newVal === oldVal) return
-  await loadResults()
-})
-
-watch(
-  () => classStore.activeClass,
-  async (newCls) => {
-    if (!newCls) return
-
-    // Clear stale data immediately so nothing from the previous class
-    // renders while the new class's data loads
-    students.value = []
-    subjectScores.value = []
-    gradeSubjects.value = []
-
-    await loadExams()
-    await loadStudents()
-    await loadGradeSubjects()
-    await loadResults()
-  },
-  { immediate: true }
-)
-
-/* =========================
-   INITIAL LOAD
-========================= */
-
-onMounted(async () => {
-  if (classStore.activeClass) {
-    await loadExams()
-    await loadStudents()
-    await loadGradeSubjects()
-    await loadResults()
-  }
-})
-</script>

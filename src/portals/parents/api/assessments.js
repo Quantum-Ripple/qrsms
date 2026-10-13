@@ -200,3 +200,16 @@ export const getStudentGrades = async (studentId) => {
     throw error
   }
 }
+
+
+export const getParentStudentResult = async ({ student, exam }) => {
+  try {
+    const res = await api.get('/results/parent/student/', {
+      params: { student, exam: exam || undefined },
+    })
+    return res.data
+  } catch (error) {
+    console.error('Error fetching parent student result:', error)
+    throw error
+  }
+}

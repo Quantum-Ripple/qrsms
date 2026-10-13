@@ -20,7 +20,7 @@ import Transactions from './components/reports/Transactions.vue'
 import CommunicationsPage from './views/EventsPage.vue'
 import SettingsPage from './views/SettingsPage.vue'
 import ParentDetails from './components/parents/ParentDetails.vue'
-import Academics from './views/Academics.vue'
+
 import CreateTeacher from './components/CreateTeacher.vue'
 import Configuration from './views/Configurations.vue'
 import Promotions from './views/Promotions.vue'
@@ -32,8 +32,7 @@ import ParentPage from './components/parents/ParentsPage.vue'
 import ParentEdit from './components/parents/ParentEdit.vue'
 import ExamManagement from './views/ExamManagement.vue'
 import AttendanceManagement from './views/AttendanceManagement.vue'
-import ClassResults from './components/assessments/ClassResults.vue'
-import StudentResults from './components/assessments/StudentResults.vue'
+
 import ClassResultsView from './views/ClassResultsView.vue'
 
 
@@ -125,19 +124,7 @@ export default [
   // Settings
   { path: 'pr/settings', name: 'PrincipalSettings', component: SettingsPage },
 
-  { path: 'academics', name: 'Academics', component: Academics },
-  {
-    path: 'academics/class-results/:classLevelId',
-    name: 'ClassResults',
-    component: ClassResults,
-    props: true,
-  },
-  {
-  path: 'academics/student/:studentId',
-  name: 'StudentResults',
-  component: StudentResults,
-  props: true,
-},
+
   { path: 'configurations', name: 'Configurations', component: Configuration },
   { path: 'promotions', name: 'Promotions', component: Promotions },
   { path: 'principal/calendar', name: 'PrincipalCalendar', component: Calender },

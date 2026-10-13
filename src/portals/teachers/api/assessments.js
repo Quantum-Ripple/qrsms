@@ -187,3 +187,29 @@ export const bulkSaveRubricScores = async (payload) => {
   }
 
 }
+
+
+
+
+
+const call = async (fn, label) => {
+  try {
+    return (await fn()).data
+  } catch (error) {
+    console.error(`Error ${label}:`, error)
+    throw error
+  }
+}
+
+// exam is optional: the server defaults to the newest exam that has marks
+export const getTeacherClassResults = ({ classLevel, stream, exam }) =>
+  call(() => api.get('/results/teacher/class/', {
+    params: { class_level: classLevel, stream, exam: exam || undefined },
+  }), 'fetching class results')
+
+export const getTeacherStudentResult = ({ exam, student }) =>
+  call(() => api.get('/results/teacher/student/', { params: { exam, student } }), 'fetching student result')
+
+// empty comment text deletes the comment
+export const saveStudentComment = ({ exam, student, comment }) =>
+  call(() => api.put('/results/teacher/comment/', { exam, student, comment }), 'saving comment')
