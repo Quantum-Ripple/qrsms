@@ -1,6 +1,6 @@
 import Dashboard from './views/Dashboard.vue'
 import StudentsPage from './views/Students.vue'
-import AssignmentsPage from './views/Assignments.vue'
+
 import AttendancePage from './views/Attendance.vue'
 import GradesPage from './views/Grades.vue'
 import AnnouncementsPage from './views/Announcements.vue'
@@ -10,9 +10,16 @@ import FeeStructure from './components/Finance/FeeStructure.vue'
 import FeeSummary from './components/Finance/FeeSummary.vue'
 import OnlinePayment from './components/Finance/OnlinePayment.vue'
 
+import NotesPage from './views/Notes.vue'
+import AssignmentsPage from './views/Assignment.vue'
+import AssignmentAttempt from './components/lms/AssignmentAttempt.vue'
+import AssignmentResults from './components/lms/AssignmentResults.vue'
+
+
 
 import EventDetail from './components/events/EventDetail.vue'
 import Assessment from './views/Assessment.vue'
+
 
 
 export default [
@@ -24,6 +31,7 @@ export default [
 
   // Assignments
   { path: 'assignments', name: 'ParentAssignments', component: AssignmentsPage },
+  { path: 'notes', name: 'ParentNotes', component: NotesPage },
 
   // Attendance
   { path: 'attendance', name: 'ParentAttendance', component: AttendancePage },
@@ -51,6 +59,10 @@ export default [
     ],
   },
 
+
+  { path: "assignments", name: "ParentAssignments", component: AssignmentsPage },
+  { path: "assignments/:id/attempt", name: "ParentAssignmentAttempt", component: AssignmentAttempt },
+  { path: "assignments/:id/result", name: "ParentAssignmentResult", component: AssignmentResults },
   // Settings
   { path: 'settings', name: 'ParentSettings', component: Settings },
 ]
