@@ -88,3 +88,14 @@ export const deletePayment = async (id) => {
   const response = await api.delete(`/payments/${id}/`)
   return response.data
 }
+
+
+export const initiateStaffStkPush = async (payload) => {
+  const response = await api.post('/mpesa/stk/staff/', payload)
+  return response.data
+}
+
+export const getMpesaTransactionStatus = async (id) => {
+  const response = await api.get(`/mpesa/transactions/${id}/`)
+  return response.data
+}

@@ -178,18 +178,14 @@
 
 
 
-            <td class="p-3 text-right">
-
-
-              <button
-                class="text-green-600 hover:underline"
-                @click="openRecordPayment(invoice.id)"
-              >
-                Record Payment
-              </button>
-
-
-            </td>
+            <td class="p-3 text-right space-x-3 whitespace-nowrap">
+                <button class="text-green-600 hover:underline" @click="openRecordPayment(invoice.id)">
+                  Record Payment
+                </button>
+                <button class="text-blue-600 hover:underline" @click="openPrompt(invoice)">
+                  Prompt
+                </button>
+              </td>
 
 
           </tr>
@@ -275,12 +271,14 @@
 
 
 
-        <button
-          class="bg-blue-600 text-white px-3 py-2 rounded"
-          @click="openRecordPayment(invoice.id)"
-        >
-          Record Payment
-        </button>
+        <div class="flex gap-2">
+          <button class="bg-blue-600 text-white px-3 py-2 rounded flex-1" @click="openRecordPayment(invoice.id)">
+            Record Payment
+          </button>
+          <button class="bg-green-600 text-white px-3 py-2 rounded flex-1" @click="openPrompt(invoice)">
+            Prompt
+          </button>
+        </div>
 
 
       </div>
@@ -354,6 +352,13 @@
 
     />
 
+    <PromptPayment
+      v-if="showPromptModal"
+      :invoice="selectedPromptInvoice"
+      @close="closePrompt"
+      @paymentRecorded="refreshInvoices"
+    />
+
 
   </div>
 </template>
@@ -364,6 +369,12 @@ import { useRouter } from 'vue-router'
 import RecordPayment from '../components/Invoices/RecordPayment.vue'
 import { getClassLevels } from '@/api/classes'
 import { listTerms } from '../api/term'
+
+import PromptPayment from '../components/Invoices/PromptPayment.vue'
+
+
+
+
 
 
 const router = useRouter()
@@ -379,6 +390,8 @@ const search = ref('')
 const selectedTerm = ref('')
 const selectedClassLevel = ref('')
 
+const showPromptModal = ref(false)
+const selectedPromptInvoice = ref(null)
 
 const classLevels = ref([])
 const terms = ref([])
@@ -393,6 +406,14 @@ const totalCount = ref(0)
 const showRecordPaymentModal = ref(false)
 const selectedInvoiceId = ref(null)
 
+const openPrompt = (invoice) => {
+  selectedPromptInvoice.value = invoice
+  showPromptModal.value = true
+}
+const closePrompt = () => {
+  showPromptModal.value = false
+  selectedPromptInvoice.value = null
+}
 
 const statusLabel = (invoice) => {
   if (invoice.is_overpaid) return `Overpaid +${Number(invoice.overpaid_amount).toFixed(2)}`

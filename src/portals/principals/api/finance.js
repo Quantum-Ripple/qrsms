@@ -36,12 +36,24 @@ export const getClasswiseFinanceSummary = async (termId) => {
   }}
 
 
-export const getTransactions = async () => {
+export const getTransactions = async (termId) => {
   try {
-    const response = await api.get('/payments/')
+    const response = await api.get('/payments/', {
+      params: termId ? { term: termId } : {},
+    })
     return response.data
   } catch (error) {
     console.error('Error fetching transactions:', error)
+    throw error
+  }
+}
+
+export const getStudentPayments = async (studentId) => {
+  try {
+    const response = await api.get(`/student/${studentId}/payments/`)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching student payments:', error)
     throw error
   }
 }

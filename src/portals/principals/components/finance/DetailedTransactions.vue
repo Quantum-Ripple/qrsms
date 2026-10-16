@@ -2,7 +2,6 @@
   <div
     class="w-full max-w-full overflow-x-hidden bg-white rounded-lg shadow p-4 sm:p-6"
   >
-    
     <div
       class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4"
     >
@@ -32,7 +31,15 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 mb-4">
+    <!-- FILTERS -->
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-4">
+      <select v-model="selectedTerm" class="border rounded px-3 py-2 text-sm w-full">
+        <option value="">All Terms</option>
+        <option v-for="t in terms" :key="t.id" :value="String(t.id)">
+          {{ t.name }}, {{ t.academic_year_name }}
+        </option>
+      </select>
+
       <input
         v-model="searchQuery"
         type="text"
@@ -71,6 +78,7 @@
       {{ error }}
     </div>
 
+    <!-- MOBILE CARDS -->
     <div v-else class="sm:hidden space-y-3">
       <div
         v-for="txn in filteredTransactions"
@@ -90,17 +98,25 @@
         </div>
 
         <button
-          @click="goToInvoice(txn.id)"
-          class="mt-3 bg-blue-500 text-white w-full py-1.5 rounded hover:bg-blue-600 text-sm"
+          @click="openStudent(txn)"
+          :disabled="!txn.student_id"
+          class="mt-3 bg-[#173458] text-white w-full py-1.5 rounded text-sm disabled:opacity-40"
         >
-          Generate Invoice
+          View payments
         </button>
       </div>
     </div>
 
-    
     <div
-      v-if="filteredTransactions.length"
+      v-if="!loading && !error && !filteredTransactions.length"
+      class="text-center text-gray-500 py-6"
+    >
+      No transactions found for these filters.
+    </div>
+
+    <!-- DESKTOP TABLE -->
+    <div
+      v-if="!loading && !error && filteredTransactions.length"
       class="hidden sm:block overflow-x-auto border rounded-md"
     >
       <table class="w-full table-auto text-sm">
@@ -111,11 +127,9 @@
             <th class="border px-3 py-2 text-left hidden md:table-cell">
               Class Level
             </th>
-            <th class="border px-3 py-2 text-left">
-              Payment Method
-            </th>
+            <th class="border px-3 py-2 text-left">Payment Method</th>
             <th class="border px-3 py-2 text-left">Amount</th>
-            <!--<th class="border px-3 py-2 text-left">Actions</th>-->
+            <th class="border px-3 py-2 text-left">Actions</th>
           </tr>
         </thead>
 
@@ -133,9 +147,7 @@
               {{ txn.full_name }}
             </td>
 
-            <td
-              class="border px-3 py-2 hidden md:table-cell whitespace-nowrap"
-            >
+            <td class="border px-3 py-2 hidden md:table-cell whitespace-nowrap">
               {{ txn.class_level }}
             </td>
 
@@ -147,28 +159,37 @@
               {{ formatCurrency(txn.amount) }}
             </td>
 
-            <!--<td class="border px-3 py-2">
+            <td class="border px-3 py-2">
               <button
-                @click="goToInvoice(txn.id)"
-                class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 text-xs"
+                @click="openStudent(txn)"
+                :disabled="!txn.student_id"
+                class="bg-[#173458] text-white px-3 py-1 rounded hover:opacity-90 text-xs disabled:opacity-40"
               >
-                Invoice
+                View
               </button>
-            </td>-->
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
+
+    <StudentPaymentsModal
+      v-if="viewingStudent"
+      :student-id="viewingStudent.id"
+      :student-name="viewingStudent.name"
+      @close="viewingStudent = null"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue"
+import { ref, computed, onMounted, watch } from "vue"
 import * as XLSX from "xlsx"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
-import { getTransactions } from "../../api/finance"
-import { useRouter } from "vue-router"
+import { getTransactions, getFinanceSummary } from "../../api/finance"
+import { listTerms } from "../../api/term"
+import StudentPaymentsModal from "./StudentPaymentsModal.vue"
 
 const transactions = ref([])
 const searchQuery = ref("")
@@ -176,24 +197,68 @@ const filter = ref({ method: "" })
 const dateRange = ref({ start: "", end: "" })
 const loading = ref(false)
 const error = ref(null)
-const router = useRouter()
 
-function goToInvoice(id) {
-  router.push({ name: "PrincipalGenerateInvoice", params: { id } })
-}
+const terms = ref([])
+const selectedTerm = ref("") // "" = all terms
+const viewingStudent = ref(null)
+
+/*
+|--------------------------------------------------------------------------
+| LOADING
+|--------------------------------------------------------------------------
+*/
+
+let requestId = 0
 
 async function fetchPayments() {
+  const myRequest = ++requestId
   loading.value = true
+  error.value = null
   try {
-    transactions.value = await getTransactions()
+    const result = await getTransactions(selectedTerm.value || undefined)
+    if (myRequest === requestId) transactions.value = result // ignore stale responses
   } catch {
-    error.value = "Failed to load transactions."
+    if (myRequest === requestId) error.value = "Failed to load transactions."
   } finally {
-    loading.value = false
+    if (myRequest === requestId) loading.value = false
   }
 }
 
-onMounted(fetchPayments)
+// Re-fetch whenever the term changes
+watch(selectedTerm, fetchPayments)
+
+onMounted(async () => {
+  let currentId = ""
+  try {
+    const [termList, summary] = await Promise.all([listTerms(), getFinanceSummary()])
+    terms.value = termList
+    currentId = summary?.term?.id ? String(summary.term.id) : ""
+  } catch (e) {
+    console.error("Failed loading terms:", e)
+  }
+
+  if (currentId) {
+    selectedTerm.value = currentId // the watcher loads the payments
+  } else {
+    fetchPayments() // no current term found, show all
+  }
+})
+
+const selectedTermLabel = computed(() => {
+  const t = terms.value.find((t) => String(t.id) === String(selectedTerm.value))
+  return t ? `${t.name}, ${t.academic_year_name}` : ""
+})
+
+function openStudent(txn) {
+  if (!txn.student_id) return
+  viewingStudent.value = { id: txn.student_id, name: txn.full_name }
+}
+
+/*
+|--------------------------------------------------------------------------
+| FILTERING + FORMATTING
+|--------------------------------------------------------------------------
+*/
 
 const filteredTransactions = computed(() =>
   transactions.value.filter((txn) => {
@@ -221,6 +286,8 @@ function formatCurrency(value) {
   }).format(value)
 }
 
+// Clears the search, method and date filters. The term stays as selected;
+// pick "All Terms" in the dropdown to widen the range.
 function viewAll() {
   searchQuery.value = ""
   filter.value.method = ""
@@ -252,6 +319,7 @@ const REPORT_COLORS = {
 
 function activeFilterSummary() {
   const parts = []
+  parts.push(`Term: ${selectedTermLabel.value || "All terms"}`)
   if (searchQuery.value) parts.push(`Name contains "${searchQuery.value}"`)
   if (filter.value.method) parts.push(`Method: ${filter.value.method}`)
   if (dateRange.value.start || dateRange.value.end) {
@@ -287,14 +355,12 @@ function exportToPDF() {
     { align: "right" }
   )
 
-  // Applied filters, only shown when something is actually active
+  // Applied filters (the term line is always shown)
   let subY = 22
   const filterSummary = activeFilterSummary()
-  if (filterSummary) {
-    doc.setFontSize(8.5)
-    doc.text(`Filters — ${filterSummary}`, margin, subY)
-    subY += 5
-  }
+  doc.setFontSize(8.5)
+  doc.text(`Filters — ${filterSummary}`, margin, subY)
+  subY += 5
 
   doc.setDrawColor(...REPORT_COLORS.accent)
   doc.setLineWidth(0.6)
