@@ -73,7 +73,7 @@ const handleLogin = async () => {
     } else if (err?.response?.status === 401) {
       error.value = 'You are not authorized.'
     } else {
-      error.value = 'Login failed. Please try again.'
+      error.value = 'This Application is under maintainance!!Please try again Later!.'
       console.error('Login error:', err)
     }
   } finally {
