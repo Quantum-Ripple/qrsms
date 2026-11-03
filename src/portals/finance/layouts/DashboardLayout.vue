@@ -57,12 +57,13 @@ const auth = useAuthStore()
 
 const navItems = [
   { label: 'Dashboard', route: { name: 'FinanceDashboard' } },
-  { label: 'Fee Structures', route: { name: 'FinanceFeeStructure'}},
-  { label: 'Payments', route: { name: 'FinancePayments'}},
-  { label: 'Invoices', route: { name: 'FinanceInvoices'}},
+  { label: 'School Fee', route: { name: 'FinanceSchoolFees' } },
+  //{ label: 'Payments', route: { name: 'FinancePayments'}},
+  { label: 'Payment Register', route: { name: 'FinancePaymentRegister'}},
+  { label: 'Fee Invoices', route: { name: 'FinanceInvoices'}},
+  { label: 'Generate Bills', route: { name: 'FinanceBilling' } },
   { label: 'Expenditures', route: { name: 'FinanceExpenditures'}},
   { label: 'Transport Billing', route: { name: 'TransportBilling'}},
-  { label: 'Transport Configurations', route: { name: 'TransportConfigurations'}},
   { label: 'Announcements', route: { name: 'FinanceAnnouncements' } },
   { label: 'Settings', route: { name: 'FinanceSettings' } },
  

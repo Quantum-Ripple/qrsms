@@ -88,3 +88,11 @@ export const getPayment = async (id) => {
     throw error
   }
 }
+
+export const getAdmissionCharges = async (termId) => {
+  const response = await api.get('/charges/', {
+    params: { active: 1, offer_at_admission: 1, ...(termId ? { term: termId } : {}) },
+  })
+  const data = response.data
+  return Array.isArray(data) ? data : (data.results ?? [])
+}

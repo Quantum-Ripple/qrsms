@@ -106,12 +106,12 @@
                 Edit
               </button>
 
-              <button
+              <!---<button
                 @click="deleteStudent"
                 class="bg-red-600 text-white px-4 py-2 rounded-lg"
               >
-                Delete
-              </button>
+                Withdraw
+              </button>-->
               <router-link :to="{ name: 'PrincipalStudents'}" class="text-blue-600 hover:underline text-sm ml-auto">
                       <- Back to students
                     </router-link>

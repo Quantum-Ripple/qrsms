@@ -2,7 +2,7 @@ import api from '../../../api/axios'
 
 export const getStudent = async() => {
   try {
-    const response = await api.get("/student/");
+    const response = await api.get("/students/");
     return response.data;
   } catch (error) {
     console.error("Error fetching student:", error);

@@ -7,7 +7,7 @@
         <div>
           <h2 class="text-lg font-semibold">M-Pesa Prompt</h2>
           <p class="text-sm text-green-50">
-            {{ invoice.student_name }} · {{ invoice.term }}
+            {{ invoice.student_name }} · {{ invoice.term || invoice.route_name }}
           </p>
         </div>
         <button class="text-white/80 hover:text-white text-xl leading-none" @click="close">✕</button>
@@ -187,7 +187,10 @@
 import { ref, computed, onBeforeUnmount } from 'vue'
 import { initiateStaffStkPush, getMpesaTransactionStatus } from '../../api/fee'
 
-const props = defineProps({ invoice: { type: Object, required: true } })
+const props = defineProps({
+  invoice: { type: Object, required: true },
+  transportInvoice: { type: Boolean, default: false },
+})
 const emit = defineEmits(['close', 'paymentRecorded'])
 
 const TOTAL_SECONDS = 90
@@ -263,7 +266,7 @@ const send = async () => {
   state.value = 'sending'
   try {
     const res = await initiateStaffStkPush({
-      invoice: props.invoice.id,
+      [props.transportInvoice ? 'transport_invoice' : 'invoice']: props.invoice.id,
       phone_number: phone.value,
       amount: amount.value,
     })

@@ -5,12 +5,15 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <h2 class="text-2xl font-semibold text-gray-800">Students</h2>
 
-      <button
-        @click="goToCreateStudents"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition w-full sm:w-auto"
-      >
-        + Add Student
-      </button>
+      <div class="flex items-center gap-2">
+  <button @click="router.push({ name: 'InactiveStudents' })" class="border border-gray-300 bg-white px-4 py-2 rounded-lg hover:bg-gray-50 w-full sm:w-auto"> 
+    Inactive students 
+  </button> 
+  <button @click="goToCreateStudents" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition w-full sm:w-auto"> 
+    + Add Student 
+  </button>
+</div>
+
     </div>
 
     <!-- SEARCH -->

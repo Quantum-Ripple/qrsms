@@ -1,5 +1,6 @@
 import Dashboard from './views/Dashboard.vue'
 import StudentsPage from './views/StudentsPage.vue'
+import InactiveStudents from './views/InactiveStudents.vue'
 import StudentsDetail from './components/StudentsDetail.vue'
 import CreateStudent from './components/CreateStudent.vue'
 import TeachersPage from './views/TeachersPage.vue'
@@ -34,7 +35,8 @@ import ExamManagement from './views/ExamManagement.vue'
 import AttendanceManagement from './views/AttendanceManagement.vue'
 
 import ClassResultsView from './views/ClassResultsView.vue'
-
+import SmsCampaign from './components/events/Smscampaigns.vue'
+import SmsCampaignDetail from './components/events/Smscampaigndetail.vue'
 
 export default [
   { path: '', name: 'PrincipalDashboard', component: Dashboard },
@@ -43,6 +45,7 @@ export default [
   { path: 'students', name: 'PrincipalStudents', component: StudentsPage },
   { path: 'students/create', name: 'CreateStudent', component: CreateStudent },
   { path: 'student/:id', name: 'PrincipalStudentDetail', component: StudentsDetail, props: true },
+  { path: 'inactive-students',name: 'InactiveStudents', component: InactiveStudents},
 
   // Teachers
   { path: 'teachers', name: 'PrincipalTeachers', component: TeachersPage },
@@ -151,4 +154,7 @@ export default [
   name: 'ClassResultsView',
   component: ClassResultsView,
 },
+
+{ path: 'sms', name: 'PrincipalSmsCampaigns', component: SmsCampaign },
+{ path: 'sms/:id', name: 'PrincipalSmsCampaignDetail', component: SmsCampaignDetail},
 ]

@@ -48,12 +48,12 @@
               :key="term.id"
               :value="term.id"
               >
-              {{term.name}}
+              {{ term.name }}, {{  term.academic_year_name }}
               </option>
 
               </select>
         </div>
-            <div>
+           <!-- <div>
               <label class="block mb-1 font-medium">Academic Year</label>
               <input
                 type="number"
@@ -62,7 +62,7 @@
                 placeholder="2026"
                 required
               />
-            </div>
+            </div>-->
 
 
         <div>

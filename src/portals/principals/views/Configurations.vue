@@ -423,6 +423,19 @@
       />
     </div>
 
+    <label class="flex items-center gap-2">
+
+            <input
+              type="checkbox"
+              v-model="newYear.is_current"
+            />
+
+            <span>
+              Set as current term
+            </span>
+
+          </label>
+
     <div class="flex justify-end gap-2 pt-2">
 
       <button
@@ -649,7 +662,8 @@ const newTerm = ref({
   name: '',
   start_date: '',
   end_date: '',
-  academic_year: ''
+  academic_year: '',
+  is_current: false,
 })
 
 

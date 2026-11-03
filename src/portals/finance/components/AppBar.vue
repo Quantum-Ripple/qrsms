@@ -59,8 +59,7 @@
         
         <nav class="hidden md:flex items-center space-x-3">
           
-          <router-link :to="{name:'FinancePayments'}" class="px-3 py-2 rounded-md hover:bg-gray-100">Payments</router-link>
-          <router-link :to="{name:'FinanceAnnouncements'}" class="px-3 py-2 rounded-md hover:bg-gray-100">Announcements</router-link>
+          <AcademicContextSelector />
 
            
 
@@ -88,6 +87,20 @@
 </template>
 
 <script setup>
+
+import { ref, watch } from 'vue'
+import AcademicContextSelector from '@/components/AcademicContextSelector.vue'
+import { useAuthStore } from '@/stores/authStore'
+import { useAcademicContextStore } from '@/stores/academicContextStore'
+
+const auth = useAuthStore()
+const academicContext = useAcademicContextStore()
+
+watch(
+  () => auth.user?.id,
+  (id) => (id ? academicContext.init() : academicContext.clear()),
+  { immediate: true }
+)
 const props = defineProps({
   title: { type: String, default: 'My App' }
 })

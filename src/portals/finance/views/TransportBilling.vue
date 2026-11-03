@@ -169,6 +169,13 @@
                   >
                     Record Payment
                   </button>
+                  <button
+                    v-if="!invoice.is_fully_paid"
+                    @click="openPrompt(invoice)"
+                    class="px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"
+                  >
+                    Prompt
+                  </button>
                   <span v-else class="text-sm text-gray-400">
                       {{ invoice.is_overpaid ? 'Overpaid' : 'Paid' }}
                     </span>
@@ -243,13 +250,20 @@
               </div>
           </div>
 
-          <button
-            v-if="!invoice.is_fully_paid"
-            @click="openPayment(invoice)"
-            class="w-full mt-4 px-3 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700"
-          >
-            Record Payment
-          </button>
+          <div v-if="!invoice.is_fully_paid" class="flex gap-2 mt-4">
+            <button
+              @click="openPayment(invoice)"
+              class="flex-1 px-3 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              Record Payment
+            </button>
+            <button
+              @click="openPrompt(invoice)"
+              class="flex-1 px-3 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Prompt
+            </button>
+          </div>
         </div>
 
         <div
@@ -475,6 +489,14 @@
         </div>
       </div>
 
+      <PromptPayment
+        v-if="showPromptModal"
+        :invoice="selectedPromptInvoice"
+        transport-invoice
+        @close="closePrompt"
+        @payment-recorded="loadInvoices"
+      />
+
     </div>
   </div>
 </template>
@@ -495,6 +517,7 @@ import {
   fetchAcademicYears,
   fetchTerms,
 } from '../api/term.js'
+import PromptPayment from '../components/Invoices/PromptPayment.vue'
 
 
 const toast = useToast()
@@ -519,6 +542,8 @@ const showGenerateModal = ref(false)
 
 const showPaymentModal = ref(false)
 const selectedInvoice = ref(null)
+const showPromptModal = ref(false)
+const selectedPromptInvoice = ref(null)
 
 const submittingPayment = ref(false)
 
@@ -731,6 +756,16 @@ function openPayment(invoice) {
     transaction_code: '',
   }
   showPaymentModal.value = true
+}
+
+function openPrompt(invoice) {
+  selectedPromptInvoice.value = invoice
+  showPromptModal.value = true
+}
+
+function closePrompt() {
+  showPromptModal.value = false
+  selectedPromptInvoice.value = null
 }
 
 function closePayment() {

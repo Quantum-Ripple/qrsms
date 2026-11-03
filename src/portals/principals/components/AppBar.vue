@@ -18,12 +18,17 @@
           <span class="text-lg font-semibold" data-testid="app-title">{{ title }}</span>
         </div>
 
+            
+
+        
+
+        
+
 
         <nav class="hidden md:flex items-center space-x-3">
+          <AcademicContextSelector />
 
           
-          <router-link :to="{ name: 'PrincipalFeeOverview'}" class="px-3 py-2 rounded-md hover:bg-gray-100" >Finance</router-link>
-          <router-link class="px-3 py-2 rounded-md hover:bg-gray-100" :to="{ name: 'PrincipalStudents'}">Students</router-link>
           
           
         <div class="relative">
@@ -94,7 +99,20 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+
+import { ref, watch } from 'vue'
+import AcademicContextSelector from '@/components/AcademicContextSelector.vue'
+import { useAuthStore } from '@/stores/authStore'
+import { useAcademicContextStore } from '@/stores/academicContextStore'
+
+const auth = useAuthStore()
+const academicContext = useAcademicContextStore()
+
+watch(
+  () => auth.user?.id,
+  (id) => (id ? academicContext.init() : academicContext.clear()),
+  { immediate: true }
+)
 
 const props = defineProps({
   title: {

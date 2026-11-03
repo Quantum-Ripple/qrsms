@@ -179,6 +179,8 @@
 
 
             <td class="p-3 text-right space-x-3 whitespace-nowrap">
+                <button class="text-blue-600 hover:underline" @click="viewInvoice(invoice.id)">View</button>
+                
                 <button class="text-green-600 hover:underline" @click="openRecordPayment(invoice.id)">
                   Record Payment
                 </button>
@@ -272,6 +274,7 @@
 
 
         <div class="flex gap-2">
+          <button class="text-blue-600 hover:underline" @click="viewInvoice(invoice.id)">View</button>
           <button class="bg-blue-600 text-white px-3 py-2 rounded flex-1" @click="openRecordPayment(invoice.id)">
             Record Payment
           </button>
@@ -414,6 +417,7 @@ const closePrompt = () => {
   showPromptModal.value = false
   selectedPromptInvoice.value = null
 }
+const viewInvoice = (id) => router.push({ name: 'InvoiceDetail', params: { id } })
 
 const statusLabel = (invoice) => {
   if (invoice.is_overpaid) return `Overpaid +${Number(invoice.overpaid_amount).toFixed(2)}`
@@ -442,9 +446,30 @@ const loadClassLevels = async () => {
 }
 
 
+const getLatestTerm = (list) => {
+  if (!Array.isArray(list) || !list.length) return null
+
+  return [...list].sort((a, b) => {
+    const yearA = Number(String(a.academic_year_name || a.academic_year || '').match(/\d{4}/)?.[0] || 0)
+    const yearB = Number(String(b.academic_year_name || b.academic_year || '').match(/\d{4}/)?.[0] || 0)
+    const termOrderA = Number(String(a.name || '').match(/\d+/)?.[0] || 0)
+    const termOrderB = Number(String(b.name || '').match(/\d+/)?.[0] || 0)
+
+    if (yearA !== yearB) return yearB - yearA
+    return termOrderB - termOrderA
+  })[0]
+}
+
 const loadTerms = async () => {
   try {
-    terms.value = await listTerms()
+    const response = await listTerms()
+    const list = Array.isArray(response) ? response : response?.results || []
+    terms.value = list
+
+    const latestTerm = getLatestTerm(list)
+    if (latestTerm) {
+      selectedTerm.value = latestTerm.name || latestTerm.display_name || latestTerm.label || ''
+    }
   } catch (error) {
     console.error(
       "Failed loading terms:",
@@ -579,15 +604,7 @@ const closeRecordPayment = () => {
 // NAVIGATION
 // -------------------------
 
-const goToCreateInvoice = () => {
-
-  router.push({
-    name:'InvoiceCreate'
-  })
-
-}
-
-
+   const goToCreateInvoice = () => router.push({ name: 'FinanceBilling' })
 
 // -------------------------
 // LIFECYCLE

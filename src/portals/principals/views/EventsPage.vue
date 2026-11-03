@@ -28,15 +28,23 @@ const router = useRouter()
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3">
       <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">
-      
+        Communications
       </h1>
 
-      <button
-        @click="router.push({ name: 'EventCreate' })"
-        class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm sm:text-base transition"
-      >
-        + Create Announcement
-      </button>
+      <div class="flex flex-wrap gap-3">
+        <router-link
+          :to="{ name: 'PrincipalSmsCampaigns' }"
+          class="px-5 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium text-sm sm:text-base transition"
+        >
+          SMS history
+        </router-link>
+        <button
+          @click="router.push({ name: 'EventCreate' })"
+          class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm sm:text-base transition"
+        >
+          + Create Announcement
+        </button>
+      </div>
     </div>
 
     <!-- List Component -->

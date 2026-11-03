@@ -139,6 +139,18 @@ async listAll(params = {}) {
     const res = await api.delete(`/students/${id}/`)
     return res.status === 204 || res.status === 200
   },
+    async listInactive(page = 1, search = '', outcome = '') {
+    const params = { page }
+    if (search.trim()) params.search = search.trim()
+    if (outcome) params.outcome = outcome
+    const res = await api.get('/students/inactive/', { params })
+    return res.data
+  },
+
+  async reinstate(studentId, classInstanceId) {
+    const res = await api.post('/enrollments/place/', { student: studentId, class_instance: classInstanceId })
+    return res.data
+  },
 }
 
 

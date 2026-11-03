@@ -16,6 +16,11 @@ import PaymentDetails from './components/payments/PaymentDetails.vue'
 import ExpenseDetails from './components/Expenses/ExpenseDetails.vue'
 import EventDetail from './components/events/EventDetail.vue'
 import TransportBilling from './views/TransportBilling.vue'
+import SchoolFees from './views/SchoolFees.vue'
+import UniformPage from './components/uniform/UniformPage.vue'
+import OtherCharges from './components/charges/OtherCharges.vue'
+
+import ChargeAssignment from './components/charges/ChargeAssignment.vue'
 
 export default [
   // Base dashboard
@@ -24,8 +29,20 @@ export default [
   // Announcements
   { path: 'announcements', name: 'FinanceAnnouncements', component: AnnouncementsPage },
 
-  // Fee Structure
-  { path: 'fee-structure', name: 'FinanceFeeStructure', component: FeeStructures },
+  // School fees
+  {
+    path: 'school-fees',
+    component: SchoolFees,
+    children: [
+      { path: '', name: 'FinanceSchoolFees', redirect: { name: 'FinanceFeeStructure' } },
+      { path: 'fee-structure', name: 'FinanceFeeStructure', component: FeeStructures },
+      { path: 'transport-configurations', name: 'TransportConfigurations', component: TransportConfiguration },
+      { path: 'uniforms', name: 'FinanceUniforms', component: UniformPage },
+      { path: 'other-charges', name: 'FinanceOtherCharges', component: OtherCharges },
+    ],
+  },
+  { path: 'fee-structure', redirect: { name: 'FinanceFeeStructure' } },
+  { path: 'transport-configurations', redirect: { name: 'TransportConfigurations' } },
   { path: 'fee-details/:id', name: 'FeeDetails', component: FeeDetails, props: true },
   { path: 'fee-create', name: 'FeeCreate', component: FeeCreate },
   { path: 'fee-print/:id', name: 'FeePrint', component: FeePrint, props: true },
@@ -45,11 +62,27 @@ export default [
 
   // Transport
   { path: 'transport-billing', name: 'TransportBilling', component: TransportBilling },
-  { path: 'transport-configurations', name: 'TransportConfigurations', component: TransportConfiguration },
 
   // Events
   { path: 'event-details/:id', name: 'FinanceEventDetail', component: EventDetail, props: true },
 
   // Settings
   { path: 'settings', name: 'FinanceSettings', component: Settings },
+
+  { path: 'student-charge-assign', name: 'ChargeAssignment',component: ChargeAssignment},
+
+  {
+  path: 'billing',
+  name: 'FinanceBilling',
+  component: () => import('./views/BillingRun.vue'),
+  redirect: (to) => ({ name: 'FinanceBillingReview', query: to.query }),
+  children: [
+    { path: 'review', name: 'FinanceBillingReview', component: () => import('./components/charges/ChargeAssignment.vue') },
+    { path: 'generate', name: 'FinanceBillingGenerate', component: () => import('./components/charges/ChargeGenerate.vue') },
+    
+  ],
+},
+{
+  path: 'payments-register', name: 'FinancePaymentRegister',component: () => import('./components/payments/PaymentRegister.vue')
+},
 ]

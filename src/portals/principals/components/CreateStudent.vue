@@ -127,7 +127,7 @@
                 class="field" />
             </div>
 
-            <div class="md:col-span-2">
+            <!--<div class="md:col-span-2">
               <label class="label">Email</label>
               <input type="email" v-model="form.email"
                 class="field" />
@@ -137,7 +137,7 @@
               <label class="label">Phone</label>
               <input type="tel" v-model="form.phone"
                 class="field" />
-            </div>
+            </div>-->
 
             <div class="md:col-span-2">
               <label class="label">Address</label>
@@ -147,6 +147,113 @@
 
           </div>
         </div>
+
+
+
+
+        <!-- ADMISSION CHARGES -->
+<div class="border rounded-xl p-6 bg-gray-50">
+  <div class="flex items-center justify-between mb-2">
+    <h4 class="text-md font-semibold text-gray-700">
+      Admission Charges
+    </h4>
+
+    <span class="text-xs text-gray-500">
+      Optional
+    </span>
+  </div>
+
+  <p class="text-sm text-gray-500 mb-5">
+    Select the charges that should be applied to this student during
+    admission.
+  </p>
+
+  <!-- Loading -->
+  <div
+    v-if="loadingAdmissionCharges"
+    class="text-sm text-gray-500 py-3"
+  >
+    Loading admission charges...
+  </div>
+
+  <!-- Charges -->
+  <div
+    v-else-if="admissionCharges.length"
+    class="space-y-3"
+  >
+    <label
+      v-for="charge in admissionCharges"
+      :key="charge.id"
+      class="flex items-center justify-between gap-4 p-4 bg-white
+             border border-gray-200 rounded-lg cursor-pointer
+             hover:border-blue-300 transition"
+    >
+      <div class="flex items-start gap-3 min-w-0">
+        <input
+          v-model="selectedAdmissionCharges"
+          type="checkbox"
+          :value="charge.id"
+          class="mt-1 w-4 h-4 text-blue-600 border-gray-300
+                 rounded focus:ring-blue-500"
+        />
+
+        <div class="min-w-0">
+          <p class="text-sm font-medium text-gray-800">
+            {{ charge.name }}
+          </p>
+
+          <p
+            v-if="charge.description"
+            class="text-xs text-gray-500 mt-1"
+          >
+            {{ charge.description }}
+          </p>
+        </div>
+      </div>
+
+      <span class="text-sm font-semibold whitespace-nowrap"
+          :class="admissionRateFor(charge) === null ? 'text-amber-700' : 'text-gray-700'">
+      {{ admissionRateFor(charge) === null ? 'No rate set' : 'KES ' + admissionRateFor(charge).toLocaleString() }}
+    </span>
+    </label>
+  </div>
+
+  <!-- Empty state -->
+  <div
+    v-else
+    class="text-sm text-gray-500 py-3"
+  >
+    No admission charges are currently available.
+  </div>
+
+  <!-- Selection summary -->
+  <div
+    v-if="selectedAdmissionCharges.length"
+    class="mt-4 pt-4 border-t border-gray-200 flex justify-between
+           items-center gap-3"
+  >
+    <span class="text-sm text-gray-600">
+      {{ selectedAdmissionCharges.length }} charge(s) selected
+    </span>
+
+    <button
+      type="button"
+      @click="selectedAdmissionCharges = []"
+      class="text-sm text-blue-600 hover:text-blue-800"
+    >
+      Clear selection
+    </button>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
 
         <!-- TRANSPORT -->
 <div class="border rounded-xl p-6 bg-gray-50">
@@ -330,6 +437,7 @@ import { fetchClassLevels } from "@/api/classes.js"
 import { fetchNextAdmissionNumber } from "../api/Students.js"
 import { fetchTransportRoutes } from '@/api/transport.js'
 import LoadingButton from '@/components/LoadingButton.vue'
+import { getAdmissionCharges } from '../api/finance.js'
 
 const loading = ref(false)
 
@@ -344,6 +452,10 @@ const selectedClassLevel = ref("")
 const streams = ref([])
 const formErrors = ref({})
 const loadingAdmission = ref(false)
+
+const admissionCharges = ref([])
+const selectedAdmissionCharges = ref([])
+const loadingAdmissionCharges = ref(false)
 
 watch(selectedClassLevel, (newValue) => {
   const selected = classLevels.value.find(
@@ -408,6 +520,8 @@ async function createStudent() {
           ? form.value.parent2
           : undefined,
 
+      admission_charges: selectedAdmissionCharges.value,
+
       uses_transport: form.value.uses_transport,
 
       transport_route: form.value.uses_transport
@@ -451,6 +565,38 @@ async function createStudent() {
 }
 
 
+async function loadAdmissionCharges() {
+  try {
+    loadingAdmissionCharges.value = true
+
+    const data = await getAdmissionCharges()
+
+    admissionCharges.value = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.results)
+        ? data.results
+        : []
+
+  } catch (error) {
+    console.error('Failed to load admission charges:', error)
+
+    admissionCharges.value = []
+
+    toast.error('Failed to load admission charges')
+  } finally {
+    loadingAdmissionCharges.value = false
+  }
+}
+
+
+const admissionRateFor = (charge) => {
+  const rates = charge.rates || []
+  const rate =
+    rates.find((r) => r.class_level != null && r.class_level === form.class_level) ??
+    rates.find((r) => r.class_level == null)
+  return rate ? Number(rate.amount) : null
+}
+
 
 onMounted(async () => {
   try {
@@ -460,6 +606,8 @@ onMounted(async () => {
     console.error("Failed to fetch class levels", error)
     toast.error("Failed to load class levels")
   }
+
+  await loadAdmissionCharges()
 
   try {
     const res = await fetchTransportRoutes()
