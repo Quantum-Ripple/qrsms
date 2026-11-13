@@ -73,6 +73,7 @@ const navItems = [
       ],
   },
   { label: 'Announcements', route: { name: 'ParentAnnouncements' } },
+  { label: 'How to pay', route: { name: 'ParentHowToPay' } },
   { label: 'Settings', route: { name: 'ParentSettings' } },
 ]
 

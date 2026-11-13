@@ -54,6 +54,7 @@ export default [
 
   // Payments
   { path: 'payments', name: 'FinancePayments', component: Payments },
+  { path: 'how-to-pay', name: 'FinanceHowToPay', component: () => import('./views/Howtopay.vue') },
   { path: 'payment-details/:id', name: 'PaymentDetails', component: PaymentDetails, props: true },
 
   // Expenditures
@@ -84,5 +85,11 @@ export default [
 },
 {
   path: 'payments-register', name: 'FinancePaymentRegister',component: () => import('./components/payments/PaymentRegister.vue')
+},
+
+{
+  path: 'arrears',
+  name: 'FinanceArrears',
+  component: () => import('./views/Arrears.vue'),
 },
 ]

@@ -119,6 +119,9 @@
                   <div class="font-medium text-gray-800">
                     {{ invoice.student_name }}
                   </div>
+                  <div class="mt-1 text-xs text-gray-500">
+                    {{ invoice.admission_number || invoice.student_admission_number || invoice.student?.admission_number || '—' }}
+                  </div>
                 </td>
 
                 <td class="px-4 py-4 text-gray-600">
@@ -205,6 +208,9 @@
             <div>
               <div class="font-semibold text-gray-800">
                 {{ invoice.student_name }}
+              </div>
+              <div class="text-xs text-gray-500 mt-1">
+                {{ invoice.admission_number || invoice.student_admission_number || invoice.student?.admission_number || '—' }}
               </div>
               <div class="text-sm text-gray-500 mt-1">
                 {{ invoice.route_name }}
@@ -518,8 +524,9 @@ import {
   fetchTerms,
 } from '../api/term.js'
 import PromptPayment from '../components/Invoices/PromptPayment.vue'
+import { useAcademicContextStore } from '@/stores/academicContextStore'
 
-
+const academicContext = useAcademicContextStore()
 const toast = useToast()
 
 // --------------------------------------------------
@@ -532,7 +539,11 @@ const academicYears = ref([])
 const terms = ref([])
 
 const selectedAcademicYear = ref('')
+let selectedAcademicYearOverride = false
+let syncingSelectedAcademicYearFromGlobal = false
 const selectedTerm = ref('')
+let selectedTermOverride = false
+let syncingSelectedTermFromGlobal = false
 const selectedStatus = ref('')
 
 const loading = ref(false)
@@ -629,6 +640,48 @@ async function loadTerms() {
     toast.error('Failed to load terms.')
   }
 }
+
+watch(
+  () => academicContext.selectedYearId,
+  (nextYearId) => {
+    if (!selectedAcademicYearOverride) {
+      syncingSelectedAcademicYearFromGlobal = true
+      selectedAcademicYear.value = nextYearId ? String(nextYearId) : ''
+    }
+  },
+  { immediate: true }
+)
+
+watch(selectedAcademicYear, (nextYear, previousYear) => {
+  if (nextYear === previousYear || syncingSelectedAcademicYearFromGlobal) {
+    syncingSelectedAcademicYearFromGlobal = false
+    return
+  }
+
+  const currentGlobalYear = academicContext.selectedYearId ? String(academicContext.selectedYearId) : ''
+  selectedAcademicYearOverride = nextYear !== currentGlobalYear
+})
+
+watch(
+  () => academicContext.selectedTermId,
+  (nextTerm) => {
+    if (!selectedTermOverride) {
+      syncingSelectedTermFromGlobal = true
+      selectedTerm.value = nextTerm ? String(nextTerm) : ''
+    }
+  },
+  { immediate: true }
+)
+
+watch(selectedTerm, (nextTerm, previousTerm) => {
+  if (nextTerm === previousTerm || syncingSelectedTermFromGlobal) {
+    syncingSelectedTermFromGlobal = false
+    return
+  }
+
+  const currentGlobalTerm = academicContext.selectedTermId ? String(academicContext.selectedTermId) : ''
+  selectedTermOverride = nextTerm !== currentGlobalTerm
+})
 
 
 // --------------------------------------------------

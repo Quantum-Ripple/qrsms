@@ -69,6 +69,7 @@
             <td class="p-3 whitespace-nowrap">{{ formatDate(p.date) }}</td>
             <td class="p-3">
               <div class="font-medium" :class="p.status === 'reversed' ? 'line-through' : ''">{{ p.full_name }}</div>
+              <div class="text-sm text-gray-500">{{ p.admission_number || p.student_admission_number || p.student?.admission_number || '—' }}</div>
               <div class="text-sm text-gray-500">{{ p.class_level }}</div>
             </td>
             <td class="p-3">{{ p.payment_method }}</td>
@@ -103,7 +104,10 @@
 
       <article v-for="p in payments" :key="p.id" class="rounded-lg border bg-white p-4 shadow-sm">
         <div class="flex items-start justify-between gap-3">
-          <h2 class="min-w-0 break-words font-semibold text-gray-900" :class="p.status === 'reversed' ? 'line-through' : ''">{{ p.full_name }}</h2>
+          <div class="min-w-0">
+            <h2 class="break-words font-semibold text-gray-900" :class="p.status === 'reversed' ? 'line-through' : ''">{{ p.full_name }}</h2>
+            <p class="mt-1 text-xs text-gray-500">{{ p.admission_number || p.student_admission_number || p.student?.admission_number || '—' }}</p>
+          </div>
           <span class="shrink-0 text-right font-semibold text-gray-900">{{ formatCurrency(p.amount) }}</span>
         </div>
 
@@ -232,6 +236,9 @@ import { listTerms } from '../../api/term'
 import { getStudent } from '../../api/Students'
 import RecordPaymentModal from './RecordPaymentModal.vue'
 import PaymentActionModal from './PaymentActionModal.vue'
+import { useAcademicContextStore } from '@/stores/academicContextStore'
+
+const academicContext = useAcademicContextStore()
 
 const payments = ref([])
 const terms = ref([])
@@ -242,6 +249,8 @@ const notice = ref(null)
 
 const search = ref('')
 const selectedTerm = ref('')
+let selectedTermOverride = false
+let syncingSelectedTermFromGlobal = false
 const methodFilter = ref('')
 const includeReversed = ref(false)
 
@@ -297,6 +306,27 @@ const loadPayments = async () => {
     if (sequence === requestSequence) loading.value = false
   }
 }
+
+watch(
+  () => academicContext.selectedTermId,
+  (nextTerm) => {
+    if (!selectedTermOverride) {
+      syncingSelectedTermFromGlobal = true
+      selectedTerm.value = nextTerm ? String(nextTerm) : ''
+    }
+  },
+  { immediate: true }
+)
+
+watch(selectedTerm, (nextTerm, previousTerm) => {
+  if (nextTerm === previousTerm || syncingSelectedTermFromGlobal) {
+    syncingSelectedTermFromGlobal = false
+    return
+  }
+
+  const currentGlobalTerm = academicContext.selectedTermId ? String(academicContext.selectedTermId) : ''
+  selectedTermOverride = nextTerm !== currentGlobalTerm
+})
 
 // Search is debounced. Other filters immediately reset to the first page.
 let searchTimer

@@ -31,3 +31,10 @@ export const getStudentGrades = async (studentId) => {
     throw error;
   }
 };
+export const searchStudents = async (search, params = {}) => {
+  const response = await api.get('/students/', {
+    params: { search, ...params },
+  })
+  const data = response.data
+  return Array.isArray(data) ? data : data?.results ?? []
+}

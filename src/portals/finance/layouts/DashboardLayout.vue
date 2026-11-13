@@ -60,11 +60,14 @@ const navItems = [
   { label: 'School Fee', route: { name: 'FinanceSchoolFees' } },
   //{ label: 'Payments', route: { name: 'FinancePayments'}},
   { label: 'Payment Register', route: { name: 'FinancePaymentRegister'}},
+  
   { label: 'Fee Invoices', route: { name: 'FinanceInvoices'}},
   { label: 'Generate Bills', route: { name: 'FinanceBilling' } },
   { label: 'Expenditures', route: { name: 'FinanceExpenditures'}},
   { label: 'Transport Billing', route: { name: 'TransportBilling'}},
+  { label: 'Arrears', route: { name: 'FinanceArrears'}},
   { label: 'Announcements', route: { name: 'FinanceAnnouncements' } },
+  { label: 'How to pay', route: { name: 'FinanceHowToPay' } },
   { label: 'Settings', route: { name: 'FinanceSettings' } },
  
 ]

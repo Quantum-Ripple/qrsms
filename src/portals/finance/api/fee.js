@@ -99,3 +99,19 @@ export const getMpesaTransactionStatus = async (id) => {
   const response = await api.get(`/mpesa/transactions/${id}/`)
   return response.data
 }
+
+export const getPaymentModes = () =>
+  api.get('funds/payment-modes/').then((r) => r.data)
+ 
+export const createPaymentMode = (payload) =>
+  api.post('funds/payment-modes/', payload).then((r) => r.data)
+ 
+export const updatePaymentMode = (id, payload) =>
+  api.patch(`funds/payment-modes/${id}/`, payload).then((r) => r.data)
+ 
+export const deletePaymentMode = (id) =>
+  api.delete(`funds/payment-modes/${id}/`)
+ 
+
+export const reorderPaymentModes = (ids) =>
+  api.post('funds/payment-modes/reorder/', { ids }).then((r) => r.data)

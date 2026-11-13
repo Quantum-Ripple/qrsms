@@ -23,3 +23,9 @@ export function initiateMpesaSTKPush(data) {
 export function getMpesaTransactionStatus(transactionId) {
   return api.get(`/mpesa/transactions/${transactionId}/`)
 }
+
+
+export const getHowToPay = (forItem = '') =>
+  api
+    .get('funds/how-to-pay/', { params: forItem ? { for: forItem } : {} })
+    .then((r) => r.data)

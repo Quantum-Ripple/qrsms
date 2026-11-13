@@ -49,7 +49,7 @@
           <option
             v-for="term in terms"
             :key="term.id"
-            :value="term.name"
+                    :value="String(term.id)"
           >
             {{ term.name }}, {{ term.academic_year_name }}
           </option>
@@ -134,7 +134,10 @@
 
 
             <td class="p-3">
-              {{ invoice.student_name }}
+              <div class="font-medium">{{ invoice.student_name }}</div>
+              <div class="text-sm text-gray-500">
+                {{ invoice.admission_number || invoice.student_admission_number || invoice.student?.admission_number || '—' }}
+              </div>
             </td>
 
 
@@ -232,21 +235,19 @@
 
 
         <div class="flex justify-between">
+          <div>
+            <span class="font-medium">
+              {{ invoice.student_name }}
+            </span>
+            <div class="text-sm text-gray-500 mt-1">
+              {{ invoice.admission_number || invoice.student_admission_number || invoice.student?.admission_number || '—' }}
+            </div>
+          </div>
 
-
-          <span class="font-medium">
-            {{ invoice.student_name }}
-          </span>
-
-
-           <span class="px-2 py-1 rounded text-sm" :class="statusClass(invoice)">
+          <span class="px-2 py-1 rounded text-sm" :class="statusClass(invoice)">
             {{ statusLabel(invoice) }}
           </span>
-
-
         </div>
-
-
 
         <div>
           Grade:
@@ -372,6 +373,7 @@ import { useRouter } from 'vue-router'
 import RecordPayment from '../components/Invoices/RecordPayment.vue'
 import { getClassLevels } from '@/api/classes'
 import { listTerms } from '../api/term'
+import { useAcademicContextStore } from '@/stores/academicContextStore'
 
 import PromptPayment from '../components/Invoices/PromptPayment.vue'
 
@@ -379,9 +381,8 @@ import PromptPayment from '../components/Invoices/PromptPayment.vue'
 
 
 
-
 const router = useRouter()
-
+const academicContext = useAcademicContextStore()
 
 // -------------------------
 // STATE
@@ -398,6 +399,8 @@ const selectedPromptInvoice = ref(null)
 
 const classLevels = ref([])
 const terms = ref([])
+let selectedTermOverride = false
+let syncingSelectedTermFromGlobal = false
 
 
 const currentPage = ref(1)
@@ -446,30 +449,11 @@ const loadClassLevels = async () => {
 }
 
 
-const getLatestTerm = (list) => {
-  if (!Array.isArray(list) || !list.length) return null
-
-  return [...list].sort((a, b) => {
-    const yearA = Number(String(a.academic_year_name || a.academic_year || '').match(/\d{4}/)?.[0] || 0)
-    const yearB = Number(String(b.academic_year_name || b.academic_year || '').match(/\d{4}/)?.[0] || 0)
-    const termOrderA = Number(String(a.name || '').match(/\d+/)?.[0] || 0)
-    const termOrderB = Number(String(b.name || '').match(/\d+/)?.[0] || 0)
-
-    if (yearA !== yearB) return yearB - yearA
-    return termOrderB - termOrderA
-  })[0]
-}
-
 const loadTerms = async () => {
   try {
     const response = await listTerms()
     const list = Array.isArray(response) ? response : response?.results || []
     terms.value = list
-
-    const latestTerm = getLatestTerm(list)
-    if (latestTerm) {
-      selectedTerm.value = latestTerm.name || latestTerm.display_name || latestTerm.label || ''
-    }
   } catch (error) {
     console.error(
       "Failed loading terms:",
@@ -479,7 +463,6 @@ const loadTerms = async () => {
 }
 
 
-
 // -------------------------
 // FETCH INVOICES
 // -------------------------
@@ -487,6 +470,9 @@ const loadTerms = async () => {
 const refreshInvoices = async () => {
 
   try {
+    const termFilter = selectedTerm.value && !Number.isNaN(Number(selectedTerm.value))
+      ? Number(selectedTerm.value)
+      : undefined
 
     const response = await getInvoices({
 
@@ -496,7 +482,7 @@ const refreshInvoices = async () => {
         selectedClassLevel.value || undefined,
 
       term:
-        selectedTerm.value || undefined,
+        termFilter,
 
       student:
         search.value || undefined
@@ -612,6 +598,10 @@ const closeRecordPayment = () => {
 
 onMounted(async()=>{
 
+  if (!academicContext.loaded && !academicContext.loading) {
+    await academicContext.init()
+  }
+
   await loadClassLevels()
 
   await loadTerms()
@@ -638,6 +628,27 @@ watch(
 )
 
 
+
+watch(
+  () => academicContext.selectedTermId,
+  (nextTerm) => {
+    if (!selectedTermOverride) {
+      syncingSelectedTermFromGlobal = true
+      selectedTerm.value = nextTerm ? String(nextTerm) : ''
+    }
+  },
+  { immediate: true }
+)
+
+watch(selectedTerm, (nextTerm, previousTerm) => {
+  if (nextTerm === previousTerm || syncingSelectedTermFromGlobal) {
+    syncingSelectedTermFromGlobal = false
+    return
+  }
+
+  const currentGlobalTerm = academicContext.selectedTermId ? String(academicContext.selectedTermId) : ''
+  selectedTermOverride = nextTerm !== currentGlobalTerm
+})
 
 // When filtering
 watch(

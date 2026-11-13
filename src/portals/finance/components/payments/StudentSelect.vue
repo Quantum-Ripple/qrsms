@@ -24,13 +24,15 @@
         </button>
       </li>
     </ul>
+    <p v-else-if="open && query && searching" class="mt-1 text-sm text-gray-500">Searching...</p>
     <p v-else-if="open && query && !results.length" class="mt-1 text-sm text-gray-500">No students match.</p>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, watch, onBeforeUnmount } from 'vue'
 import { studentName, studentAdmission } from '../../api/payment'
+import { searchStudents } from '../../api/Students'
 
 const props = defineProps({
   modelValue: { type: [Number, String], default: '' },
@@ -43,38 +45,75 @@ const emit = defineEmits(['update:modelValue'])
 
 const query = ref('')
 const open = ref(false)
+const results = ref([])
+const searching = ref(false)
+
+let timer = null
+let seq = 0
 
 const labelFor = (s) => [studentName(s), studentAdmission(s)].filter(Boolean).join(' · ')
 
+// preselect when opened from a student page
 watch(
   () => props.modelValue,
   (id) => {
     if (id && !query.value) {
-      const s = props.students.find((x) => x.id === id)
+      const s = props.students.find((x) => String(x.id) === String(id))
       if (s) query.value = labelFor(s)
     }
   },
   { immediate: true },
 )
 
-const results = computed(() => {
-  const q = query.value.trim().toLowerCase()
-  if (!q) return []
-  return props.students
-    .filter((s) => s.id !== props.excludeId)
-    .filter((s) => labelFor(s).toLowerCase().includes(q))
-    .slice(0, 8)
-})
+const runSearch = async (q) => {
+  const mine = ++seq // ignore out-of-order responses
+  searching.value = true
+  try {
+    // The backend matches the whole string against ONE field at a time, so
+    // "john doe" would find nothing. Search by the longest word, then narrow
+    // by every word on the client.
+    const words = q.toLowerCase().split(/\s+/).filter(Boolean)
+    const longest = [...words].sort((a, b) => b.length - a.length)[0]
+
+    const list = await searchStudents(longest, { status: 'all' })
+    if (mine !== seq) return
+
+    results.value = list
+      .filter((s) => !props.excludeId || String(s.id) !== String(props.excludeId))
+      .filter((s) => {
+        const label = labelFor(s).toLowerCase()
+        return words.every((w) => label.includes(w))
+      })
+      .slice(0, 8)
+  } catch {
+    if (mine === seq) results.value = []
+  } finally {
+    if (mine === seq) searching.value = false
+  }
+}
 
 // typing clears the current pick so a stale id is never submitted
 const onInput = () => {
   open.value = true
   emit('update:modelValue', '')
+  clearTimeout(timer)
+
+  const q = query.value.trim()
+  if (!q) {
+    seq++
+    results.value = []
+    searching.value = false
+    return
+  }
+  timer = setTimeout(() => runSearch(q), 250)
 }
 
 const pick = (s) => {
   emit('update:modelValue', s.id)
   query.value = labelFor(s)
+  results.value = []
   open.value = false
 }
+
+onBeforeUnmount(() => clearTimeout(timer))
 </script>
