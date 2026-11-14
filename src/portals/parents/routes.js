@@ -22,7 +22,8 @@ import Assessment from './views/Assessment.vue'
 import HowToPay from './views/Howtopay.vue'
 import HowToPayDetail from './views/Howtopaydetail.vue'
 
-
+import Invoices from './components/Finance/Invoices.vue'
+import Receipts from './components/Finance/Receipts.vue'
 
 export default [
  
@@ -69,5 +70,9 @@ export default [
   { path: 'settings', name: 'ParentSettings', component: Settings },
 
   { path: 'how-to-pay', name: 'ParentHowToPay', component: HowToPay },
-  { path: 'how-to-pay/:id', name: 'ParentHowToPayDetail', component: HowToPayDetail }
+  { path: 'how-to-pay/:id', name: 'ParentHowToPayDetail', component: HowToPayDetail },
+
+  { path: 'invoices', name: 'ParentInvoices', component: Invoices },
+  { path: 'receipts', name: 'ParentReceipts', component: Receipts },
 ]
+

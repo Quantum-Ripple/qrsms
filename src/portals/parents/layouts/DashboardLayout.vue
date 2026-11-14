@@ -61,6 +61,8 @@ const navItems = [
       { label: 'Fee Statement', route: { name: 'ParentFeeStatements' } },
       { label: 'Fee Structure', route: { name: 'ParentFeeStructure' } },
       { label: 'Make Payment', route: { name: 'ParentOnlinePayment' } },
+      { label: 'Invoices', route: { name: 'ParentInvoices' } },
+      { label: 'Receipts', route: { name: 'ParentReceipts' } },
     ], 
   },
   
