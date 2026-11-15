@@ -360,7 +360,7 @@ import {
 import { listTerms } from '../../api/term'
 import { getClassLevels } from '@/api/classes'
 import StudentBillDetail from './StudentBillDetail.vue'
-import { useBillingContext } from '../../composables/useBillingContext'
+import { useBillingContext } from '../../composables/usebillingcontext'
 
 const terms = ref([])
 const classLevels = ref([])
