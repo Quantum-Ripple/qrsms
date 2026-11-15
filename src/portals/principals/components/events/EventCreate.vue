@@ -152,7 +152,7 @@ import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import * as eventApi from '../../api/events.js'
 import * as smsApi from '../../api/sms.js'
-import SmsTopUpModal from './SmsTopUpModal.vue'
+import SmsTopUpModal from './Smstopupmodal.vue'
 
 import { useAuthStore } from '@/stores/authStore.js'
 

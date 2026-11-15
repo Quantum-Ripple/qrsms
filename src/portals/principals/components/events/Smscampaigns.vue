@@ -57,7 +57,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import * as smsApi from '../../api/sms.js'
-import SmsTopUpModal from './SmsTopUpModal.vue'
+import SmsTopUpModal from './Smstopupmodal.vue'
 
 const router = useRouter()
 const campaigns = ref([])
