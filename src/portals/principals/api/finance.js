@@ -38,10 +38,20 @@ export const getClasswiseFinanceSummary = async (termId) => {
 
 export const getTransactions = async (termId) => {
   try {
-    const response = await api.get('/payments/', {
+    const first = await api.get('/payments/', {
       params: termId ? { term: termId } : {},
     })
-    return response.data
+    const data = first.data
+    if (Array.isArray(data)) return data        // not paginated
+
+    const rows = [...(data.results ?? [])]
+    let next = data.next
+    while (next) {
+      const page = await api.get(next)          // `next` already carries the query string
+      rows.push(...(page.data.results ?? []))
+      next = page.data.next
+    }
+    return rows
   } catch (error) {
     console.error('Error fetching transactions:', error)
     throw error

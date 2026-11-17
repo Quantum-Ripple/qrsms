@@ -1,27 +1,8 @@
 <template>
   <div class="p-6 bg-gray-50 rounded-xl space-y-8">
     <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
+    <div class="mb-6">
       <h2 class="text-2xl font-semibold text-gray-800">Analytics Overview</h2>
-
-      <div class="flex items-center gap-2">
-        <label class="text-sm text-gray-500" for="analytics-term-select">
-          Term
-        </label>
-        <select
-          id="analytics-term-select"
-          v-model="selectedTerm"
-          class="border rounded px-3 py-1.5 text-sm text-gray-700"
-        >
-          <option
-            v-for="term in terms"
-            :key="term.id"
-            :value="String(term.id)"
-          >
-            {{ term.name }}, {{ term.academic_year_name }}
-          </option>
-        </select>
-      </div>
     </div>
 
     <!-- Graph Grid -->
@@ -77,11 +58,12 @@ import {
   getMonthlyFinanceSummary,
   getFinanceSummary
 } from '../../api/Dashboard'
-import { fetchTerms } from '../../api/term.js'
 
 import { useAuthStore } from '@/stores/authStore'
+import { useAcademicContextStore } from '@/stores/academicContextStore'
 
 const auth = useAuthStore()
+const academicContext = useAcademicContextStore()
 
 // Register Chart.js components + Filler (required for `fill: true`)
 Chart.register(
@@ -122,13 +104,8 @@ const defaultStudentsPerClass = []
 // Read user -> school id
 const school_id = auth.user?.school || ""
 
-// Term selector state
-const terms = ref([])
-const selectedTerm = ref('')
-// Distinguishes "we just set selectedTerm ourselves after learning the
-// backend's current term" from "the user picked something in the
-// dropdown" — avoids a redundant extra fetch right after the first one.
-let syncingTerm = false
+let dashboardRequest = 0
+let isMounted = false
 
 // Helper: safely destroy charts
 function destroyCharts() {
@@ -137,16 +114,10 @@ function destroyCharts() {
   if (feeStatusChart) { feeStatusChart.destroy(); feeStatusChart = null }
 }
 
-async function loadTerms() {
-  try {
-    const response = await fetchTerms()
-    terms.value = Array.isArray(response) ? response : response?.results || []
-  } catch (err) {
-    console.error('Failed loading terms:', err)
-  }
-}
-
 async function loadDashboard() {
+  const request = ++dashboardRequest
+  const termId = academicContext.selectedTermId || undefined
+
   // destroy any existing charts before rebuilding (hot-reload / remount /
   // term-change safety)
   destroyCharts()
@@ -155,14 +126,11 @@ async function loadDashboard() {
     // fetch required data in parallel
     const [stats, financeSummary, monthly] = await Promise.all([
       fetchSchoolStatistics(school_id),
-      getFinanceSummary(selectedTerm.value || undefined),
-      getMonthlyFinanceSummary(selectedTerm.value || undefined)
+      getFinanceSummary(termId),
+      getMonthlyFinanceSummary(termId)
     ])
 
-    if (!selectedTerm.value && financeSummary?.term?.id) {
-      syncingTerm = true
-      selectedTerm.value = String(financeSummary.term.id)
-    }
+    if (request !== dashboardRequest) return
 
     // -------- Students per class ----------
     let classLabels = []
@@ -291,26 +259,32 @@ async function loadDashboard() {
 
   } catch (err) {
     // Log and leave the fallback charts (or none) visible
-    console.error('Error initializing charts:', err)
+    if (request === dashboardRequest) {
+      console.error('Error initializing charts:', err)
+    }
   }
 }
 
-watch(selectedTerm, (newVal, oldVal) => {
-  if (syncingTerm) {
-    syncingTerm = false
-    return
+watch(
+  () => [academicContext.loaded, academicContext.selectedTermId],
+  () => {
+    if (isMounted && academicContext.loaded) {
+      loadDashboard()
+    }
   }
-  if (newVal && newVal !== oldVal) {
-    loadDashboard()
-  }
-})
+)
 
 onUnmounted(() => {
+  dashboardRequest += 1
   destroyCharts()
 })
 
-onMounted(async () => {
-  await Promise.all([loadTerms(), loadDashboard()])
+onMounted(() => {
+  isMounted = true
+
+  if (academicContext.loaded) {
+    loadDashboard()
+  }
 })
 </script>
 

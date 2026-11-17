@@ -188,7 +188,7 @@ onMounted(() => {
 
         <button
           type="button"
-          class="min-h-12 w-full rounded-xl px-5 text-base font-semibold text-white shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2"
+          class="min-h-12 w-full rounded-xl px-5 text-base font-semibold text-white shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 sm:w-fit sm:px-8"
           style="background: linear-gradient(135deg, #1db954, #14a44d)"
           @click="payInApp"
         >

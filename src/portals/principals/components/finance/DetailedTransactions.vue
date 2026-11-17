@@ -187,10 +187,12 @@ import { ref, computed, onMounted, watch } from "vue"
 import * as XLSX from "xlsx"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
-import { getTransactions, getFinanceSummary } from "../../api/finance"
+import { getTransactions } from "../../api/finance"
 import { listTerms } from "../../api/term"
 import StudentPaymentsModal from "./StudentPaymentsModal.vue"
+import { useAcademicContextStore } from "@/stores/academicContextStore"
 
+const academicContext = useAcademicContextStore()
 const transactions = ref([])
 const searchQuery = ref("")
 const filter = ref({ method: "" })
@@ -199,8 +201,15 @@ const loading = ref(false)
 const error = ref(null)
 
 const terms = ref([])
-const selectedTerm = ref("") // "" = all terms
+const selectedTerm = ref(
+  academicContext.selectedTermId
+    ? String(academicContext.selectedTermId)
+    : ""
+)
 const viewingStudent = ref(null)
+let selectedTermOverride = false
+let syncingSelectedTermFromGlobal = false
+let isMounted = false
 
 /*
 |--------------------------------------------------------------------------
@@ -224,23 +233,56 @@ async function fetchPayments() {
   }
 }
 
-// Re-fetch whenever the term changes
-watch(selectedTerm, fetchPayments)
+watch(
+  () => academicContext.selectedTermId,
+  (nextTerm) => {
+    const globalTerm = nextTerm ? String(nextTerm) : ""
+
+    if (selectedTermOverride && selectedTerm.value === globalTerm) {
+      selectedTermOverride = false
+    } else if (!selectedTermOverride && selectedTerm.value !== globalTerm) {
+      syncingSelectedTermFromGlobal = true
+      selectedTerm.value = globalTerm
+    }
+  },
+  { immediate: true }
+)
+
+watch(selectedTerm, (nextTerm, previousTerm) => {
+  if (nextTerm === previousTerm || syncingSelectedTermFromGlobal) {
+    syncingSelectedTermFromGlobal = false
+    return
+  }
+
+  const globalTerm = academicContext.selectedTermId
+    ? String(academicContext.selectedTermId)
+    : ""
+  selectedTermOverride = nextTerm !== globalTerm
+})
+
+watch(
+  [() => academicContext.loaded, selectedTerm],
+  () => {
+    if (isMounted && academicContext.loaded) {
+      fetchPayments()
+    }
+  }
+)
 
 onMounted(async () => {
-  let currentId = ""
   try {
-    const [termList, summary] = await Promise.all([listTerms(), getFinanceSummary()])
-    terms.value = termList
-    currentId = summary?.term?.id ? String(summary.term.id) : ""
+    const termList = await listTerms()
+    terms.value = Array.isArray(termList)
+      ? termList
+      : termList?.results || []
   } catch (e) {
     console.error("Failed loading terms:", e)
   }
 
-  if (currentId) {
-    selectedTerm.value = currentId // the watcher loads the payments
-  } else {
-    fetchPayments() // no current term found, show all
+  isMounted = true
+
+  if (academicContext.loaded) {
+    fetchPayments()
   }
 })
 

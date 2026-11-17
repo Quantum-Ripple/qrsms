@@ -164,8 +164,7 @@
     studentId,
     (newId) => {
       fetchFinance(newId);
-    },
-    { immediate: true } 
+    }
   );
 
   watch(selectedTerm, (newVal, oldVal) => {
@@ -178,8 +177,13 @@
     }
   });
 
-  onMounted(() => {
-    loadTerms();
+  onMounted(async () => {
+    await loadTerms();
+    if (terms.value.length) {
+      syncingTerm = true;
+      selectedTerm.value = String(terms.value[0].id);
+    }
+    await fetchFinance(studentId.value);
   });
   
   
