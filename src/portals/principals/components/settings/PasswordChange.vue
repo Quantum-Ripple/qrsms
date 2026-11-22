@@ -86,6 +86,7 @@
 <script setup>
 import { ref } from 'vue';
 import Auth from '../../api/Auth';
+import { getErrorMessage } from '@/utils/apiError.js'
 
 
 const oldPassword = ref('');
@@ -130,11 +131,10 @@ const handleSubmit = async () => {
     newPassword.value = '';
     confirmPassword.value = '';
   } catch (err) {
-    errorMessage.value =
-      err.old_password ||
-      err.new_password ||
-      err.detail ||
-      'Something went wrong!';
+    errorMessage.value = getErrorMessage(
+      { response: { data: err } },
+      'Failed to change password.'
+    );
   } finally {
     loading.value = false;
   }

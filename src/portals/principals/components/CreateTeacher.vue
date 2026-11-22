@@ -118,7 +118,7 @@ import { useToast } from 'vue-toastification'
 import { fetchClassLevels } from '@/api/classes.js'
 import LoadingButton from '@/components/LoadingButton.vue'
 import AssignmentForm from '../composables/AssignmentForm.vue'
-
+import { getErrorMessage } from '@/utils/apiError.js'
 
 const loading = ref(false)
 const router = useRouter()
@@ -174,8 +174,8 @@ async function createTeacher() {
     toast.success("Teacher created successfully!")
     router.push({ name: 'PrincipalTeachers' })
   } catch (err) {
-    console.error(err)
-    toast.error("Failed to create teacher.")
+      console.error(err)
+    toast.error(getErrorMessage(err, "Failed to create teacher."))
   } finally {
     loading.value = false
   }

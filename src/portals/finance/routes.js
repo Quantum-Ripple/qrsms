@@ -64,6 +64,10 @@ export default [
   // Transport
   { path: 'transport-billing', name: 'TransportBilling', component: TransportBilling },
 
+  // Payroll
+  { path: 'payroll', name: 'finance-payroll', component: () => import('./views/Payroll.vue') },
+  { path: 'payroll/runs/:id', name: 'finance-payroll-run', component: () => import('./views/PayrollRun.vue') },
+
   // Events
   { path: 'event-details/:id', name: 'FinanceEventDetail', component: EventDetail, props: true },
 

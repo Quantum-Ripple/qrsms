@@ -94,6 +94,7 @@ const navItems = [
       { label: 'Fee Overview', route: { name: 'PrincipalFeeOverview' } },
       { label: 'Detailed Transactions', route: { name: 'PrincipalDetailedTransactions' } },
       { label: 'Expenditure Summary', route: { name: 'PrincipalExpenditureSummary' } },
+      { label: 'Payroll', route: { name: 'PrincipalPayroll' } },
     ],
   },
   {

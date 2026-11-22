@@ -119,6 +119,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import teachersApi from '../api/Teachers.js'
 import { useToast } from 'vue-toastification'
+import { getErrorMessage } from '@/utils/apiError.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -147,7 +148,7 @@ async function updateStaff() {
     editMode.value = false
   } catch (error) {
     console.error('Failed to update staff:', error)
-    toast.error('Failed to update staff')
+    toast.error(getErrorMessage(error, 'Failed to update staff.'))
   }
 }
 

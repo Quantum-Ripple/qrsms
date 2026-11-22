@@ -80,6 +80,7 @@ const navItems = [
     ],
   },
   { label: 'Assignments', route: { name: 'TeachersAssignmentsPage' } },
+  { label: 'My Pay', route: { name: 'TeachersMyPay' } },
   { label: 'Announcements', route: { name: 'TeachersAnnouncementsPage' } },
   { label: 'Settings', route: { name: 'TeachersSettings' } },
 ]

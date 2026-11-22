@@ -40,6 +40,7 @@
 <script setup>
 import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import * as smsApi from '../../api/sms.js'
+import { getErrorMessage } from '@/utils/apiError.js'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -79,7 +80,7 @@ async function start() {
     pollStatus(topup.id)
   } catch (err) {
     state.value = 'idle'
-    message.value = smsApi.errorText(err)
+    message.value = getErrorMessage(err, 'Failed to start the SMS top-up.')
   }
 }
 

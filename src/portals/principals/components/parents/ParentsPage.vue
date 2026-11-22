@@ -558,6 +558,7 @@ import { useToast } from 'vue-toastification'
 
 import parentsApi from '../../api/parents.js'
 import InfoItem from '../../../teachers/components/InfoItem.vue'
+import { getErrorMessage } from '@/utils/apiError.js'
 
 
 const route = useRoute()
@@ -645,17 +646,7 @@ async function resetPassword() {
     resetModalVisible.value = false
 
   } catch (error) {
-    const data = error.response?.data
-
-    if (data?.password?.length) {
-      toast.error(data.password[0])
-    } else if (data?.confirm_password?.length) {
-      toast.error(data.confirm_password[0])
-    } else if (data?.detail) {
-      toast.error(data.detail)
-    } else {
-      toast.error('Failed to reset parent password.')
-    }
+    toast.error(getErrorMessage(error, 'Failed to reset parent password.'))
 
   } finally {
     resetting.value = false
@@ -699,8 +690,7 @@ async function submitCreateAccount() {
   } catch (error) {
     console.error('createAccount failed:', error) // temporary — shows the real cause in devtools
 
-    const data = error.response?.data
-    toast.error(data?.email?.[0] || data?.username?.[0] || data?.detail || 'Failed to create parent account.')
+    toast.error(getErrorMessage(error, 'Failed to create parent account.'))
 
   } finally {
     creatingAccount.value = false

@@ -155,6 +155,7 @@ import * as smsApi from '../../api/sms.js'
 import SmsTopUpModal from './Smstopupmodal.vue'
 
 import { useAuthStore } from '@/stores/authStore.js'
+import { getErrorMessage } from '@/utils/apiError.js'
 
 const auth = useAuthStore()
 
@@ -296,7 +297,7 @@ async function createEvent() {
     }, 1500)
   } catch (err) {
     console.error('Failed to create announcement:', err)
-    errorMessage.value = err.message || 'Error creating announcement.'
+    errorMessage.value = getErrorMessage(err, 'Error creating announcement.')
   } finally {
     loading.value = false
   }

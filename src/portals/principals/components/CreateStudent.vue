@@ -438,6 +438,7 @@ import { fetchNextAdmissionNumber } from "../api/Students.js"
 import { fetchTransportRoutes } from '@/api/transport.js'
 import LoadingButton from '@/components/LoadingButton.vue'
 import { getAdmissionCharges } from '../api/finance.js'
+import { getErrorMessage } from '@/utils/apiError.js'
 
 const loading = ref(false)
 
@@ -549,15 +550,9 @@ async function createStudent() {
 
       formErrors.value = errors
 
-      const messages = Object.values(errors).flat()
-
-      messages.forEach(msg => {
-        toast.error(msg)
-      })
+      toast.error(getErrorMessage(error, 'Failed to create student.'))
     } else {
-      toast.error(
-        'Something went wrong. Please try again.'
-      )
+      toast.error(getErrorMessage(error, 'Failed to create student.'))
     }
   } finally {
     loading.value = false

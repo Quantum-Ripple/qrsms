@@ -11,6 +11,8 @@ import PrincipalRoutes from '../portals/principals/routes'
 import FinanceRoutes from '../portals/finance/routes'
 import ParentRoutes from '../portals/parents/routes'
 
+import StaffPassword from '../views/StaffPassword.vue'
+
 
 const ROLE_TO_PORTAL_PATH = {
   student: '/student',
@@ -57,6 +59,14 @@ const routes = [
     component: LoginPage,
     meta: { public: true }
   },
+
+{
+  path: '/staff/password',
+  name: 'StaffPassword',
+  component: StaffPassword,
+  meta: { public: true },
+},
+
   {
     path: '/privacy',
     name: 'PrivacyPolicy',

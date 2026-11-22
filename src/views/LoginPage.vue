@@ -97,7 +97,7 @@ const handleLogin = async () => {
       />
 
       <!-- Password -->
-      <div class="relative mb-3">
+      <div class="relative mb-2">
         <input
           v-model="password"
           :type="showPassword ? 'text' : 'password'"
@@ -116,7 +116,6 @@ const handleLogin = async () => {
           ></i>
         </button>
       </div>
-
       <div class="mb-4 flex items-start gap-2 text-sm text-slate-600">
         <input
           id="acceptPolicies"
@@ -124,6 +123,10 @@ const handleLogin = async () => {
           type="checkbox"
           class="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
         />
+
+
+     
+
 
         <label for="acceptPolicies" class="leading-6">
           I have read and agree to the
@@ -151,6 +154,15 @@ const handleLogin = async () => {
         <span v-if="!loading">Login</span>
         <span v-else>Signing in...</span>
       </button>
+
+      <div class="mt-3 flex justify-end">
+        <router-link
+          to="/staff/password"
+          class="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+        >
+          Forgot password?
+        </router-link>
+      </div>
 
       <p v-if="error" class="text-red-500 text-sm mt-3">
         {{ error }}

@@ -36,8 +36,8 @@
         </div>
 
         <div class="qr-brand-text">
-          <strong>Quantum Ripple</strong>
-          <span>School System</span>
+          <strong>QRSMS</strong>
+          <span><i>Simple.Reliable.Trusted</i></span>
         </div>
       </div>
 

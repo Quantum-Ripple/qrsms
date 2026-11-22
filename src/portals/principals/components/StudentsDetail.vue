@@ -398,6 +398,7 @@ import { useToast } from 'vue-toastification'
 import studentsApi from '../api/Students.js'
 import { fetchClassLevels } from "@/api/classes.js"
 import { fetchTransportRoutes } from "@/api/transport.js"
+import { getErrorMessage } from '@/utils/apiError.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -592,7 +593,7 @@ async function updateStudent() {
 
   } catch (error) {
     console.error(error)
-    toast.error('Failed to update student.')
+    toast.error(getErrorMessage(error, 'Failed to update student.'))
   }
 }
 

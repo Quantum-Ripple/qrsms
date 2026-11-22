@@ -236,6 +236,7 @@ import { useRouter } from 'vue-router'
 import teachersApi from '../api/Teachers.js'
 import { useToast } from 'vue-toastification'
 import LoadingButton from '@/components/LoadingButton.vue'
+import { getErrorMessage } from '@/utils/apiError.js'
 
 const router = useRouter()
 const toast = useToast()
@@ -276,7 +277,7 @@ async function createOtherStaff() {
 
   } catch (error) {
     console.error('Create other staff failed:', error)
-    toast.error('Failed to create staff')
+    toast.error(getErrorMessage(error, 'Failed to create staff.'))
   } finally {
     loading.value = false
   }

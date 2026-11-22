@@ -64,6 +64,7 @@ export default [
   { path: 'principal/finance/overview', name: 'PrincipalFeeOverview', component: FeeOverview },
   { path: 'principal/finance/transactions', name: 'PrincipalDetailedTransactions', component: DetailedTransactions },
   { path: 'principal/finance/expenditure', name: 'PrincipalExpenditureSummary', component: ExpenditureSummary },
+  { path: 'finance/payroll', name: 'PrincipalPayroll', component: () => import('./views/Payroll.vue') },
   { path: 'principal/generate-invoice/:id', name: 'PrincipalGenerateInvoice', component: GenerateInvoice, props: true },
 
   // Reports

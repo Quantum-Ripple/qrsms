@@ -75,6 +75,7 @@ const navItems = [
   { label: 'Generate Bills', route: { name: 'FinanceBilling' } },
   { label: 'Expenditures', route: { name: 'FinanceExpenditures' } },
   { label: 'Transport Billing', route: { name: 'TransportBilling' } },
+  { label: 'Payroll', route: { name: 'finance-payroll' } },
   { label: 'Arrears', route: { name: 'FinanceArrears' } },
   { label: 'Announcements', route: { name: 'FinanceAnnouncements' } },
   { label: 'How to pay', route: { name: 'FinanceHowToPay' } },

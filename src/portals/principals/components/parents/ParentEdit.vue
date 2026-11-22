@@ -219,6 +219,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 
 import parentsApi from '../../api/parents.js'
+import { getErrorMessage } from '@/utils/apiError.js'
 
 
 const route = useRoute()
@@ -284,15 +285,7 @@ async function saveParent() {
 
     console.error('Failed to update parent:', error)
 
-    const data = error?.response?.data
-
-    if (data?.email?.length) {
-      toast.error(data.email[0])
-    } else if (data?.detail) {
-      toast.error(data.detail)
-    } else {
-      toast.error('Failed to update parent details.')
-    }
+    toast.error(getErrorMessage(error, 'Failed to update parent details.'))
 
   } finally {
 

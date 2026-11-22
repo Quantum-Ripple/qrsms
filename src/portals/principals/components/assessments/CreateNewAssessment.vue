@@ -236,6 +236,7 @@ import { ref, computed, onMounted } from "vue";
 import { createExam } from "../../api/Grades";
 import { listTerms } from "../../api/term";
 import { fetchClassLevels } from "../../../../api/classes";
+import { getErrorMessage } from '@/utils/apiError.js'
 
 const emit = defineEmits(["close", "created"]);
 
@@ -363,21 +364,7 @@ const handleSubmit = async () => {
     emit("created");
   } catch (err) {
     console.error("Failed to create exam:", err);
-
-    const responseData = err.response?.data;
-
-    if (responseData) {
-      if (typeof responseData === "string") {
-        error.value = responseData;
-      } else if (responseData.detail) {
-        error.value = responseData.detail;
-      } else {
-        const firstError = Object.values(responseData).flat()[0];
-        error.value = firstError || "Failed to create exam.";
-      }
-    } else {
-      error.value = "Failed to create exam.";
-    }
+    error.value = getErrorMessage(err, "Failed to create exam.");
   } finally {
     submitting.value = false;
   }

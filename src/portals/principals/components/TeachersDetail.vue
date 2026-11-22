@@ -498,6 +498,7 @@ import teachersApi from '../api/Teachers.js'
 import { fetchClassLevels } from "@/api/classes.js"
 import AssignmentForm from '../composables/AssignmentForm.vue'
 import InfoItem from '../../teachers/components/InfoItem.vue'
+import { getErrorMessage } from '@/utils/apiError.js'
 
 
 const route = useRoute()
@@ -758,7 +759,7 @@ async function updateTeacher() {
     normalizeForm()
   } catch (error) {
     console.error(error.response?.data || error)
-    toast.error("Update failed")
+    toast.error(getErrorMessage(error, "Failed to update teacher."))
   }
 }
 
@@ -820,17 +821,7 @@ async function deleteTeacher() {
     closeResetPassword()
 
   } catch (error) {
-    const data = error.response?.data
-
-    if (data?.password?.length) {
-      toast.error(data.password[0])
-    } else if (data?.confirm_password?.length) {
-      toast.error(data.confirm_password[0])
-    } else if (data?.detail) {
-      toast.error(data.detail)
-    } else {
-      toast.error('Failed to reset teacher password.')
-    }
+    toast.error(getErrorMessage(error, 'Failed to reset teacher password.'))
 
   } finally {
     resetting.value = false

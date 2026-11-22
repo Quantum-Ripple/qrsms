@@ -80,6 +80,11 @@ export default [
     component: AnnouncementsPage,
   },
   {
+    path: 'my-pay',
+    name: 'TeachersMyPay',
+    component: () => import('./views/MyPay.vue'),
+  },
+  {
     path: 'assignments',
     name: 'TeachersAssignmentsPage',
     component: AssignmentPage,
