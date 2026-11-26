@@ -4,12 +4,12 @@
       <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
         <div>
           <h2 class="text-2xl font-semibold text-gray-800">Other Staff Details</h2>
-          <p class="text-sm text-gray-500">View and manage this staff member.</p>
+     
         </div>
 
         <div class="flex flex-wrap gap-3">
           <button @click="editMode = true" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Edit</button>
-          <button @click="deleteStaff" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Delete</button>
+          <!--<button @click="deleteStaff" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Delete</button>-->
           <router-link :to="{ name: 'PrincipalOtherStaff' }" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">Back</router-link>
         </div>
       </div>

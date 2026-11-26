@@ -127,8 +127,8 @@
 
       </section>
 
-
       <!-- Parent Account -->
+       <!--
       <section
         class="w-full min-w-0 rounded-2xl bg-white p-4 sm:p-6 shadow overflow-hidden"
       >
@@ -186,7 +186,7 @@
       >
         Create Parent Account
       </button>
-      </section>
+      </section>-->
 
 
       <!-- Students -->

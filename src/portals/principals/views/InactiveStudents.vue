@@ -3,7 +3,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
         <h2 class="text-2xl font-semibold text-gray-800">Inactive Students</h2>
-        <p class="text-sm text-gray-500">Students who graduated or withdrew, and what happened.</p>
+        
       </div>
       <button @click="router.push({ name: 'PrincipalStudents' })"
               class="border border-gray-300 bg-white px-4 py-2 rounded-lg hover:bg-gray-50 w-full sm:w-auto">

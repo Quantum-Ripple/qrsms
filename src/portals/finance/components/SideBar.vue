@@ -34,9 +34,9 @@
           </svg>
         </div>
 
-        <div class="qr-brand-text">
-          <strong>Quantum Ripple</strong>
-          <span>School System</span>
+         <div class="qr-brand-text">
+          <strong>QRSMS</strong>
+          <span><i>Simple.Reliable.Trusted</i></span>
         </div>
       </div>
 

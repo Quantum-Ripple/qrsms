@@ -179,7 +179,7 @@
 
 
         <!-- Teacher Account -->
-        <section class="rounded-2xl bg-white p-6 shadow">
+       <!-- <section class="rounded-2xl bg-white p-6 shadow">
 
           <h3 class="mb-5 text-lg font-semibold text-gray-800">
             Teacher Account
@@ -217,7 +217,7 @@
 
           </div>
 
-        </section>
+        </section>-->
 
 
         <!-- ACTIONS -->
@@ -232,12 +232,12 @@
               Edit Teacher
             </button>
 
-            <button
+            <!--<button
               @click="deleteTeacher"
               class="rounded-lg bg-red-600 px-5 py-3 text-white transition hover:bg-red-700"
             >
               Delete Teacher
-            </button>
+            </button>-->
 
           </div>
 

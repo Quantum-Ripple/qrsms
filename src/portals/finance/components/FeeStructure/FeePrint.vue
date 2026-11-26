@@ -3,7 +3,7 @@
     <div class="text-center mb-8">
       <h1 class="text-3xl font-bold">{{ fee.school_name || 'Unknown School' }}</h1>
       <p class="text-gray-600">
-        Fee Structure for {{ fee.class_level }} - {{ fee.term }} {{ fee.year }}
+        Fee Structure for {{ fee.class_level_name }} - {{ fee.term_name }} {{ fee.academic_year }}
       </p>
     </div>
 
@@ -11,7 +11,7 @@
       <div class="grid grid-cols-2 gap-6">
         <div>
           <p class="text-sm text-gray-500">Class Level</p>
-          <p class="font-medium text-lg">{{ fee.class_level }}</p>
+          <p class="font-medium text-lg">{{ fee.class_level_name }}</p>
         </div>
 
         <div>
@@ -21,7 +21,7 @@
 
         <div>
           <p class="text-sm text-gray-500">Academic Year</p>
-          <p class="font-medium text-lg">{{ fee.year }}</p>
+          <p class="font-medium text-lg">{{ fee.academic_year }}</p>
         </div>
 
         <div>

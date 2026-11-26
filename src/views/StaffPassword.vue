@@ -374,7 +374,7 @@ onUnmounted(() => {
               QRSMS
             </p>
             <p class="text-xs text-slate-500">
-              School Management System
+              <i>Simple.Reliable.Trusted</i>
             </p>
           </div>
         </div>
@@ -808,7 +808,12 @@ onUnmounted(() => {
         </div>
 
         <p class="mt-6 text-center text-xs text-slate-400">
-          Secured by Quantum Ripple LTD
+          Secured by  <a
+          href="https://quantumripple.co.ke"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-blue-600 font-medium hover:text-blue-700 hover:underline"
+        > Quantum Ripple LTD </a>
         </p>
       </div>
     </main>

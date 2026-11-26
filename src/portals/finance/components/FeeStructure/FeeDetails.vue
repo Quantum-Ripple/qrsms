@@ -108,12 +108,13 @@
         Deleting this fee structure is permanent and cannot be undone.
       </p>
 
-      <button
-        @click="confirmDelete"
+      <!--<button
+        @click="confirmDelete",
+        
         class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
       >
         Delete Fee Structure
-      </button>
+      </button>-->
     </div>
 
 
